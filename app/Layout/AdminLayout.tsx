@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, Outlet, useActionData, useLocation, useNavigation } from "@remix-run/react";
-import { Button } from "@nextui-org/react";
+import { Button, User } from "@nextui-org/react";
 import { IoMenuOutline } from "react-icons/io5";
 import { 
     MdDashboard, 
@@ -115,6 +115,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                         <h2 className="text-xl font-semibold">
                             {navItems.find((item) => item.path === location.pathname)?.label || "Dashboard"}
                         </h2>
+                        <User
+                            avatarProps={{
+                                src: "https://i.pravatar.cc/150?u=a04258114e29026702d",
+                            }}
+
+                        />
                     </header>
 
                     {/* Loading overlay */}
