@@ -10,9 +10,15 @@ import {
     MdAutorenew,
     MdPointOfSale,
     MdAttachMoney,
-    MdAssessment
+    MdAssessment,
+    MdHome,
+    MdSearch,
+    MdBookmark,
+    MdVerifiedUser
 } from "react-icons/md";
 import { FaUserTie } from "react-icons/fa";
+import logo from "~/images/logo.png"
+
 
 interface NavItem {
     icon: React.ReactNode;
@@ -25,16 +31,13 @@ interface AdminLayoutProps {
 }
 
 const navItems: NavItem[] = [
-    { icon: <MdDashboard className="text-xl" />, label: "Dashboard", path: "/admin" },
-    { icon: <MdPeople className="text-xl" />, label: "Users", path: "/admin/users" },
-    { icon: <FaUserTie className="text-xl" />, label: "Suppliers", path: "/admin/suppliers" },
-    { icon: <MdCategory className="text-xl" />, label: "Category", path: "/admin/category" },
-    { icon: <MdInventory className="text-xl" />, label: "Products", path: "/admin/products" },
-    { icon: <MdAutorenew className="text-xl" />, label: "Restocking", path: "/admin/restocking" },
-    { icon: <MdPointOfSale className="text-xl" />, label: "Sales", path: "/admin/sales" },
-    { icon: <MdAttachMoney className="text-xl" />, label: "Debt", path: "/admin/debt" },
-    { icon: <MdAssessment className="text-xl" />, label: "Report", path: "/admin/report" },
+    { icon: <MdHome className="text-xl" />, label: "Explore", path: "/admin" },
+    { icon: <MdSearch className="text-xl" />, label: "Search", path: "/admin/users" },
+    { icon: <MdBookmark className="text-xl" />, label: "My Nuggets", path: "/admin/suppliers" },
+    { icon: <MdVerifiedUser className="text-xl" />, label: "My Profile", path: "/admin/category" },
+
 ];
+
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -67,14 +70,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 >
                     {/* Logo Area */}
                     <div className="h-16 flex items-center justify-between px-4 border-b">
-                        {!isCollapsed && <h1 className="text-xl font-bold">Admin</h1>}
+                        {!isCollapsed && <h1 className="text-xl font-bold">DL Nuggets</h1>}
                         <Button
                             isIconOnly
                             variant="light"
                             onClick={() => setIsCollapsed(!isCollapsed)}
                             className="ml-auto"
                         >
-                            <IoMenuOutline className="text-xl text-white" />
+                            <img src={logo} alt="" />
                         </Button>
                     </div>
 
