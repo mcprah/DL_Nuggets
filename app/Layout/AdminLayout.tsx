@@ -1,24 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link, Outlet, useActionData, useLocation, useNavigation } from "@remix-run/react";
+import { Link, useLocation, useNavigation } from "@remix-run/react";
 import { Button, User } from "@nextui-org/react";
 import { IoMenuOutline } from "react-icons/io5";
-import { 
-    MdDashboard, 
-    MdPeople, 
-    MdCategory,
-    MdInventory,
-    MdAutorenew,
-    MdPointOfSale,
-    MdAttachMoney,
-    MdAssessment,
+import {
     MdHome,
     MdSearch,
     MdBookmark,
     MdVerifiedUser
 } from "react-icons/md";
-import { FaUserTie } from "react-icons/fa";
-import logo from "~/images/logo.png"
-
+import logo from "~/images/logo.png";
 
 interface NavItem {
     icon: React.ReactNode;
@@ -26,49 +16,41 @@ interface NavItem {
     path: string;
 }
 
-interface AdminLayoutProps {
-    children: React.ReactNode;
-}
-
 const navItems: NavItem[] = [
-    { icon: <MdHome className="text-xl" />, label: "Explore", path: "/admin" },
+    { icon: <MdHome className="text-xl" />, label: "Explore", path: "/" },
     { icon: <MdSearch className="text-xl" />, label: "Search", path: "/admin/users" },
-    { icon: <MdBookmark className="text-xl" />, label: "My Nuggets", path: "/admin/suppliers" },
+    { icon: <MdBookmark className="text-xl" />, label: "My Nuggets", path: "/nuggets" },
     { icon: <MdVerifiedUser className="text-xl" />, label: "My Profile", path: "/admin/category" },
-
 ];
 
-
-const AdminLayout = ({ children }: AdminLayoutProps) => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+    const [isCollapsed, setIsCollapsed] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
     const location = useLocation();
-    const navigation = useNavigation()
+    const navigation = useNavigation();
     const isLoading = navigation.state === "loading";
-    const actionData = useActionData<any>();
 
     useEffect(() => {
         const checkScreenSize = () => {
-            setIsMobile(window.innerWidth < 768);
-            setIsCollapsed(window.innerWidth < 768);
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            setIsCollapsed(true); // Hide sidebar by default on mobile
         };
 
         checkScreenSize();
         window.addEventListener("resize", checkScreenSize);
-
         return () => window.removeEventListener("resize", checkScreenSize);
     }, []);
 
     return (
-        <div className=" overflow-y-hidden min-h-screen">
+        <div className="overflow-y-hidden min-h-screen bg-slate-50">
             <div className="flex px-2 py-2">
                 {/* Sidebar */}
                 <aside
                     className={`fixed md:relative h-[97vh] rounded-xl bg-[#249DD0] text-white shadow-lg transition-all duration-300 z-50
-                    ${isCollapsed ? "w-[70px]" : "w-[250px]"}
-                    ${isMobile && isCollapsed ? "-translate-x-full" : "translate-x-0"}`}
+          ${isMobile ? (isCollapsed ? "-translate-x-full" : "translate-x-0") : isCollapsed ? "w-[70px]" : "w-[250px]"}`}
                 >
-                    {/* Logo Area */}
+                    {/* Sidebar Header */}
                     <div className="h-16 flex items-center justify-between px-4 border-b">
                         {!isCollapsed && <h1 className="text-xl font-bold">DL Nuggets</h1>}
                         <Button
@@ -77,22 +59,19 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                             onClick={() => setIsCollapsed(!isCollapsed)}
                             className="ml-auto"
                         >
-                            <img src={logo} alt="" />
+                            <img src={logo} alt="Logo" />
                         </Button>
                     </div>
 
                     {/* Navigation Items */}
-                    <nav className={`p-2 flex  flex-col gap-1 ${isCollapsed ? "justify-ceter items-center" : ""}`}>
+                    <nav className={`p-2 flex flex-col gap-1 ${isCollapsed ? "justify-center items-center" : ""}`}>
                         {navItems.map((item) => (
                             <Link
                                 key={item.path}
                                 to={item.path}
                                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                                    ${location.pathname === item.path
-                                    ? "bg-primary text-white"
-                                    : "hover:bg-gray-100"
-                                    }
-                                `}
+                  ${location.pathname === item.path ? " text-white" : "hover:bg-white hover:shadow-sm hover:text-[#249DD0]"}
+                `}
                             >
                                 {item.icon}
                                 {!isCollapsed && <span>{item.label}</span>}
@@ -104,7 +83,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 {/* Main Content */}
                 <main className="flex-1 overflow-auto pl-4">
                     {/* Top Header */}
-                    <header className="h-16 bg-white shadow-sm border border-black/5 px-4 flex items-center justify-between rounded-xl flex items-center ">
+                    <header className="h-16 bg-white shadow-sm border border-black/5 px-4 flex items-center justify-between rounded-xl">
+                        {/* Toggle Button for Mobile */}
                         {isMobile && (
                             <Button
                                 isIconOnly
@@ -122,7 +102,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                             avatarProps={{
                                 src: "https://i.pravatar.cc/150?u=a04258114e29026702d",
                             }}
-
                         />
                     </header>
 
@@ -134,13 +113,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                     )}
 
                     {/* Page Content */}
-                    <div className="">
-                        {children}
-                    </div>
+                    <div>{children}</div>
                 </main>
             </div>
 
-            {/* Mobile Overlay */}
+            {/* Mobile Overlay (Closes Sidebar When Clicked) */}
             {isMobile && !isCollapsed && (
                 <div
                     className="fixed inset-0 bg-black/50 z-40"
@@ -150,6 +127,5 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </div>
     );
 };
-
 
 export default AdminLayout;
