@@ -1,24 +1,44 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Input, Button, Card, CardBody } from "@nextui-org/react";
-import { motion } from "framer-motion";
-import AdminLayout from "~/Layout/AdminLayout";
-import backgroundImage from "~/images/Library-Postcard-004_2.webp";
+import { Link, useLocation, useNavigation } from "@remix-run/react";
+import { Button, User, Modal, ModalBody, ModalHeader, ModalContent, Input, Card, CardBody } from "@nextui-org/react";
+import { IoMenuOutline } from "react-icons/io5";
+import { MdHome, MdSearch, MdBookmark, MdVerifiedUser } from "react-icons/md";
+import logo from "~/images/logo.png";
 
-const SearchEngine = () => {
-    const [query, setQuery] = useState("");
-    const [results, setResults] = useState([]);
+interface NavItem {
+    icon: React.ReactNode;
+    label: string;
+    path: string;
+}
+
+const navItems: NavItem[] = [
+    { icon: <MdHome className="text-xl" />, label: "Explore", path: "/" },
+    { icon: <MdSearch className="text-xl" />, label: "Search", path: "/search" },
+    { icon: <MdBookmark className="text-xl" />, label: "Lex Nuggets", path: "/nuggets" },
+    { icon: <MdVerifiedUser className="text-xl" />, label: "My Profile", path: "/admin/category" },
+];
+
+const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const suggestionBoxRef = useRef(null);
+    const location = useLocation();
+    const navigation = useNavigation();
+    const isLoading = navigation.state === "loading";
 
     useEffect(() => {
-        if (query.length > 1) {
-            fetchSuggestions(query);
+        if (searchQuery.length > 1) {
+            fetchSuggestions(searchQuery);
         } else {
             setSuggestions([]);
         }
-    }, [query]);
+    }, [searchQuery]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -32,10 +52,9 @@ const SearchEngine = () => {
         };
     }, []);
 
-    const fetchSuggestions = async (searchTerm) => {
+    const fetchSuggestions = async (query: string) => {
         try {
-            const formattedQuery = searchTerm.replace(/\s+/g, "+");
-            const response = await axios.get(`https://dummyjson.com/users/search?q=${formattedQuery}`);
+            const response = await axios.get(`https://dummyjson.com/users/search?q=${query}`);
             setSuggestions(response.data.users || []);
         } catch (error) {
             console.error("Suggestion error:", error);
@@ -44,98 +63,70 @@ const SearchEngine = () => {
     };
 
     const handleSearch = async () => {
-        if (!query) return;
+        if (!searchQuery) return;
         setLoading(true);
         try {
-            const formattedQuery = query.replace(/\s+/g, "+");
-            const response = await axios.get(`https://dummyjson.com/users/search?q=${formattedQuery}`);
-            setResults(response.data.users || []);
+            const response = await axios.get(`https://dummyjson.com/users/search?q=${searchQuery}`);
+            setSearchResults(response.data.users || []);
         } catch (error) {
             console.error("Search error:", error);
-            setResults([]);
+            setSearchResults([]);
         }
         setLoading(false);
     };
 
-    const handleClear = () => {
-        setQuery("");
-        setResults([]);
-        setSuggestions([]);
-    };
-
     return (
-        <AdminLayout>
-            <div
-                className="relative mt-4 rounded-xl flex flex-col items-center justify-center h-[86vh] p-4 bg-cover bg-center overflow-hidden"
-                style={{ backgroundImage: `url(${backgroundImage})` }}
-            >
-                {/* Black Overlay */}
-                <div className="absolute inset-0 bg-black opacity-50"></div>
-
-                <motion.div
-                    className="relative w-full max-w-2xl p-6 bg-white bg-opacity-90 rounded-2xl shadow-md"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <div className="relative w-full" ref={suggestionBoxRef}>
-                        <Input
-                            type="text"
-                            placeholder="Search for anything..."
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            className="w-full p-3 border rounded-lg"
-                        />
-                        {suggestions.length > 0 && (
-                            <div className="absolute top-full left-0 w-full bg-white border rounded-lg shadow-md z-10">
-                                {suggestions.map((suggestion, index) => (
-                                    <div
-                                        key={index}
-                                        className="p-2 hover:bg-gray-200 cursor-pointer"
-                                        onClick={() => {
-                                            setQuery(suggestion.firstName + " " + suggestion.lastName);
-                                            setSuggestions([]);
-                                        }}
-                                    >
-                                        {suggestion.firstName} {suggestion.lastName}
-                                    </div>
+        <div className="overflow-y-hidden min-h-screen bg-slate-50">
+            <Modal isOpen={isSearchOpen} onOpenChange={setIsSearchOpen} backdrop="blur">
+                <ModalContent>
+                    <ModalHeader className="text-center">Search</ModalHeader>
+                    <ModalBody className="flex flex-col items-center p-6">
+                        <div className="relative w-full" ref={suggestionBoxRef}>
+                            <Input
+                                type="text"
+                                placeholder="Search for anything..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {suggestions.length > 0 && (
+                                <div className="absolute top-full left-0 w-full bg-white border rounded-lg shadow-md z-10">
+                                    {suggestions.map((suggestion, index) => (
+                                        <div
+                                            key={index}
+                                            className="p-2 hover:bg-gray-200 cursor-pointer"
+                                            onClick={() => {
+                                                setSearchQuery(suggestion.firstName + " " + suggestion.lastName);
+                                                setSuggestions([]);
+                                            }}
+                                        >
+                                            {suggestion.firstName} {suggestion.lastName}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                            <Button onClick={handleSearch}>Search</Button>
+                            <Button onClick={() => setSearchQuery("")} className="bg-red-500 text-white">Clear</Button>
+                        </div>
+                        {loading && <p>Loading...</p>}
+                        {searchResults.length > 0 && (
+                            <div className="mt-4 w-full">
+                                {searchResults.map((user) => (
+                                    <Card key={user.id} className="p-4 bg-white rounded-xl shadow">
+                                        <CardBody>
+                                            <h3 className="text-lg font-semibold">{user.firstName} {user.lastName}</h3>
+                                            <p className="text-gray-600">Email: {user.email}</p>
+                                        </CardBody>
+                                    </Card>
                                 ))}
                             </div>
                         )}
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                        <Button onClick={handleSearch} className="p-3 flex items-center gap-2">
-                            Search
-                        </Button>
-                        <Button onClick={handleClear} className="p-3 flex items-center gap-2 bg-red-500 text-white">
-                            Clear
-                        </Button>
-                    </div>
-                </motion.div>
-
-                <div className="relative mt-6 w-full max-w-2xl overflow-hidden">
-                    {loading && <p className="text-center text-gray-500">Searching...</p>}
-                    {results.length > 0 && (
-                        <motion.div
-                            className="space-y-4 overflow-hidden"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            {results.map((result, index) => (
-                                <Card key={index} className="p-4 bg-white rounded-xl shadow">
-                                    <CardBody>
-                                        <h3 className="text-lg font-semibold">{result.firstName} {result.lastName}</h3>
-                                        <p className="text-gray-600">Email: {result.email}</p>
-                                    </CardBody>
-                                </Card>
-                            ))}
-                        </motion.div>
-                    )}
-                </div>
-            </div>
-        </AdminLayout>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+        </div>
     );
 };
 
-export default SearchEngine;
+export default AdminLayout;
