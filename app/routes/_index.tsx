@@ -2,13 +2,17 @@ import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useState } from "react";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
-import { MdEmail, MdLock } from "react-icons/md";
+import { MdEmail, MdLock, MdPerson, MdPhone } from "react-icons/md";
 import axios from "axios";
-import logo from "~/images/logo-removebg-preview.png"
+import logo from "~/images/logo-removebg-preview.png";
+
 
 const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [fullName, setFullName] = useState("");
+    const [phone, setPhone] = useState("");
     const [isSignUp, setIsSignUp] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -17,8 +21,13 @@ const Login = () => {
     const navigate = useNavigate();
 
     const handleSubmit = async () => {
-        if (!username || !password) {
-            setError("Email and password are required.");
+        if (isSignUp && (!fullName || !phone || !username || !password || !confirmPassword)) {
+            setError("All fields are required for sign-up.");
+            return;
+        }
+
+        if (isSignUp && password !== confirmPassword) {
+            setError("Passwords do not match.");
             return;
         }
 
@@ -26,28 +35,38 @@ const Login = () => {
         setError(null);
 
         try {
-            const response = await axios.post(`${baseUrl}/login`, {
-                username,
-                password,
-            });
+            const endpoint = isSignUp ? `${baseUrl}/users/add` : `${baseUrl}/auth/login`;
+            const data = isSignUp
+                ? { fullName, phone, username, password }
+                : { username, password };
 
-            const token = response.data.token;
-            localStorage.setItem("token", token); // Store token securely
-            console.log(token);
+            const response = await axios.post(endpoint, data);
 
+            if (isSignUp) {
+                // Redirect to login page after sign-up
+                navigate("/");
+            } else {
+            // Store token securely for login
+                const token = response.data.token;
+                localStorage.setItem("token", token);
+                console.log(token);
 
-            navigate("/dashboard"); // Redirect to dashboard
+                // Redirect to dashboard after login
+                navigate("/dashboard");
+            }
         } catch (err) {
             setError(err.response?.data?.message || "An error occurred. Please try again.");
         } finally {
             setLoading(false);
         }
+
     };
 
     return (
         <div className="flex h-screen w-full items-center justify-center bg-gray-100 p-4">
             <div className="flex flex-col md:flex-row bg-white rounded-2xl shadow-lg overflow-hidden w-full max-w-4xl">
                 {/* Left Side */}
+
                 <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
                     <h2 className="text-2xl font-bold text-gray-900 font-montserrat">
                         {isSignUp ? "Create an Account" : "Welcome Back"}
@@ -69,6 +88,30 @@ const Login = () => {
                             Signup
                         </button>
                     </div>
+                    {isSignUp && (
+                        <>
+                            <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
+                                <MdPerson className="text-gray-400 mr-2" />
+                                <input
+                                    type="text"
+                                    placeholder="Full Name"
+                                    className="flex-1 outline-none"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                />
+                            </div>
+                            <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
+                                <MdPhone className="text-gray-400 mr-2" />
+                                <input
+                                    type="text"
+                                    placeholder="Phone Number"
+                                    className="flex-1 outline-none"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
                     <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
                         <MdEmail className="text-gray-400 mr-2" />
                         <input
@@ -89,6 +132,18 @@ const Login = () => {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
+                    {isSignUp && (
+                        <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
+                            <MdLock className="text-gray-400 mr-2" />
+                            <input
+                                type="password"
+                                placeholder="Confirm Password"
+                                className="flex-1 outline-none"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                            />
+                        </div>
+                    )}
                     {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
                     <button
                         className="mt-4 w-full py-2 bg-[#1B1464] text-white font-bold rounded-lg"

@@ -47,7 +47,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             <div className="flex px-2 py-2">
                 {/* Sidebar */}
                 <aside
-                    className={`fixed md:relative h-[97vh] rounded-xl bg-[#249DD0] text-white shadow-lg transition-all duration-300 z-50
+                    className={`fixed md:relative h-[97vh] rounded-xl bg-[#1B1464] text-white shadow-lg transition-all duration-300 z-50
           ${isMobile ? (isCollapsed ? "-translate-x-full" : "translate-x-0") : isCollapsed ? "w-[70px]" : "w-[250px]"}`}
                 >
                     {/* Sidebar Header */}
