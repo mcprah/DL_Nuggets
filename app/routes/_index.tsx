@@ -8,7 +8,7 @@ import logo from "~/images/logo-removebg-preview.png";
 
 
 const Login = () => {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [fullName, setFullName] = useState("");
@@ -21,7 +21,7 @@ const Login = () => {
     const navigate = useNavigate();
 
     const handleSubmit = async () => {
-        if (isSignUp && (!fullName || !phone || !username || !password || !confirmPassword)) {
+        if (isSignUp && (!fullName || !phone || !email || !password || !confirmPassword)) {
             setError("All fields are required for sign-up.");
             return;
         }
@@ -35,10 +35,10 @@ const Login = () => {
         setError(null);
 
         try {
-            const endpoint = isSignUp ? `${baseUrl}/users/add` : `${baseUrl}/auth/login`;
+            const endpoint = isSignUp ? `${baseUrl}/users/add` : `https://phplaravel-745164-4627172.cloudwaysapps.com/api/login`;
             const data = isSignUp
-                ? { fullName, phone, username, password }
-                : { username, password };
+                ? { fullName, phone, email, password }
+                : { email, password };
 
             const response = await axios.post(endpoint, data);
 
@@ -82,7 +82,7 @@ const Login = () => {
                             Sign In
                         </button>
                         <button
-                            className={`flex-1 py-2 rounded-lg font-semibold ${isSignUp ? "bg-gray-200" : "text-gray-500"}`}
+                            className={`flex-1 py-2 rounded-lg font-semibold font-montserrat ${isSignUp ? "bg-gray-200" : "text-gray-500"}`}
                             onClick={() => setIsSignUp(true)}
                         >
                             Signup
@@ -95,7 +95,7 @@ const Login = () => {
                                 <input
                                     type="text"
                                     placeholder="Full Name"
-                                    className="flex-1 outline-none"
+                                    className="flex-1 outline-none text-nunito"
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                 />
@@ -105,7 +105,7 @@ const Login = () => {
                                 <input
                                     type="text"
                                     placeholder="Phone Number"
-                                    className="flex-1 outline-none"
+                                    className="flex-1 outline-none text-nunito"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                 />
@@ -117,9 +117,9 @@ const Login = () => {
                         <input
                             type="email"
                             placeholder="Email Address"
-                            className="flex-1 outline-none"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            className="flex-1 outline-none text-nunito"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
                     <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
@@ -127,7 +127,7 @@ const Login = () => {
                         <input
                             type="password"
                             placeholder="Password"
-                            className="flex-1 outline-none"
+                            className="flex-1 outline-none text-nunito"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
@@ -138,7 +138,7 @@ const Login = () => {
                             <input
                                 type="password"
                                 placeholder="Confirm Password"
-                                className="flex-1 outline-none"
+                                className="flex-1 outline-none text-nunito"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                             />
@@ -146,13 +146,13 @@ const Login = () => {
                     )}
                     {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
                     <button
-                        className="mt-4 w-full py-2 bg-[#1B1464] text-white font-bold rounded-lg"
+                        className="mt-4 w-full py-2 bg-[#1B1464] font-montserrat text-white font-bold rounded-lg"
                         onClick={handleSubmit}
                         disabled={loading}
                     >
                         {loading ? "Processing..." : isSignUp ? "Sign Up" : "Continue"}
                     </button>
-                    <p className="text-center text-gray-500 my-4">Or Continue With</p>
+                    <p className="text-center text-gray-500 my-4 font-nunito">Or Continue With</p>
                     <div className="flex justify-center gap-4">
                         <button className="p-3 rounded-full bg-gray-200"><FaGoogle className="text-gray-700" /></button>
                         <button className="p-3 rounded-full bg-black"><FaApple className="text-white" /></button>
@@ -161,7 +161,8 @@ const Login = () => {
                 </div>
 
                 {/* Right Side */}
-                <div className="w-full md:w-1/2 bg-blue-100 flex items-center justify-center p-8">
+                <div className="w-full md:w-1/2 bg-blue-100 flex flex-col items-center justify-center p-8">
+                    <p className="text-2xl font-montserrat text-[#1B1464]">Lex Nuggets</p>
                     <img
                         src={logo}
                         alt="Secure Login"
