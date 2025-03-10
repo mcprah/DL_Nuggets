@@ -16,6 +16,7 @@
     "@remix-run/node": "^2.15.3",
     "@remix-run/react": "^2.15.3",
     "@remix-run/serve": "^2.15.3",
+    "axios": "^1.8.2",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.7",
     "isbot": "^4.1.0",
@@ -46,4 +47,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }}
+  }
+}
