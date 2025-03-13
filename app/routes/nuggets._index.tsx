@@ -63,7 +63,6 @@ const Nuggets = () => {
     return (
         <AdminLayout>
             <div className="pt-4 flex flex-col gap-2">
-                <p className="font-montserrat font-bold text-xl">Lex Nuggets</p>
                 <p className="font-nunito">Quickly and easily access catalogues of legal principles at play in any case</p>
 
                 {/* Category Selection Buttons */}

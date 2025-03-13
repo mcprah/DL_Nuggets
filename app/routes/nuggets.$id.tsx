@@ -58,7 +58,7 @@ const NuggetsDetails = () => {
                         <p className="font-montserrat font-bold text-xl">{nuggetDetails?.name || "Nugget Details"}</p>
                     </div>
 
-                    {/* Category Selection Buttons */}
+                    {/* Category Selection Buttons
                     <div className="flex gap-4 p-2 rounded-xl shadow-sm max-w-max bg-white mt-4">
                         <Button
                             size="sm"
@@ -81,7 +81,7 @@ const NuggetsDetails = () => {
                         >
                             Judges
                         </Button>
-                    </div>
+                    </div> */}
 
                     {/* Grid Layout for Sub-Nuggets */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 bg-white rounded-xl shadow-sm border border-black/10 p-4">

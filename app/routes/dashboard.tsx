@@ -16,11 +16,15 @@ const Home = () => {
 
     return (
         <AdminLayout>
-            {/* Full Page Background with Dark Overlay */}
+            {/* Full Page Background with Animated Dark Overlay */}
             <div
-                className="relative w-full lg:h-[87vh] flex flex-col items-center px-4 py-8 mt-4 rounded-xl text-white"
-                style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                className="relative w-full h-screen lg:h-[87vh] flex flex-col items-center px-4 py-8 mt-4 rounded-xl text-white overflow-hidden"
             >
+                {/* Animated Background */}
+                <div
+                    className="absolute inset-0 bg-cover bg-center scale-110 animate-bg-move"
+                    style={{ backgroundImage: `url(${backgroundImage})` }}
+                ></div>
                 {/* Dark Overlay */}
                 <div className="absolute inset-0 bg-black opacity-50 rounded-xl"></div>
                 <div className="relative z-10 flex flex-col items-center w-full">
@@ -85,6 +89,16 @@ const Home = () => {
                     </div>
                 </div>
             </div>
+            <style>{`
+                @keyframes bg-move {
+                    0% { transform: scale(1.1) translateY(0); }
+                    50% { transform: scale(1.15) translateY(-10px); }
+                    100% { transform: scale(1.1) translateY(0); }
+                }
+                .animate-bg-move {
+                    animation: bg-move 10s infinite alternate ease-in-out;
+                }
+            `}</style>
         </AdminLayout>
     );
 };
