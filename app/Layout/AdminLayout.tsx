@@ -13,7 +13,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-    { icon: <MdHome className="text-xl" />, label: "Explore", path: "/" },
+    { icon: <MdHome className="text-xl" />, label: "Explore", path: "/dashboard" },
     { icon: <MdBookmark className="text-xl" />, label: "Lex Nuggets", path: "/nuggets" },
     { icon: <MdVerifiedUser className="text-xl" />, label: "My Profile", path: "/admin/category" },
 ];
