@@ -39,7 +39,7 @@ const Login = () => {
       const endpoint = isSignUp ? `${baseUrl}/sign-up` : `${baseUrl}/login`;
       const data = isSignUp
         ? { name: fullName, phone, email, password }
-        : { email, password };
+        : { email, password, device_name: "Browser" };
 
       const response = await axios.post(endpoint, data, {
         headers: {
