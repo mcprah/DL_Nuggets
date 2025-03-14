@@ -35,7 +35,7 @@ const Login = () => {
         setError(null);
 
         try {
-            const endpoint = isSignUp ? `${baseUrl}/users/add` : `https://phplaravel-745164-4627172.cloudwaysapps.com/api/login`;
+            const endpoint = isSignUp ? `${baseUrl}/sign-up` : `https://manage.dennislawgh.com/api/v1/login`;
             const data = isSignUp
                 ? { fullName, phone, email, password }
                 : { email, password };
@@ -47,8 +47,8 @@ const Login = () => {
                 navigate("/");
             } else {
             // Store token securely for login
-                const token = response.data.token;
-                localStorage.setItem("token", token);
+                const token = response.data.access_token;
+                localStorage.setItem("access_token", token);
                 console.log(token);
 
                 // Redirect to dashboard after login
