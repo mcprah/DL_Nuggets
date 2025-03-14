@@ -34,7 +34,7 @@ const Login = () => {
         setError(null);
 
         try {
-            const endpoint = isSignUp ? `${baseUrl}/sign-up` : `https://manage.dennislawgh.com/api/v1/login`;
+            const endpoint = isSignUp ? `${baseUrl}/sign-up` : `${baseUrl}/login`;
             const data = isSignUp
                 ? { fullName, phone, email, password }
                 : { email, password };
