@@ -19,7 +19,6 @@ const Login = () => {
 
     const { baseUrl } = useLoaderData<typeof loader>();
     const navigate = useNavigate();
-
     const handleSubmit = async () => {
         if (isSignUp && (!fullName || !phone || !email || !password || !confirmPassword)) {
             setError("All fields are required for sign-up.");
@@ -40,13 +39,18 @@ const Login = () => {
                 ? { fullName, phone, email, password }
                 : { email, password };
 
-            const response = await axios.post(endpoint, data);
+            const response = await axios.post(endpoint, data, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                withCredentials: true, // Allows cross-origin cookies (CORS fix)
+            });
 
             if (isSignUp) {
                 // Redirect to login page after sign-up
                 navigate("/");
             } else {
-            // Store token securely for login
+                // Store token securely for login
                 const token = response.data.access_token;
                 localStorage.setItem("access_token", token);
                 console.log(token);
@@ -59,8 +63,8 @@ const Login = () => {
         } finally {
             setLoading(false);
         }
-
     };
+
 
     return (
         <div className="flex h-screen w-full items-center justify-center bg-gray-100 p-4">
