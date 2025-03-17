@@ -1,18 +1,18 @@
+import { useState, useEffect } from "react";
 import { Link, useLoaderData } from "@remix-run/react";
 import { MdArrowRight } from "react-icons/md";
 import axios from "axios";
 import { LoaderFunction } from "@remix-run/node";
 
 // Define types for our data
-interface AreaOfLaw {
+interface Court {
   id: number;
   name: string;
-  display_name: string;
 }
 
 interface PaginatedResponse {
   current_page: number;
-  data: AreaOfLaw[];
+  data: Court[];
   first_page_url: string;
   from: number;
   last_page: number;
@@ -26,23 +26,23 @@ interface PaginatedResponse {
 }
 
 interface LoaderData {
-  areaOfLaw: PaginatedResponse;
+  courts: PaginatedResponse;
   baseUrl: string;
 }
 
-const AreaOfLaw = () => {
-  const { areaOfLaw } = useLoaderData<LoaderData>();
+const Courts = () => {
+  const { courts } = useLoaderData<LoaderData>();
 
   return (
     <div className="">
       <div className="lg:grid lg:grid-cols-4 gap-4 bg-white p-4 shadow-sm rounded-xl border border-black/5">
-        {areaOfLaw.data.map((area) => (
+        {courts.data.map((court) => (
           <Link
-            key={area.id}
-            to={`/nuggets/${area.id}`}
+            key={court.id}
+            to={`/nuggets/court/${court.id}`}
             className="bg-white border border-black/10 flex justify-between p-3 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition-all duration-300"
           >
-            <p className="text-black">{area.value}</p>
+            <p className="text-black">{court.name}</p>
             <MdArrowRight className="text-xl text-gray-700" />
           </Link>
         ))}
@@ -51,17 +51,17 @@ const AreaOfLaw = () => {
   );
 };
 
-export default AreaOfLaw;
+export default Courts;
 
 export const loader: LoaderFunction = async () => {
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
   try {
-    const response = await axios.get(`${baseUrl}/area-of-law`);
+    const response = await axios.get(`${baseUrl}/courts`);
     return {
-      areaOfLaw: response.data,
+      courts: response.data,
       baseUrl,
     };
   } catch (error) {
-    throw new Error("Failed to fetch areas of law");
+    throw new Error("Failed to fetch courts");
   }
 };
