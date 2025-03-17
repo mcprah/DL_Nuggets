@@ -1,17 +1,40 @@
 import { useState } from "react";
 import { useParams, useNavigate, useLoaderData } from "@remix-run/react";
 import { MdArrowBack } from "react-icons/md";
-import { Pagination } from "@nextui-org/react";
+import { Pagination, Chip } from "@nextui-org/react";
 import { LoaderFunction } from "@remix-run/node";
 import axios from "axios";
+
+interface Keyword {
+  keyword: {
+    value: string;
+  };
+}
+
+interface AreaOfLaw {
+  area_of_law: {
+    id: number;
+    display_name: string;
+  };
+}
 
 interface Nugget {
   id: number;
   title: string;
   principle: string;
-  source?: string;
-  description?: string;
-  keywords?: string[];
+  headnote?: string;
+  quote?: string;
+  dl_citation_no?: string;
+  citation_no?: string;
+  year?: number;
+  judge_title?: string;
+  page_number?: number;
+  area_of_laws?: AreaOfLaw[];
+  keywords?: Keyword[];
+  judge?: {
+    id: number;
+    fullname: string;
+  };
 }
 
 interface Court {
@@ -20,6 +43,7 @@ interface Court {
 }
 
 interface LoaderData {
+  details: Court;
   court: Court;
   nuggets: Nugget[];
   baseUrl: string;
@@ -42,8 +66,10 @@ const CourtDetails = () => {
     setIsDrawerOpen(true);
   };
 
-  const { court, nuggets, baseUrl, currentPage, totalPages, perPage } =
+  const { details, court, nuggets, baseUrl, currentPage, totalPages, perPage } =
     useLoaderData<LoaderData>();
+
+  const courtData = details || court;
 
   return (
     <div className="flex transition-all duration-300">
@@ -62,7 +88,7 @@ const CourtDetails = () => {
             <MdArrowBack className="text-2xl" />
           </button>
           <p className="font-montserrat font-bold text-xl">
-            {court?.name || "Court Details"}
+            {courtData?.name || "Court Details"}
           </p>
         </div>
         {/* Grid Layout for Sub-Nuggets */}
@@ -81,6 +107,14 @@ const CourtDetails = () => {
               >
                 <p className="font-bold line-clamp-3">{nugget.title}</p>
                 <p className="text-sm mt-1 line-clamp-3">{nugget.principle}</p>
+                <div className="mt-2 flex justify-between items-center">
+                  <span className="text-xs text-gray-500">
+                    {nugget.citation_no || nugget.dl_citation_no}
+                  </span>
+                  <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+                    {nugget.year}
+                  </span>
+                </div>
               </div>
             ))
           ) : (
@@ -101,7 +135,7 @@ const CourtDetails = () => {
 
       {/* Drawer - Full Preview */}
       <div
-        className={`fixed right-0 top-0 h-full w-[400px] bg-white shadow-lg transition-transform duration-300 border-l ${
+        className={`fixed right-0 top-0 h-full w-[400px] bg-white shadow-lg transition-transform duration-300 border-l overflow-y-auto ${
           isDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -115,12 +149,36 @@ const CourtDetails = () => {
               ✕ Close
             </button>
 
+            {/* Citation */}
+            <div className="mt-4 flex justify-between items-center">
+              <span className="text-sm font-semibold">
+                {selectedSubNugget.citation_no ||
+                  selectedSubNugget.dl_citation_no}
+              </span>
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                {selectedSubNugget.year}
+              </span>
+            </div>
+
+            {/* Headnote */}
+            {selectedSubNugget.headnote && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-500 font-semibold">HEADNOTE:</p>
+                <p className="text-sm mt-1 italic">
+                  {selectedSubNugget.headnote}
+                </p>
+              </div>
+            )}
+
             {/* Source Quote */}
-            <p className="text-sm text-gray-500 mt-4">
-              <strong>QUOTE FROM:</strong>
-              <br />
-              {selectedSubNugget.source || "Unknown Source"}
-            </p>
+            <div className="mt-4">
+              <p className="text-sm text-gray-500 font-semibold">
+                CASE CITATION:
+              </p>
+              <p className="text-sm mt-1 font-medium">
+                {selectedSubNugget.quote || selectedSubNugget.title}
+              </p>
+            </div>
 
             {/* Nugget Title */}
             <h2 className="font-bold text-xl mt-4">
@@ -128,28 +186,78 @@ const CourtDetails = () => {
             </h2>
 
             {/* Description */}
-            <p className="text-gray-700 mt-2">
-              {selectedSubNugget.description || selectedSubNugget.principle}
-            </p>
+            <div className="mt-4">
+              <p className="text-sm text-gray-500 font-semibold">PRINCIPLE:</p>
+              <p className="text-gray-700 mt-1">
+                {selectedSubNugget.principle}
+              </p>
+            </div>
 
             {/* Tags & Keywords */}
-            <div className="mt-4 flex gap-2 flex-wrap">
-              {selectedSubNugget.keywords?.map(
-                (keyword: string, index: number) => (
-                  <span
+            <div className="mt-4">
+              <p className="text-sm text-gray-500 font-semibold mb-2">
+                KEYWORDS:
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {selectedSubNugget.keywords?.map((keywordObj, index) => (
+                  <Chip
                     key={index}
-                    className="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-700"
+                    size="sm"
+                    variant="flat"
+                    color="secondary"
+                    className="bg-gray-200 text-gray-700"
                   >
-                    {keyword}
-                  </span>
-                )
-              )}
+                    {keywordObj.keyword.value}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+
+            {/* Area of Law */}
+            <div className="mt-4">
+              <p className="text-sm text-gray-500 font-semibold mb-2">
+                AREA OF LAW:
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {selectedSubNugget.area_of_laws?.map((areaObj, index) => (
+                  <Chip
+                    key={index}
+                    size="sm"
+                    variant="flat"
+                    color="primary"
+                    className="bg-primary/10 text-primary"
+                  >
+                    {areaObj.area_of_law.display_name}
+                  </Chip>
+                ))}
+              </div>
             </div>
 
             {/* Metadata */}
-            <div className="mt-6">
-              <p className="text-sm text-gray-500">Court</p>
-              <p className="font-semibold">{court?.name}</p>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Judge</p>
+                <p className="font-semibold">
+                  {selectedSubNugget.judge?.fullname || "Not specified"}
+                </p>
+                {selectedSubNugget.judge_title && (
+                  <p className="text-xs text-gray-500">
+                    {selectedSubNugget.judge_title}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Court</p>
+                <p className="font-semibold">{courtData?.name}</p>
+              </div>
+              {selectedSubNugget.page_number && (
+                <div>
+                  <p className="text-sm text-gray-500">Page Number</p>
+                  <p className="font-semibold">
+                    {selectedSubNugget.page_number}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -172,8 +280,6 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     const response = await axios.get(
       `${baseUrl}/nuggets/court/${id}?page=${page}&limit=${limit}`
     );
-
-    console.log(response.data?.data[0]);
 
     return {
       details: response.data?.data[0]?.court || null,
