@@ -103,7 +103,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex px-2 py-2 gap-4">
         {/* Sidebar */}
         <aside
-          className={`fixed md:relative h-[97vh] gap-4 flex flex-col transition-all duration-300 z-50
+          className={`fixed top-0 left-0 md:relative h-[97vh] gap-4 flex flex-col transition-all duration-300 z-50
           ${
             isMobile
               ? isCollapsed

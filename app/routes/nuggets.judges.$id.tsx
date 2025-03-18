@@ -116,7 +116,7 @@ const JudgesDetails = () => {
                         key={idx}
                         className="text-xs bg-gray-100 px-2 py-0.5 rounded-full"
                       >
-                        {keywordObj.keyword.value}
+                        {keywordObj?.keyword?.value || "No keywords"}
                       </span>
                     ))}
                     {nugget.keywords.length > 2 && (
