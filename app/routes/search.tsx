@@ -164,6 +164,15 @@ const Search = () => {
       initialKeyword ||
       initialJudge ||
       initialYear;
+
+    console.log("Initial URL parameters:", {
+      query: initialQuery,
+      areaoflaw: initialAreaOfLaw,
+      keyword: initialKeyword,
+      judge: initialJudge,
+      year: initialYear,
+    });
+
     if (hasFilters) {
       // Once filter data is loaded, perform the search
       if (
@@ -172,8 +181,43 @@ const Search = () => {
         keywords.length > 0 &&
         judges.length > 0
       ) {
-        // Use the standard search with the initial query
-        handleSearch(initialQuery || "", 1);
+        // Special handling for numeric judge IDs in URL
+        if (initialJudge && /^\d+$/.test(initialJudge)) {
+          console.log(`Using judge_id ${initialJudge} for search`);
+
+          // Create a special set of params for direct ID search
+          const params: Record<string, any> = {
+            limit: 12,
+          };
+
+          if (initialQuery) params.q = initialQuery;
+
+          // Use judge_id directly instead of judge parameter
+          params.judge_id = initialJudge;
+
+          setLoading(true);
+          axios
+            .get(`${baseUrl}/nuggets/search`, { params })
+            .then((response) => {
+              console.log("Direct judge_id search response:", response.data);
+              setResults(response.data?.data || []);
+              setTotalResults(response.data?.meta?.total || 0);
+              setCurrentPage(response.data?.meta?.current_page || 1);
+              setTotalPages(response.data?.meta?.last_page || 1);
+            })
+            .catch((error) => {
+              console.error("Search error:", error);
+              setError("Failed to perform search. Please try again.");
+              setResults([]);
+            })
+            .finally(() => {
+              setLoading(false);
+            });
+        } else {
+          // Use the standard search for all other cases
+          console.log("Using standard search handler");
+          handleSearch(initialQuery || "", 1);
+        }
       }
     }
   }, [
@@ -227,38 +271,30 @@ const Search = () => {
 
       // If we have a numeric ID in the URL, find the display value for the UI
       if (directAreaId && /^\d+$/.test(directAreaId)) {
-        const aolResponse = await axios.get(`${baseUrl}/area-of-law`);
-        if (aolResponse.data && aolResponse.data.data) {
-          const area = aolResponse.data.data.find(
-            (a: any) => a.id.toString() === directAreaId
-          );
-          if (area) {
-            setSelectedAreaOfLaw(area.value);
-          }
+        const area = aolResponse.data.data.find(
+          (a: any) => a.id.toString() === directAreaId
+        );
+        if (area) {
+          setSelectedAreaOfLaw(area.value);
         }
       }
 
       if (directKeywordId && /^\d+$/.test(directKeywordId)) {
-        const keywordsResponse = await axios.get(`${baseUrl}/keywords`);
-        if (keywordsResponse.data && keywordsResponse.data.data) {
-          const keyword = keywordsResponse.data.data.find(
-            (k: any) => k.id.toString() === directKeywordId
-          );
-          if (keyword) {
-            setSelectedKeyword(keyword.value);
-          }
+        const keyword = keywordsResponse.data.data.find(
+          (k: any) => k.id.toString() === directKeywordId
+        );
+        if (keyword) {
+          setSelectedKeyword(keyword.value);
         }
       }
 
       if (directJudgeId && /^\d+$/.test(directJudgeId)) {
-        const judgesResponse = await axios.get(`${baseUrl}/judges`);
-        if (judgesResponse.data && judgesResponse.data.data) {
-          const judge = judgesResponse.data.data.find(
-            (j: any) => j.id.toString() === directJudgeId
-          );
-          if (judge) {
-            setSelectedJudge(judge.fullname);
-          }
+        // Use the judges data we just loaded
+        const judge = judgesResponse.data.data.find(
+          (j: any) => j.id.toString() === directJudgeId
+        );
+        if (judge) {
+          setSelectedJudge(judge.fullname);
         }
       }
     } catch (error) {
@@ -472,13 +508,20 @@ const Search = () => {
         params.keyword = selectedKey ? selectedKey.id : selectedKeyword;
       }
 
+      // Use judge_id parameter for the API instead of judge
+      // This matches the backend expectation in judge() method
       if (directJudgeId && /^\d+$/.test(directJudgeId)) {
-        params.judge = directJudgeId;
+        // For numeric judge IDs, use judge_id not judge
+        params.judge_id = directJudgeId;
       } else if (selectedJudge) {
         const selectedJudgeObj = judges.find(
           (judge) => judge.fullname === selectedJudge
         );
-        params.judge = selectedJudgeObj ? selectedJudgeObj.id : selectedJudge;
+        if (selectedJudgeObj) {
+          params.judge_id = selectedJudgeObj.id;
+        } else {
+          params.judge = selectedJudge;
+        }
       }
 
       if (selectedYear) {
