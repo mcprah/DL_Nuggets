@@ -151,6 +151,7 @@ const JudgesDetails = () => {
         nugget={selectedSubNugget}
         parentName={details?.fullname}
         parentType="judge"
+        baseUrl={baseUrl}
       />
     </div>
   );

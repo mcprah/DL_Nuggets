@@ -60,14 +60,14 @@ const navItems: NavItem[] = [
     path: "/nuggets",
   },
   {
-    icon: <MdVerifiedUser className="text-xl" />,
-    label: "My Profile",
-    path: "/profile",
-  },
-  {
     icon: <MdBookmarks className="text-xl" />,
     label: "My Nuggets",
     path: "/my-nuggets",
+  },
+  {
+    icon: <MdVerifiedUser className="text-xl" />,
+    label: "My Profile",
+    path: "/profile",
   },
 ];
 

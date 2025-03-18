@@ -1,5 +1,8 @@
-import { Chip } from "@nextui-org/react";
+import { Chip, Button } from "@nextui-org/react";
 import { Link } from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { MdBookmarkAdd, MdBookmarkRemove } from "react-icons/md";
+import axios from "axios";
 
 interface Keyword {
   keyword: {
@@ -36,6 +39,7 @@ export interface Nugget {
   slug?: string;
   courts?: string;
   other_citations?: string | null;
+  is_bookmarked?: boolean;
 }
 
 interface NuggetDrawerProps {
@@ -44,6 +48,7 @@ interface NuggetDrawerProps {
   nugget: Nugget | null;
   parentName?: string;
   parentType?: "judge" | "court" | "area";
+  onBookmarkChange?: () => void;
 }
 
 const NuggetDrawer = ({
@@ -52,23 +57,110 @@ const NuggetDrawer = ({
   nugget,
   parentName,
   parentType,
+  onBookmarkChange,
+  baseUrl,
 }: NuggetDrawerProps) => {
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
+  const [isBookmarking, setIsBookmarking] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (nugget) {
+      setIsBookmarked(!!nugget.is_bookmarked);
+    }
+  }, [nugget]);
+
   if (!nugget) return null;
+
+  const handleBookmarkToggle = async () => {
+    if (!nugget || isBookmarking) return;
+
+    setIsBookmarking(true);
+    setErrorMessage(null);
+
+    try {
+      // Get token from localStorage
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        setErrorMessage("You must be logged in to bookmark nuggets");
+        setIsBookmarking(false);
+        return;
+      }
+
+      if (isBookmarked) {
+        // Remove bookmark
+        await axios.delete(`${baseUrl}/bookmark-nugget/${nugget.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } else {
+        // Add bookmark
+        await axios.post(
+          `${baseUrl}/bookmark-nugget`,
+          { nugget_id: nugget.id },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+
+      // Toggle bookmark state
+      setIsBookmarked(!isBookmarked);
+
+      // Call the callback if provided to refresh parent component
+      if (onBookmarkChange) {
+        onBookmarkChange();
+      }
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+      setErrorMessage("Failed to update bookmark. Please try again.");
+    } finally {
+      setIsBookmarking(false);
+    }
+  };
 
   return (
     <div
-      className={`fixed right-0 top-0 h-full w-[400px] bg-white shadow-lg transition-transform duration-300 border-l overflow-y-auto ${
+      className={`fixed z-50 right-0 top-0 h-full w-[400px] bg-white shadow-lg transition-transform duration-300 border-l overflow-y-auto ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
       <div className="p-6 flex flex-col h-full">
-        {/* Close Button */}
-        <button
-          className="text-gray-600 hover:text-primary self-end"
-          onClick={onClose}
-        >
-          ✕ Close
-        </button>
+        {/* Close Button and Bookmark */}
+        <div className="flex justify-between w-full">
+          <Button
+            isIconOnly
+            variant="light"
+            color={isBookmarked ? "danger" : "primary"}
+            aria-label={
+              isBookmarked ? "Remove from bookmarks" : "Add to bookmarks"
+            }
+            isLoading={isBookmarking}
+            onClick={handleBookmarkToggle}
+          >
+            {isBookmarked ? (
+              <MdBookmarkRemove className="text-xl" />
+            ) : (
+              <MdBookmarkAdd className="text-xl" />
+            )}
+          </Button>
+          <button
+            className="text-gray-600 hover:text-primary"
+            onClick={onClose}
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mt-2 p-2 bg-red-50 text-red-600 rounded-md text-sm">
+            {errorMessage}
+          </div>
+        )}
 
         {/* Case Information */}
         <div className="mt-2">

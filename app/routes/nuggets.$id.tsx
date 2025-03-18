@@ -147,6 +147,7 @@ const AreaOfLawDetails = () => {
         nugget={selectedSubNugget}
         parentName={details?.display_name}
         parentType="area"
+        baseUrl={baseUrl}
       />
     </div>
   );

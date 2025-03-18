@@ -16,7 +16,7 @@ import {
   Button,
 } from "@nextui-org/react";
 import axios from "axios";
-import { Nugget } from "~/components/NuggetDrawer";
+import NuggetDrawer, { Nugget } from "~/components/NuggetDrawer";
 
 // Define the server loader data type
 interface ServerLoaderData {
@@ -77,6 +77,8 @@ export const clientLoader = async ({
       }
     );
 
+    console.log(response.data);
+
     return {
       nuggets: response.data?.data || [],
       totalPages: response.data?.meta?.last_page || 1,
@@ -105,6 +107,7 @@ export default function MyNuggets() {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedNugget, setSelectedNugget] = useState<Nugget | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Open drawer with selected nugget details
   const openDrawer = (nugget: Nugget) => {
@@ -115,6 +118,15 @@ export default function MyNuggets() {
   // Close drawer
   const closeDrawer = () => {
     setIsDrawerOpen(false);
+  };
+
+  // Handle bookmark changes
+  const handleBookmarkChange = () => {
+    // Force re-render to refresh the list
+    setRefreshKey((prev) => prev + 1);
+
+    // In a production app, you might want to refresh the data
+    // This is a simplified approach for this example
   };
 
   if (error === "Not authenticated") {
@@ -170,7 +182,7 @@ export default function MyNuggets() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {nuggets?.map((nugget) => (
                 <Card
-                  key={nugget.id}
+                  key={`${nugget.id}-${refreshKey}`}
                   className="h-full shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => openDrawer(nugget)}
                 >
@@ -224,94 +236,14 @@ export default function MyNuggets() {
         )}
       </div>
 
-      {/* Nugget Drawer for viewing details */}
-      {selectedNugget && (
-        <div
-          className={`fixed right-0 top-0 h-full w-[400px] bg-white shadow-lg transition-transform duration-300 border-l overflow-y-auto ${
-            isDrawerOpen ? "translate-x-0" : "translate-x-full"
-          }`}
-        >
-          {isDrawerOpen && selectedNugget && (
-            <div className="p-6 flex flex-col h-full">
-              <button
-                className="text-gray-600 hover:text-primary self-end"
-                onClick={closeDrawer}
-              >
-                ✕ Close
-              </button>
-
-              <div className="mt-2">
-                <span className="bg-blue-50 text-blue-800 px-2 py-1 text-xs rounded-full">
-                  {selectedNugget.status || "Published"}
-                </span>
-              </div>
-
-              <div className="mt-4 flex justify-between items-center">
-                <span className="text-sm font-semibold">
-                  {selectedNugget.citation_no || selectedNugget.dl_citation_no}
-                </span>
-                <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-                  {selectedNugget.year}
-                </span>
-              </div>
-
-              <h2 className="font-bold text-xl mt-4">
-                {selectedNugget.headnote || selectedNugget.title}
-              </h2>
-
-              {selectedNugget.principle && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-500 font-semibold">
-                    PRINCIPLE:
-                  </p>
-                  <p className="text-gray-700 mt-1">
-                    {selectedNugget.principle}
-                  </p>
-                </div>
-              )}
-
-              {selectedNugget.keywords &&
-                selectedNugget.keywords?.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-500 font-semibold mb-2">
-                      KEYWORDS:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedNugget?.keywords?.map((keywordObj, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
-                        >
-                          {keywordObj.keyword.value}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              {selectedNugget.judge && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-500 font-semibold">JUDGE:</p>
-                  <p className="text-gray-700">
-                    {selectedNugget.judge.fullname}{" "}
-                    {selectedNugget.judge_title &&
-                      `(${selectedNugget.judge_title})`}
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-6 flex justify-end">
-                <Button
-                  color="primary"
-                  onClick={() => navigate(`/nuggets/${selectedNugget.id}`)}
-                >
-                  View Full Details
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Use the NuggetDrawer component */}
+      <NuggetDrawer
+        isOpen={isDrawerOpen}
+        onClose={closeDrawer}
+        nugget={selectedNugget}
+        parentType="area"
+        onBookmarkChange={handleBookmarkChange}
+      />
     </AdminLayout>
   );
 }

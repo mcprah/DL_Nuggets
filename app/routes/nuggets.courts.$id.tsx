@@ -149,6 +149,7 @@ const CourtDetails = () => {
         nugget={selectedSubNugget}
         parentName={courtData?.name}
         parentType="court"
+        baseUrl={baseUrl}
       />
     </div>
   );
