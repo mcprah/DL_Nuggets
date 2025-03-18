@@ -11,15 +11,38 @@ import {
   Input,
   Card,
   CardBody,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Avatar,
 } from "@nextui-org/react";
 import { IoMenuOutline } from "react-icons/io5";
-import { MdHome, MdSearch, MdBookmark, MdVerifiedUser } from "react-icons/md";
+import {
+  MdHome,
+  MdSearch,
+  MdBookmark,
+  MdVerifiedUser,
+  MdLogout,
+  MdSettings,
+  MdNotifications,
+  MdChevronLeft,
+  MdChevronRight,
+} from "react-icons/md";
 import logo from "~/images/logo.png";
 
 interface NavItem {
   icon: React.ReactNode;
   label: string;
   path: string;
+}
+
+// Define SearchUser interface to fix linter errors
+interface SearchUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  image?: string;
 }
 
 const navItems: NavItem[] = [
@@ -45,23 +68,40 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [suggestions, setSuggestions] = useState([]);
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [suggestions, setSuggestions] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
   const navigation = useNavigation();
   const isLoading = navigation.state === "loading";
 
   useEffect(() => {
+    // Check if there's a saved sidebar state in localStorage
+    const savedSidebarState = localStorage.getItem("sidebarCollapsed");
+    if (savedSidebarState !== null) {
+      setIsCollapsed(savedSidebarState === "true");
+    }
+
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      setIsCollapsed(true);
+      if (mobile) {
+        setIsCollapsed(true);
+      }
     };
+
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
+
+  // Save sidebar state to localStorage when it changes
+  useEffect(() => {
+    if (!isMobile) {
+      localStorage.setItem("sidebarCollapsed", isCollapsed.toString());
+    }
+  }, [isCollapsed, isMobile]);
 
   useEffect(() => {
     if (searchQuery.length > 1) {
@@ -98,120 +138,204 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     setLoading(false);
   };
 
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("access_token");
+      window.location.href = "/";
+    }
+  };
+
   return (
-    <div className="overflow-y-hidden min-h-screen bg-slate-50">
-      <div className="flex px-2 py-2 gap-4">
-        {/* Sidebar */}
+    <div className="min-h-screen bg-slate-50 overflow-hidden">
+      <div className="flex">
+        {/* Fixed Sidebar */}
         <aside
-          className={`fixed top-0 left-0 md:relative h-[97vh] gap-4 flex flex-col transition-all duration-300 z-50
+          className={`fixed top-0 left-0 h-full z-40 transition-all duration-300 ease-in-out
           ${
             isMobile
               ? isCollapsed
                 ? "-translate-x-full"
-                : "translate-x-0"
+                : "translate-x-0 w-64"
               : isCollapsed
               ? "w-[70px]"
-              : "w-[250px]"
+              : "w-64"
           }`}
         >
-          {/* Sidebar Header */}
-          <div className="h-16 flex items-center justify-between px-4 bg-white rounded-xl shadow-lg">
-            {!isCollapsed && <h1 className="text-xl font-bold">DL Nuggets</h1>}
-            <Button
-              isIconOnly
-              variant="light"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="ml-auto"
-            >
-              <img src={logo} alt="Logo" />
-            </Button>
-          </div>
+          {/* Sidebar Content */}
+          <div className="flex flex-col h-full bg-white shadow-lg">
+            {/* Logo Area */}
+            <div className="flex items-center h-16 px-4 border-b bg-white">
+              {!isCollapsed && (
+                <h1 className="text-xl font-bold text-primary">DL Nuggets</h1>
+              )}
+              <div className={`${isCollapsed ? "mx-auto" : "ml-auto"}`}>
+                <img src={logo} alt="Logo" className="h-10" />
+              </div>
+            </div>
 
-          {/* Navigation Items */}
-          <nav
-            className={`p-2 flex flex-col gap-3 shadow-lg h-full bg-white text-gray-500 rounded-xl  ${
-              isCollapsed ? " items-center" : ""
-            }`}
-          >
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                  ${
-                    location.pathname === item.path
-                      ? " text-blue-600"
-                      : "hover:bg-white hover:shadow-sm hover:text-[#249DD0]"
-                  }
-                `}
+            {/* Navigation Items */}
+            <nav className="flex-1 overflow-y-auto py-6">
+              <div className="px-3 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200
+                    ${
+                      location.pathname === item.path
+                        ? "bg-primary text-white"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <div className={`${isCollapsed ? "mx-auto" : ""}`}>
+                      {item.icon}
+                    </div>
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+
+            {/* Sidebar Footer */}
+            <div className="border-t p-2">
+              <Button
+                className={`w-full justify-center bg-gray-100 text-gray-700`}
+                onPress={() => setIsCollapsed(!isCollapsed)}
+                isIconOnly
               >
-                {item.icon}
-                {!isCollapsed && <span>{item.label}</span>}
-              </Link>
-            ))}
-          </nav>
+                {isCollapsed ? (
+                  <MdChevronRight className="text-xl" />
+                ) : (
+                  <>
+                    <MdChevronLeft className="text-xl" />
+                    <span className="ml-2">Collapse</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </aside>
 
-        <main className="flex-1 overflow-auto">
-          <header className="h-16 bg-white shadow-sm border border-black/5 px-4 flex items-center justify-between rounded-xl">
-            {isMobile && (
+        {/* Main Content */}
+        <main
+          className={`flex-1 transition-all duration-300 ${
+            isMobile ? "ml-0" : isCollapsed ? "ml-[70px]" : "ml-64"
+          }`}
+        >
+          {/* Header */}
+          <header className="sticky top-0 z-30 h-16 bg-white shadow-sm px-4 flex items-center justify-between">
+            <div className="flex items-center">
+              {isMobile && (
+                <Button
+                  isIconOnly
+                  variant="light"
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="mr-4"
+                >
+                  <IoMenuOutline className="text-xl" />
+                </Button>
+              )}
+              <h2 className="text-xl font-semibold text-gray-800">
+                {navItems.find((item) => item.path === location.pathname)
+                  ?.label || "Dashboard"}
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-3">
               <Button
                 isIconOnly
                 variant="light"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="mr-4"
+                onClick={() => setIsSearchOpen(true)}
+                className="relative"
               >
-                <IoMenuOutline className="text-xl" />
+                <MdSearch className="text-2xl text-gray-600" />
               </Button>
-            )}
-            <h2 className="text-xl font-semibold">
-              {navItems.find((item) => item.path === location.pathname)
-                ?.label || "Dashboard"}
-            </h2>
-            <Button
-              isIconOnly
-              variant="light"
-              onClick={() => setIsSearchOpen(true)}
-            >
-              <MdSearch className="text-2xl" />
-            </Button>
+
+              <Button isIconOnly variant="light" className="relative">
+                <MdNotifications className="text-2xl text-gray-600" />
+                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+              </Button>
+
+              {/* User dropdown */}
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button
+                    className="bg-gradient-to-r from-blue-500 to-primary p-0"
+                    isIconOnly
+                  >
+                    <span className="text-white font-bold">JD</span>
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="User actions">
+                  <DropdownItem
+                    key="profile"
+                    startContent={<MdVerifiedUser className="text-primary" />}
+                    description="Manage your account"
+                  >
+                    My Profile
+                  </DropdownItem>
+                  <DropdownItem
+                    key="settings"
+                    startContent={<MdSettings className="text-gray-500" />}
+                  >
+                    Settings
+                  </DropdownItem>
+                  <DropdownItem
+                    key="logout"
+                    className="text-danger"
+                    color="danger"
+                    startContent={<MdLogout className="text-danger" />}
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
           </header>
 
-          <div className="mb-16 md:mb-0">{children}</div>
+          {/* Page Content */}
+          <div className="p-4 pb-20 md:pb-4">
+            {/* Loading state */}
+            {isLoading ? (
+              <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              children
+            )}
+          </div>
 
-          <div className="flex-1 md:hidden flex text-gray-500 overflow-auto fixed bottom-0 w-full bg-white h-14 p-2 border-t border-gray-200">
-            <NavLink
-              to="/dashboard"
-              className="flex-1 flex flex-col items-center justify-center"
-            >
-              <MdHome className="text-2xl" />
-              <span className="text-xs">Home</span>
-            </NavLink>
-            <NavLink
-              to="/nuggets"
-              className="flex-1 flex flex-col items-center justify-center"
-            >
-              <MdBookmark className="text-2xl" />
-              <span className="text-xs">Nuggets</span>
-            </NavLink>
-            <NavLink
-              to="/search"
-              className="flex-1 flex flex-col items-center justify-center"
-            >
-              <MdSearch className="text-2xl" />
-              <span className="text-xs">Search</span>
-            </NavLink>
-            <NavLink
-              to="/profile"
-              className="flex-1 flex flex-col items-center justify-center"
-            >
-              <MdVerifiedUser className="text-2xl" />
-              <span className="text-xs">Profile</span>
-            </NavLink>
+          {/* Mobile Bottom Navigation */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+            <div className="flex justify-around py-2">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex flex-col items-center py-1 px-3 ${
+                      isActive ? "text-primary" : "text-gray-500"
+                    }`
+                  }
+                >
+                  {item.icon}
+                  <span className="text-xs mt-1">{item.label}</span>
+                </NavLink>
+              ))}
+              <div
+                className="flex flex-col items-center py-1 px-3 text-gray-500 cursor-pointer"
+                onClick={handleLogout}
+              >
+                <MdLogout className="text-xl" />
+                <span className="text-xs mt-1">Logout</span>
+              </div>
+            </div>
           </div>
         </main>
       </div>
 
+      {/* Search Modal */}
       <Modal
         isOpen={isSearchOpen}
         onOpenChange={setIsSearchOpen}
@@ -225,25 +349,39 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               placeholder="Search for anything..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              startContent={<MdSearch />}
+              className="w-full"
             />
             {suggestions.length > 0 && (
-              <div className="absolute w-full bg-white shadow-lg rounded-lg mt-2">
+              <div className="w-full bg-white shadow-lg rounded-lg mt-2 max-h-60 overflow-y-auto">
                 {suggestions.map((user) => (
                   <div
                     key={user.id}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                    className="p-3 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
                     onClick={() => setSearchQuery(user.firstName)}
                   >
+                    {user.image && (
+                      <img
+                        src={user.image}
+                        alt={user.firstName}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
                     {user.firstName} {user.lastName}
                   </div>
                 ))}
               </div>
             )}
-            <div className="flex gap-2 mt-4">
-              <Button onClick={handleSearch}>Search</Button>
+            <div className="flex gap-2 mt-4 w-full">
+              <Button
+                onClick={handleSearch}
+                className="flex-1 bg-primary text-white"
+              >
+                Search
+              </Button>
               <Button
                 onClick={() => setSearchQuery("")}
-                className="bg-red-500 text-white"
+                className="flex-1 bg-gray-200"
               >
                 Clear
               </Button>

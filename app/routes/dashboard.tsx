@@ -46,7 +46,7 @@ const Dashboard = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const goToCategory = (category) => {
+  const goToCategory = (category: string) => {
     navigate(`/nuggets?category=${category}`);
   };
 
