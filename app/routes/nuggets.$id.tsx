@@ -47,7 +47,7 @@ const AreaOfLawDetails = () => {
     <div className="flex transition-all duration-300">
       {/* Main Content Area */}
       <div
-        className={`flex-1 p-2 overflow-x-hidden transition-all duration-300 ${
+        className={`flex-1 p-2 overflow-x-hidden transition-all duration-300 overflow-y-hidden ${
           isDrawerOpen ? "pr-[400px]" : ""
         }`}
       >
