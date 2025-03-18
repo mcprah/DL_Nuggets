@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, NavLink, useLocation, useNavigation } from "@remix-run/react";
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+  useNavigation,
+} from "@remix-run/react";
 import {
   Button,
   User,
@@ -72,7 +78,7 @@ const navItems: NavItem[] = [
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,6 +88,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
   const navigation = useNavigation();
+  const navigate = useNavigate();
   const isLoading = navigation.state === "loading";
 
   useEffect(() => {
@@ -144,6 +151,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       setSearchResults([]);
     }
     setLoading(false);
+  };
+
+  const handleSearchClick = () => {
+    navigate("/search");
   };
 
   const handleLogout = () => {
@@ -253,7 +264,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <Button
                 isIconOnly
                 variant="light"
-                onClick={() => setIsSearchOpen(true)}
+                onClick={handleSearchClick}
                 className="relative"
               >
                 <MdSearch className="text-2xl text-gray-600" />
