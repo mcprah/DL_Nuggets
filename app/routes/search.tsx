@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import {
   Link,
@@ -43,6 +43,10 @@ interface SearchResult {
 interface LoaderData {
   baseUrl: string;
   initialQuery: string | null;
+  initialAreaOfLaw: string | null;
+  initialKeyword: string | null;
+  initialJudge: string | null;
+  initialYear: string | null;
 }
 
 export const meta: MetaFunction = ({ data }) => {
@@ -69,16 +73,31 @@ export const meta: MetaFunction = ({ data }) => {
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
   const query = url.searchParams.get("q");
+  const areaoflaw = url.searchParams.get("areaoflaw");
+  const keyword = url.searchParams.get("keyword");
+  const judge = url.searchParams.get("judge");
+  const year = url.searchParams.get("year");
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
 
   return json({
     baseUrl,
     initialQuery: query,
+    initialAreaOfLaw: areaoflaw,
+    initialKeyword: keyword,
+    initialJudge: judge,
+    initialYear: year,
   });
 };
 
 const Search = () => {
-  const { baseUrl, initialQuery } = useLoaderData<LoaderData>();
+  const {
+    baseUrl,
+    initialQuery,
+    initialAreaOfLaw,
+    initialKeyword,
+    initialJudge,
+    initialYear,
+  } = useLoaderData<LoaderData>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(initialQuery || "");
   const [results, setResults] = useState<Nugget[]>([]);
@@ -92,14 +111,20 @@ const Search = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Search filters
-  const [selectedAreaOfLaw, setSelectedAreaOfLaw] = useState<string>("");
-  const [selectedKeyword, setSelectedKeyword] = useState<string>("");
-  const [selectedJudge, setSelectedJudge] = useState<string>("");
-  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedAreaOfLaw, setSelectedAreaOfLaw] = useState<string>(
+    initialAreaOfLaw || ""
+  );
+  const [selectedKeyword, setSelectedKeyword] = useState<string>(
+    initialKeyword || ""
+  );
+  const [selectedJudge, setSelectedJudge] = useState<string>(
+    initialJudge || ""
+  );
+  const [selectedYear, setSelectedYear] = useState<string>(initialYear || "");
 
   // Filter data states
   const [areasOfLaw, setAreasOfLaw] = useState<
-    Array<{ id: number; value: string }>
+    Array<{ id: number; value: string; display_name?: string }>
   >([]);
   const [keywords, setKeywords] = useState<
     Array<{ id: number; value: string }>
@@ -130,6 +155,38 @@ const Search = () => {
   useEffect(() => {
     fetchFilterData();
   }, []);
+
+  // Run search if query or filters are provided in URL on initial component mount
+  useEffect(() => {
+    const hasFilters =
+      initialQuery ||
+      initialAreaOfLaw ||
+      initialKeyword ||
+      initialJudge ||
+      initialYear;
+    if (hasFilters) {
+      // Once filter data is loaded, perform the search
+      if (
+        !loadingFilters &&
+        areasOfLaw.length > 0 &&
+        keywords.length > 0 &&
+        judges.length > 0
+      ) {
+        // Use the standard search with the initial query
+        handleSearch(initialQuery || "", 1);
+      }
+    }
+  }, [
+    initialQuery,
+    initialAreaOfLaw,
+    initialKeyword,
+    initialJudge,
+    initialYear,
+    loadingFilters,
+    areasOfLaw,
+    keywords,
+    judges,
+  ]);
 
   // Function to fetch all filter data
   const fetchFilterData = async () => {
@@ -162,6 +219,48 @@ const Search = () => {
           { id: 6, value: "Damages" },
         ]);
       }
+
+      // After filter data is loaded, check for direct ID parameters and update UI
+      const directAreaId = searchParams.get("areaoflaw");
+      const directKeywordId = searchParams.get("keyword");
+      const directJudgeId = searchParams.get("judge");
+
+      // If we have a numeric ID in the URL, find the display value for the UI
+      if (directAreaId && /^\d+$/.test(directAreaId)) {
+        const aolResponse = await axios.get(`${baseUrl}/area-of-law`);
+        if (aolResponse.data && aolResponse.data.data) {
+          const area = aolResponse.data.data.find(
+            (a: any) => a.id.toString() === directAreaId
+          );
+          if (area) {
+            setSelectedAreaOfLaw(area.value);
+          }
+        }
+      }
+
+      if (directKeywordId && /^\d+$/.test(directKeywordId)) {
+        const keywordsResponse = await axios.get(`${baseUrl}/keywords`);
+        if (keywordsResponse.data && keywordsResponse.data.data) {
+          const keyword = keywordsResponse.data.data.find(
+            (k: any) => k.id.toString() === directKeywordId
+          );
+          if (keyword) {
+            setSelectedKeyword(keyword.value);
+          }
+        }
+      }
+
+      if (directJudgeId && /^\d+$/.test(directJudgeId)) {
+        const judgesResponse = await axios.get(`${baseUrl}/judges`);
+        if (judgesResponse.data && judgesResponse.data.data) {
+          const judge = judgesResponse.data.data.find(
+            (j: any) => j.id.toString() === directJudgeId
+          );
+          if (judge) {
+            setSelectedJudge(judge.fullname);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error fetching filter data:", error);
       // Set fallback data for keywords if API fails
@@ -187,115 +286,6 @@ const Search = () => {
       }
     }
   }, []);
-
-  // Run search if query is provided in URL
-  useEffect(() => {
-    if (initialQuery) {
-      handleSearch(initialQuery, 1);
-    }
-  }, [initialQuery]);
-
-  // Save recent searches to localStorage
-  const saveRecentSearch = (query: string) => {
-    if (!query.trim()) return;
-
-    // Add to recent searches without duplicates and keep only last 5
-    const updatedSearches = [
-      query,
-      ...recentSearches.filter((item) => item !== query),
-    ].slice(0, 5);
-
-    setRecentSearches(updatedSearches);
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem("recentSearches", JSON.stringify(updatedSearches));
-    }
-  };
-
-  const handleSearch = async (query: string, page: number = 1) => {
-    if (
-      !query.trim() &&
-      !selectedAreaOfLaw &&
-      !selectedKeyword &&
-      !selectedJudge &&
-      !selectedYear
-    )
-      return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Build search params
-      const params: Record<string, any> = {
-        page,
-        limit: 12,
-      };
-
-      if (query.trim()) {
-        params.q = query.trim();
-      }
-
-      if (selectedAreaOfLaw) {
-        // Find the selected area's ID if we're using display_name
-        const selectedArea = areasOfLaw.find(
-          (area) => area.display_name === selectedAreaOfLaw
-        );
-        params.areaoflaw = selectedArea ? selectedArea.id : selectedAreaOfLaw;
-      }
-
-      if (selectedKeyword) {
-        // Find the selected keyword's ID if we're using value
-        const selectedKey = keywords.find(
-          (keyword) => keyword.value === selectedKeyword
-        );
-        params.keyword = selectedKey ? selectedKey.id : selectedKeyword;
-      }
-
-      if (selectedJudge) {
-        // Find the selected judge's ID if we're using fullname
-        const selectedJudgeObj = judges.find(
-          (judge) => judge.fullname === selectedJudge
-        );
-        params.judge = selectedJudgeObj ? selectedJudgeObj.id : selectedJudge;
-      }
-
-      if (selectedYear) {
-        params.year = selectedYear;
-      }
-
-      // Update URL params for user-friendly URLs
-      // We'll keep the display values in the URL for better UX
-      const urlParams: Record<string, string> = {};
-      if (query.trim()) urlParams.q = query.trim();
-      if (selectedAreaOfLaw) urlParams.areaoflaw = selectedAreaOfLaw;
-      if (selectedKeyword) urlParams.keyword = selectedKeyword;
-      if (selectedJudge) urlParams.judge = selectedJudge;
-      if (selectedYear) urlParams.year = selectedYear;
-      if (page > 1) urlParams.page = page.toString();
-
-      setSearchParams(urlParams);
-
-      // Save to recent searches if there's a query
-      if (query.trim()) {
-        saveRecentSearch(query);
-      }
-
-      console.log("Search params:", params);
-      const response = await axios.get(`${baseUrl}/nuggets/search`, { params });
-
-      setResults(response.data?.data || []);
-      setTotalResults(response.data?.meta?.total || 0);
-      setCurrentPage(response.data?.meta?.current_page || 1);
-      setTotalPages(response.data?.meta?.last_page || 1);
-    } catch (error) {
-      console.error("Search error:", error);
-      setError("Failed to perform search. Please try again.");
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleKeywordClick = (keyword: string) => {
     setSearchQuery(keyword);
@@ -363,7 +353,7 @@ const Search = () => {
               isLoading={loadingFilters}
             >
               {areasOfLaw.map((area) => (
-                <SelectItem key={area.id.toString()} value={area.display_name}>
+                <SelectItem key={area.id.toString()} value={area.value}>
                   {area.value}
                 </SelectItem>
               ))}
@@ -429,6 +419,135 @@ const Search = () => {
         </CardBody>
       </Card>
     );
+  };
+
+  // Original search handler with UI state
+  const handleSearch = async (query: string, page: number = 1) => {
+    if (
+      !query.trim() &&
+      !selectedAreaOfLaw &&
+      !selectedKeyword &&
+      !selectedJudge &&
+      !selectedYear
+    )
+      return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Build search params
+      const params: Record<string, any> = {
+        page,
+        limit: 12,
+      };
+
+      if (query.trim()) {
+        params.q = query.trim();
+      }
+
+      // For direct ID searches, we need to handle them differently
+      // Check URL parameters to see if we have direct IDs
+      const directAreaId = searchParams.get("areaoflaw");
+      const directKeywordId = searchParams.get("keyword");
+      const directJudgeId = searchParams.get("judge");
+
+      // If we have direct numeric IDs in the URL, use those
+      if (directAreaId && /^\d+$/.test(directAreaId)) {
+        params.areaoflaw = directAreaId;
+      } else if (selectedAreaOfLaw) {
+        // Otherwise use the selected values from the UI
+        const selectedArea = areasOfLaw.find(
+          (area) => area.value === selectedAreaOfLaw
+        );
+        params.areaoflaw = selectedArea ? selectedArea.id : selectedAreaOfLaw;
+      }
+
+      if (directKeywordId && /^\d+$/.test(directKeywordId)) {
+        params.keyword = directKeywordId;
+      } else if (selectedKeyword) {
+        const selectedKey = keywords.find(
+          (keyword) => keyword.value === selectedKeyword
+        );
+        params.keyword = selectedKey ? selectedKey.id : selectedKeyword;
+      }
+
+      if (directJudgeId && /^\d+$/.test(directJudgeId)) {
+        params.judge = directJudgeId;
+      } else if (selectedJudge) {
+        const selectedJudgeObj = judges.find(
+          (judge) => judge.fullname === selectedJudge
+        );
+        params.judge = selectedJudgeObj ? selectedJudgeObj.id : selectedJudge;
+      }
+
+      if (selectedYear) {
+        params.year = selectedYear;
+      }
+
+      // Update URL params for user-friendly URLs
+      // We'll keep the display values in the URL for better UX
+      const urlParams: Record<string, string> = {};
+      if (query.trim()) urlParams.q = query.trim();
+      if (selectedAreaOfLaw) urlParams.areaoflaw = selectedAreaOfLaw;
+      if (selectedKeyword) urlParams.keyword = selectedKeyword;
+      if (selectedJudge) urlParams.judge = selectedJudge;
+      if (selectedYear) urlParams.year = selectedYear;
+      if (page > 1) urlParams.page = page.toString();
+
+      // If we had direct IDs in the URL and no UI selection, keep the ID in the URL
+      if (directAreaId && /^\d+$/.test(directAreaId) && !selectedAreaOfLaw) {
+        urlParams.areaoflaw = directAreaId;
+      }
+      if (
+        directKeywordId &&
+        /^\d+$/.test(directKeywordId) &&
+        !selectedKeyword
+      ) {
+        urlParams.keyword = directKeywordId;
+      }
+      if (directJudgeId && /^\d+$/.test(directJudgeId) && !selectedJudge) {
+        urlParams.judge = directJudgeId;
+      }
+
+      setSearchParams(urlParams);
+
+      // Save to recent searches if there's a query
+      if (query.trim()) {
+        saveRecentSearch(query);
+      }
+
+      console.log("Search params:", params);
+      const response = await axios.get(`${baseUrl}/nuggets/search`, { params });
+
+      setResults(response.data?.data || []);
+      setTotalResults(response.data?.meta?.total || 0);
+      setCurrentPage(response.data?.meta?.current_page || 1);
+      setTotalPages(response.data?.meta?.last_page || 1);
+    } catch (error) {
+      console.error("Search error:", error);
+      setError("Failed to perform search. Please try again.");
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Save recent searches to localStorage
+  const saveRecentSearch = (query: string) => {
+    if (!query.trim()) return;
+
+    // Add to recent searches without duplicates and keep only last 5
+    const updatedSearches = [
+      query,
+      ...recentSearches.filter((item) => item !== query),
+    ].slice(0, 5);
+
+    setRecentSearches(updatedSearches);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("recentSearches", JSON.stringify(updatedSearches));
+    }
   };
 
   return (
