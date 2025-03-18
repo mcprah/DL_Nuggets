@@ -52,7 +52,6 @@ export const meta: MetaFunction = () => {
 
 const Judges = () => {
   const { judges } = useLoaderData<LoaderData>();
-  console.log("from index");
 
   return (
     <div className="">

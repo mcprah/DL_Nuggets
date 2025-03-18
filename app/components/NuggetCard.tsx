@@ -13,8 +13,6 @@ export default function NuggetCard({
   onClick,
   className = "",
 }: NuggetCardProps) {
-  console.log(nugget);
-
   return (
     <div
       className={`p-4 border rounded-lg bg-gray-50 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-md ${

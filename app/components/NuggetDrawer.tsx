@@ -202,7 +202,10 @@ const NuggetDrawer = ({
         {/* Title with Link */}
         <div className="mt-2">
           <Link
-            to={`/nuggets/${nugget.id}`}
+            to={`https://www.dennislawgh.com/case-preview?dl_citation_no=${
+              nugget.dl_citation_no || nugget.citation_no
+            }`}
+            target="_blank"
             className="text-sm font-medium text-blue-600 hover:underline"
           >
             {nugget.title}

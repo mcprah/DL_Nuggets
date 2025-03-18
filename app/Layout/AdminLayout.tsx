@@ -78,8 +78,19 @@ const navItems: NavItem[] = [
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  // Initialize with null to avoid initial render flicker
-  const [isCollapsed, setIsCollapsed] = useState<boolean | null>(null);
+  // Get initial state from localStorage or default to true (collapsed)
+  const getInitialSidebarState = () => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebarCollapsed");
+      return saved !== null ? saved === "true" : true;
+    }
+    return true;
+  };
+
+  // Initialize with the correct initial state
+  const [isCollapsed, setIsCollapsed] = useState(() =>
+    getInitialSidebarState()
+  );
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,18 +103,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const isLoading = navigation.state === "loading";
 
-  // First useEffect to run only once on component mount
+  // Effect for screen size checking
   useEffect(() => {
-    // Check localStorage first for saved state
-    const savedState = localStorage.getItem("sidebarCollapsed");
-    // If we have a saved state, use it, otherwise default to true
-    setIsCollapsed(savedState !== null ? savedState === "true" : true);
-  }, []);
-
-  useEffect(() => {
-    // Skip if isCollapsed is still null (initial load)
-    if (isCollapsed === null) return;
-
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
@@ -115,14 +116,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
-  }, [isCollapsed]);
+  }, []);
 
   // Save sidebar state to localStorage when it changes
   useEffect(() => {
-    // Skip if isCollapsed is null (hasn't been initialized yet)
-    if (isCollapsed === null) return;
-
-    if (!isMobile) {
+    if (!isMobile && typeof window !== "undefined") {
       localStorage.setItem("sidebarCollapsed", String(isCollapsed));
     }
   }, [isCollapsed, isMobile]);
@@ -176,75 +174,73 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="min-h-screen bg-slate-50 overflow-hidden">
       <div className="flex">
-        {/* Fixed Sidebar - Only render once isCollapsed is initialized */}
-        {isCollapsed !== null && (
-          <aside
-            className={`fixed top-0 left-0 h-full z-40 transition-all duration-300 ease-in-out
-            ${
-              isMobile
-                ? isCollapsed
-                  ? "-translate-x-full"
-                  : "translate-x-0 w-64"
-                : isCollapsed
-                ? "w-[70px]"
-                : "w-64"
-            }`}
-          >
-            {/* Sidebar Content */}
-            <div className="flex flex-col h-full bg-white shadow-lg">
-              {/* Logo Area */}
-              <div className="flex items-center h-16 px-4 border-b bg-white">
-                {!isCollapsed && (
-                  <h1 className="text-xl font-bold text-primary">DL Nuggets</h1>
-                )}
-                <div className={`${isCollapsed ? "mx-auto" : "ml-auto"}`}>
-                  <img src={logo} alt="Logo" className="h-10" />
-                </div>
-              </div>
-
-              {/* Navigation Items */}
-              <nav className="flex-1 overflow-y-auto py-6">
-                <div className="px-3 space-y-1">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200
-                      ${
-                        location.pathname === item.path
-                          ? "bg-primary text-white"
-                          : "text-gray-600 hover:bg-gray-100"
-                      }`}
-                    >
-                      <div className={`${isCollapsed ? "mx-auto" : ""}`}>
-                        {item.icon}
-                      </div>
-                      {!isCollapsed && <span>{item.label}</span>}
-                    </Link>
-                  ))}
-                </div>
-              </nav>
-
-              {/* Sidebar Footer */}
-              <div className="border-t p-2">
-                <Button
-                  className={`w-full justify-center bg-gray-100 text-gray-700`}
-                  onPress={() => setIsCollapsed(!isCollapsed)}
-                  isIconOnly
-                >
-                  {isCollapsed ? (
-                    <MdChevronRight className="text-xl" />
-                  ) : (
-                    <>
-                      <MdChevronLeft className="text-xl" />
-                      <span className="ml-2">Collapse</span>
-                    </>
-                  )}
-                </Button>
+        {/* Fixed Sidebar */}
+        <aside
+          className={`fixed top-0 left-0 h-full z-40 transition-all duration-300 ease-in-out
+          ${
+            isMobile
+              ? isCollapsed
+                ? "-translate-x-full"
+                : "translate-x-0 w-64"
+              : isCollapsed
+              ? "w-[70px]"
+              : "w-64"
+          }`}
+        >
+          {/* Sidebar Content */}
+          <div className="flex flex-col h-full bg-white shadow-lg">
+            {/* Logo Area */}
+            <div className="flex items-center h-16 px-4 border-b bg-white">
+              {!isCollapsed && (
+                <h1 className="text-xl font-bold text-primary">DL Nuggets</h1>
+              )}
+              <div className={`${isCollapsed ? "mx-auto" : "ml-auto"}`}>
+                <img src={logo} alt="Logo" className="h-10" />
               </div>
             </div>
-          </aside>
-        )}
+
+            {/* Navigation Items */}
+            <nav className="flex-1 overflow-y-auto py-6">
+              <div className="px-3 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200
+                    ${
+                      location.pathname === item.path
+                        ? "bg-primary text-white"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <div className={`${isCollapsed ? "mx-auto" : ""}`}>
+                      {item.icon}
+                    </div>
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+
+            {/* Sidebar Footer */}
+            <div className="border-t p-2">
+              <Button
+                className={`w-full justify-center bg-gray-100 text-gray-700`}
+                onPress={() => setIsCollapsed(!isCollapsed)}
+                isIconOnly
+              >
+                {isCollapsed ? (
+                  <MdChevronRight className="text-xl" />
+                ) : (
+                  <>
+                    <MdChevronLeft className="text-xl" />
+                    <span className="ml-2">Collapse</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </aside>
 
         {/* Main Content */}
         <main

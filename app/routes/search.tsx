@@ -97,28 +97,26 @@ const Search = () => {
   const [selectedJudge, setSelectedJudge] = useState<string>("");
   const [selectedYear, setSelectedYear] = useState<string>("");
 
+  // Filter data states
+  const [areasOfLaw, setAreasOfLaw] = useState<
+    Array<{ id: number; value: string }>
+  >([]);
+  const [keywords, setKeywords] = useState<
+    Array<{ id: number; value: string }>
+  >([]);
+  const [judges, setJudges] = useState<Array<{ id: number; fullname: string }>>(
+    []
+  );
+  const [loadingFilters, setLoadingFilters] = useState(false);
+
   const navigate = useNavigate();
 
-  // Sample data for filter options
-  const areasOfLaw = [
-    "Constitutional Law",
-    "Criminal Law",
-    "Civil Law",
-    "Family Law",
-    "Administrative Law",
-    "Corporate Law",
-  ];
+  // Generate years dynamically (current year to 30 years ago)
+  const years = Array.from({ length: 30 }, (_, i) =>
+    (new Date().getFullYear() - i).toString()
+  );
 
-  const keywords = [
-    "Evidence",
-    "Procedure",
-    "Rights",
-    "Contract",
-    "Liability",
-    "Damages",
-  ];
-
-  // Trending keywords (also used for trending topics section)
+  // Trending keywords for the trending topics section
   const trendingKeywords = [
     "Constitutional Law",
     "Criminal Procedure",
@@ -128,17 +126,57 @@ const Search = () => {
     "Property Law",
   ];
 
-  const judges = [
-    "Justice Smith",
-    "Justice Johnson",
-    "Justice Brown",
-    "Justice Davis",
-    "Justice Miller",
-  ];
+  // Load filter data on component mount
+  useEffect(() => {
+    fetchFilterData();
+  }, []);
 
-  const years = Array.from({ length: 30 }, (_, i) =>
-    (new Date().getFullYear() - i).toString()
-  );
+  // Function to fetch all filter data
+  const fetchFilterData = async () => {
+    setLoadingFilters(true);
+    try {
+      // Fetch areas of law
+      const aolResponse = await axios.get(`${baseUrl}/area-of-law`);
+      if (aolResponse.data && aolResponse.data.data) {
+        setAreasOfLaw(aolResponse.data.data);
+      }
+
+      // Fetch judges
+      const judgesResponse = await axios.get(`${baseUrl}/judges`);
+      if (judgesResponse.data && judgesResponse.data.data) {
+        setJudges(judgesResponse.data.data);
+      }
+
+      // Fetch keywords using the new endpoint
+      const keywordsResponse = await axios.get(`${baseUrl}/keywords`);
+      if (keywordsResponse.data && keywordsResponse.data.data) {
+        setKeywords(keywordsResponse.data.data);
+      } else {
+        // Fallback to sample data if API fails
+        setKeywords([
+          { id: 1, value: "Evidence" },
+          { id: 2, value: "Procedure" },
+          { id: 3, value: "Rights" },
+          { id: 4, value: "Contract" },
+          { id: 5, value: "Liability" },
+          { id: 6, value: "Damages" },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching filter data:", error);
+      // Set fallback data for keywords if API fails
+      setKeywords([
+        { id: 1, value: "Evidence" },
+        { id: 2, value: "Procedure" },
+        { id: 3, value: "Rights" },
+        { id: 4, value: "Contract" },
+        { id: 5, value: "Liability" },
+        { id: 6, value: "Damages" },
+      ]);
+    } finally {
+      setLoadingFilters(false);
+    }
+  };
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -199,29 +237,51 @@ const Search = () => {
       }
 
       if (selectedAreaOfLaw) {
-        params.areaoflaw = selectedAreaOfLaw;
+        // Find the selected area's ID if we're using display_name
+        const selectedArea = areasOfLaw.find(
+          (area) => area.display_name === selectedAreaOfLaw
+        );
+        params.areaoflaw = selectedArea ? selectedArea.id : selectedAreaOfLaw;
       }
 
       if (selectedKeyword) {
-        params.keyword = selectedKeyword;
+        // Find the selected keyword's ID if we're using value
+        const selectedKey = keywords.find(
+          (keyword) => keyword.value === selectedKeyword
+        );
+        params.keyword = selectedKey ? selectedKey.id : selectedKeyword;
       }
 
       if (selectedJudge) {
-        params.judge = selectedJudge;
+        // Find the selected judge's ID if we're using fullname
+        const selectedJudgeObj = judges.find(
+          (judge) => judge.fullname === selectedJudge
+        );
+        params.judge = selectedJudgeObj ? selectedJudgeObj.id : selectedJudge;
       }
 
       if (selectedYear) {
         params.year = selectedYear;
       }
 
-      // Update URL params
-      setSearchParams(params);
+      // Update URL params for user-friendly URLs
+      // We'll keep the display values in the URL for better UX
+      const urlParams: Record<string, string> = {};
+      if (query.trim()) urlParams.q = query.trim();
+      if (selectedAreaOfLaw) urlParams.areaoflaw = selectedAreaOfLaw;
+      if (selectedKeyword) urlParams.keyword = selectedKeyword;
+      if (selectedJudge) urlParams.judge = selectedJudge;
+      if (selectedYear) urlParams.year = selectedYear;
+      if (page > 1) urlParams.page = page.toString();
+
+      setSearchParams(urlParams);
 
       // Save to recent searches if there's a query
       if (query.trim()) {
         saveRecentSearch(query);
       }
 
+      console.log("Search params:", params);
       const response = await axios.get(`${baseUrl}/nuggets/search`, { params });
 
       setResults(response.data?.data || []);
@@ -270,6 +330,107 @@ const Search = () => {
   const hasActiveFilters =
     selectedAreaOfLaw || selectedKeyword || selectedJudge || selectedYear;
 
+  // Advanced Filters Card
+  const renderFiltersCard = () => {
+    if (!showFilters) return null;
+
+    return (
+      <Card className="mb-4">
+        <CardBody>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold">Advanced Filters</h2>
+            {hasActiveFilters && (
+              <Button
+                size="sm"
+                variant="light"
+                color="danger"
+                startContent={<MdFilterListOff />}
+                onClick={handleClearFilters}
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Select
+              label="Area of Law"
+              placeholder="Select area of law"
+              selectedKeys={selectedAreaOfLaw ? [selectedAreaOfLaw] : []}
+              onSelectionChange={(keys) =>
+                setSelectedAreaOfLaw(Array.from(keys as Set<string>)[0] || "")
+              }
+              className="w-full"
+              isLoading={loadingFilters}
+            >
+              {areasOfLaw.map((area) => (
+                <SelectItem key={area.id.toString()} value={area.display_name}>
+                  {area.value}
+                </SelectItem>
+              ))}
+            </Select>
+
+            <Select
+              label="Keyword"
+              placeholder="Select keyword"
+              selectedKeys={selectedKeyword ? [selectedKeyword] : []}
+              onSelectionChange={(keys) =>
+                setSelectedKeyword(Array.from(keys as Set<string>)[0] || "")
+              }
+              className="w-full"
+              isLoading={loadingFilters}
+            >
+              {keywords.map((keyword) => (
+                <SelectItem key={keyword.id.toString()} value={keyword.value}>
+                  {keyword.value}
+                </SelectItem>
+              ))}
+            </Select>
+
+            <Select
+              label="Judge"
+              placeholder="Select judge"
+              selectedKeys={selectedJudge ? [selectedJudge] : []}
+              onSelectionChange={(keys) =>
+                setSelectedJudge(Array.from(keys as Set<string>)[0] || "")
+              }
+              className="w-full"
+              isLoading={loadingFilters}
+            >
+              {judges.map((judge) => (
+                <SelectItem key={judge.id.toString()} value={judge.fullname}>
+                  {judge.fullname}
+                </SelectItem>
+              ))}
+            </Select>
+
+            <Select
+              label="Year"
+              placeholder="Select year"
+              selectedKeys={selectedYear ? [selectedYear] : []}
+              onSelectionChange={(keys) =>
+                setSelectedYear(Array.from(keys as Set<string>)[0] || "")
+              }
+              className="w-full"
+            >
+              {years.map((year) => (
+                <SelectItem key={year} value={year}>
+                  {year}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
+          <Button
+            className="w-full mt-4"
+            color="secondary"
+            onClick={() => handleSearch(searchQuery, 1)}
+          >
+            Apply Filters
+          </Button>
+        </CardBody>
+      </Card>
+    );
+  };
+
   return (
     <AdminLayout>
       <div className="max-w-7xl mx-auto">
@@ -317,102 +478,7 @@ const Search = () => {
           </div>
 
           {/* Advanced Filters */}
-          {showFilters && (
-            <Card className="mb-4">
-              <CardBody>
-                <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-lg font-semibold">Advanced Filters</h2>
-                  {hasActiveFilters && (
-                    <Button
-                      size="sm"
-                      variant="light"
-                      color="danger"
-                      startContent={<MdFilterListOff />}
-                      onClick={handleClearFilters}
-                    >
-                      Clear Filters
-                    </Button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Select
-                    label="Area of Law"
-                    placeholder="Select area of law"
-                    selectedKeys={selectedAreaOfLaw ? [selectedAreaOfLaw] : []}
-                    onSelectionChange={(keys) =>
-                      setSelectedAreaOfLaw(
-                        Array.from(keys as Set<string>)[0] || ""
-                      )
-                    }
-                    className="w-full"
-                  >
-                    {areasOfLaw.map((area) => (
-                      <SelectItem key={area} value={area}>
-                        {area}
-                      </SelectItem>
-                    ))}
-                  </Select>
-
-                  <Select
-                    label="Keyword"
-                    placeholder="Select keyword"
-                    selectedKeys={selectedKeyword ? [selectedKeyword] : []}
-                    onSelectionChange={(keys) =>
-                      setSelectedKeyword(
-                        Array.from(keys as Set<string>)[0] || ""
-                      )
-                    }
-                    className="w-full"
-                  >
-                    {keywords.map((keyword) => (
-                      <SelectItem key={keyword} value={keyword}>
-                        {keyword}
-                      </SelectItem>
-                    ))}
-                  </Select>
-
-                  <Select
-                    label="Judge"
-                    placeholder="Select judge"
-                    selectedKeys={selectedJudge ? [selectedJudge] : []}
-                    onSelectionChange={(keys) =>
-                      setSelectedJudge(Array.from(keys as Set<string>)[0] || "")
-                    }
-                    className="w-full"
-                  >
-                    {judges.map((judge) => (
-                      <SelectItem key={judge} value={judge}>
-                        {judge}
-                      </SelectItem>
-                    ))}
-                  </Select>
-
-                  <Select
-                    label="Year"
-                    placeholder="Select year"
-                    selectedKeys={selectedYear ? [selectedYear] : []}
-                    onSelectionChange={(keys) =>
-                      setSelectedYear(Array.from(keys as Set<string>)[0] || "")
-                    }
-                    className="w-full"
-                  >
-                    {years.map((year) => (
-                      <SelectItem key={year} value={year}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                </div>
-                <Button
-                  className="w-full mt-4"
-                  color="secondary"
-                  onClick={() => handleSearch(searchQuery, 1)}
-                >
-                  Apply Filters
-                </Button>
-              </CardBody>
-            </Card>
-          )}
+          {renderFiltersCard()}
 
           {/* Active Filters Display */}
           {hasActiveFilters && (
