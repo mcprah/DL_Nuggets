@@ -132,7 +132,7 @@ interface NuggetFormData {
   other_citations?: string;
   status?: string;
   slug?: string;
-  judges?: number;
+  judges?: string;
   personal_areas_of_law?: string;
 }
 
@@ -168,7 +168,7 @@ export default function MyNuggets() {
     other_citations: "",
     status: "",
     slug: "",
-    judges: undefined,
+    judges: "",
     personal_areas_of_law: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -253,7 +253,7 @@ export default function MyNuggets() {
       other_citations: nugget.other_citations || "",
       status: nugget.status || "",
       slug: nugget.slug || "",
-      judges: nugget.judge?.id,
+      judges: nugget.judge?.id.toString(),
       personal_areas_of_law: "",
     });
     setSelectedNugget(nugget);
@@ -299,7 +299,7 @@ export default function MyNuggets() {
         other_citations: "",
         status: "",
         slug: "",
-        judges: undefined,
+        judges: "",
         personal_areas_of_law: "",
       });
       onClose();
@@ -363,7 +363,7 @@ export default function MyNuggets() {
         other_citations: "",
         status: "",
         slug: "",
-        judges: undefined,
+        judges: "",
         personal_areas_of_law: "",
       });
       onEditClose();
@@ -474,19 +474,19 @@ export default function MyNuggets() {
 
   return (
     <AdminLayout>
-      <div className="p-6 bg-white rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+      <div className="p-4 sm:p-6 bg-white rounded-xl shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="text-gray-600 hover:text-primary transition-all duration-300"
-            >
-              <MdArrowBack className="text-2xl" />
-            </button>
-            <h1 className="text-2xl font-bold">My Nuggets</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">My Nuggets</h1>
           </div>
-          <div className="flex gap-2">
-            <Button color="primary" startContent={<MdAdd />} onClick={onOpen}>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              color="primary"
+              startContent={<MdAdd />}
+              onClick={onOpen}
+              size="sm"
+              className="w-full sm:w-auto"
+            >
               Add Nugget
             </Button>
             {nuggets?.length > 0 && (
@@ -494,6 +494,8 @@ export default function MyNuggets() {
                 color="danger"
                 variant="light"
                 onClick={deleteAllPersonalNuggets}
+                size="sm"
+                className="w-full sm:w-auto"
               >
                 Delete All
               </Button>
@@ -518,45 +520,50 @@ export default function MyNuggets() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {nuggets?.map((nugget) => (
                 <Card
                   key={`${nugget.id}-${refreshKey}`}
                   className="h-full shadow-sm hover:shadow-md transition-shadow"
                 >
-                  <CardHeader className="flex justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">
-                        {nugget.citation_no || nugget.dl_citation_no}
+                  <CardHeader className="flex justify-between overflow-hidden">
+                    <div className="truncate max-w-[70%]">
+                      <p className="text-sm text-gray-500 truncate">
+                        {nugget.citation_no ||
+                          nugget.dl_citation_no ||
+                          "No citation"}
                       </p>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 shrink-0">
                       {nugget.year && (
-                        <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">
+                        <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs whitespace-nowrap">
                           {nugget.year}
                         </span>
                       )}
                     </div>
                   </CardHeader>
                   <CardBody
-                    className="cursor-pointer"
+                    className="cursor-pointer pt-1"
                     onClick={() => openDrawer(nugget)}
                   >
-                    <h3 className="font-semibold line-clamp-2 mb-2">
+                    <h3 className="font-semibold line-clamp-2 mb-2 text-sm sm:text-base">
                       {nugget.headnote || nugget.title}
                     </h3>
-                    <p className="text-sm text-gray-600 line-clamp-3">
+                    <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">
                       {nugget.principle}
                     </p>
                   </CardBody>
-                  <CardFooter className="flex justify-between">
-                    <div className="flex gap-2">
+                  <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto">
                       <Button
                         size="sm"
                         isIconOnly
                         variant="light"
                         color="primary"
-                        onClick={() => openEditModal(nugget)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(nugget);
+                        }}
                       >
                         <MdEdit />
                       </Button>
@@ -565,7 +572,8 @@ export default function MyNuggets() {
                         isIconOnly
                         variant="light"
                         color="danger"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setNuggetToDelete(nugget.id);
                           onDeleteConfirmOpen();
                         }}
@@ -577,7 +585,11 @@ export default function MyNuggets() {
                       size="sm"
                       variant="flat"
                       color="primary"
-                      onClick={() => openDrawer(nugget)}
+                      className="w-full sm:w-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDrawer(nugget);
+                      }}
                     >
                       View Details
                     </Button>
@@ -587,11 +599,14 @@ export default function MyNuggets() {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-8 overflow-x-auto">
                 <Pagination
                   total={totalPages}
                   initialPage={currentPage}
                   onChange={(page) => navigate(`/my-nuggets?page=${page}`)}
+                  classNames={{
+                    wrapper: "overflow-x-auto px-2 py-1",
+                  }}
                 />
               </div>
             )}
@@ -600,7 +615,12 @@ export default function MyNuggets() {
       </div>
 
       {/* Add Nugget Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size="lg"
+        scrollBehavior="inside"
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -613,7 +633,7 @@ export default function MyNuggets() {
                     {formError}
                   </div>
                 )}
-                <Tabs aria-label="Nugget form sections">
+                <Tabs aria-label="Nugget form sections" className="w-full">
                   <Tab key="basic" title="Basic Information">
                     <div className="mt-4 space-y-4">
                       <Input
@@ -624,6 +644,7 @@ export default function MyNuggets() {
                         placeholder="Enter nugget title"
                         variant="bordered"
                         isRequired
+                        fullWidth
                       />
                       <Textarea
                         label="Principle"
@@ -634,8 +655,9 @@ export default function MyNuggets() {
                         minRows={4}
                         variant="bordered"
                         isRequired
+                        fullWidth
                       />
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
                           label="Year"
                           name="year"
@@ -644,6 +666,7 @@ export default function MyNuggets() {
                           placeholder="YYYY"
                           variant="bordered"
                           type="number"
+                          fullWidth
                         />
                         <Input
                           label="Citation Number"
@@ -652,6 +675,7 @@ export default function MyNuggets() {
                           onChange={handleInputChange}
                           placeholder="Citation number"
                           variant="bordered"
+                          fullWidth
                         />
                       </div>
                     </div>
@@ -666,6 +690,7 @@ export default function MyNuggets() {
                         placeholder="Enter the headnote"
                         minRows={3}
                         variant="bordered"
+                        fullWidth
                       />
                       <Textarea
                         label="Quote"
@@ -675,6 +700,7 @@ export default function MyNuggets() {
                         placeholder="Enter the quote"
                         minRows={3}
                         variant="bordered"
+                        fullWidth
                       />
                       <Input
                         label="DL Citation No"
@@ -683,8 +709,9 @@ export default function MyNuggets() {
                         onChange={handleInputChange}
                         placeholder="DL citation number"
                         variant="bordered"
+                        fullWidth
                       />
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
                           label="Status"
                           name="status"
@@ -692,6 +719,7 @@ export default function MyNuggets() {
                           onChange={handleInputChange}
                           placeholder="Status (e.g., Published)"
                           variant="bordered"
+                          fullWidth
                         />
                         <Input
                           label="Slug"
@@ -700,6 +728,7 @@ export default function MyNuggets() {
                           onChange={handleInputChange}
                           placeholder="URL slug"
                           variant="bordered"
+                          fullWidth
                         />
                       </div>
                     </div>
@@ -708,29 +737,31 @@ export default function MyNuggets() {
                     <div className="mt-4 space-y-4">
                       <Select
                         label="Judge"
-                        name="judge_id"
-                        value={formData.judges?.toString() || ""}
+                        placeholder="Select a judge"
+                        variant="bordered"
+                        selectedKeys={formData.judges ? [formData.judges] : []}
                         onChange={(e) => {
                           const value = e.target.value;
                           setFormData((prev) => ({
                             ...prev,
-                            judges: value ? value : undefined,
+                            judges: value || undefined,
                           }));
                         }}
-                        placeholder="Select a judge"
-                        variant="bordered"
+                        fullWidth
                       >
-                        <SelectItem key="none" value="">
-                          No Judge
-                        </SelectItem>
-                        {judges.map((judge) => (
-                          <SelectItem
-                            key={judge.id}
-                            value={judge.id.toString()}
-                          >
-                            {judge.fullname}
-                          </SelectItem>
-                        ))}
+                        {[
+                          <SelectItem key="" value="">
+                            No Judge
+                          </SelectItem>,
+                          ...judges.map((judge) => (
+                            <SelectItem
+                              key={judge.id.toString()}
+                              value={judge.id.toString()}
+                            >
+                              {judge.fullname}
+                            </SelectItem>
+                          )),
+                        ]}
                       </Select>
                       <Input
                         label="Judge Title"
@@ -739,6 +770,7 @@ export default function MyNuggets() {
                         onChange={handleInputChange}
                         placeholder="Judge title"
                         variant="bordered"
+                        fullWidth
                       />
                       <Input
                         label="Page Number"
@@ -748,6 +780,7 @@ export default function MyNuggets() {
                         placeholder="Page number"
                         variant="bordered"
                         type="number"
+                        fullWidth
                       />
                       <Textarea
                         label="Courts"
@@ -757,6 +790,7 @@ export default function MyNuggets() {
                         placeholder="Courts information"
                         minRows={2}
                         variant="bordered"
+                        fullWidth
                       />
                       <Textarea
                         label="Other Citations"
@@ -766,6 +800,7 @@ export default function MyNuggets() {
                         placeholder="Other citations"
                         minRows={2}
                         variant="bordered"
+                        fullWidth
                       />
                       <Textarea
                         label="Areas of Law"
@@ -775,13 +810,19 @@ export default function MyNuggets() {
                         placeholder="Areas of law (comma separated)"
                         minRows={2}
                         variant="bordered"
+                        fullWidth
                       />
                     </div>
                   </Tab>
                 </Tabs>
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
+                <Button
+                  color="danger"
+                  variant="light"
+                  onPress={onClose}
+                  className="w-full sm:w-auto"
+                >
                   Cancel
                 </Button>
                 <Button
@@ -789,6 +830,7 @@ export default function MyNuggets() {
                   onPress={addPersonalNugget}
                   isLoading={isSubmitting}
                   isDisabled={!formData.title || !formData.principle}
+                  className="w-full sm:w-auto"
                 >
                   Save Nugget
                 </Button>
@@ -799,7 +841,12 @@ export default function MyNuggets() {
       </Modal>
 
       {/* Edit Nugget Modal */}
-      <Modal isOpen={isEditOpen} onClose={onEditClose} size="lg">
+      <Modal
+        isOpen={isEditOpen}
+        onClose={onEditClose}
+        size="lg"
+        scrollBehavior="inside"
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -812,7 +859,7 @@ export default function MyNuggets() {
                     {formError}
                   </div>
                 )}
-                <Tabs aria-label="Nugget form sections">
+                <Tabs aria-label="Nugget form sections" className="w-full">
                   <Tab key="basic" title="Basic Information">
                     <div className="mt-4 space-y-4">
                       <Input
@@ -823,6 +870,7 @@ export default function MyNuggets() {
                         placeholder="Enter nugget title"
                         variant="bordered"
                         isRequired
+                        fullWidth
                       />
                       <Textarea
                         label="Principle"
@@ -833,8 +881,9 @@ export default function MyNuggets() {
                         minRows={4}
                         variant="bordered"
                         isRequired
+                        fullWidth
                       />
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
                           label="Year"
                           name="year"
@@ -843,6 +892,7 @@ export default function MyNuggets() {
                           placeholder="YYYY"
                           variant="bordered"
                           type="number"
+                          fullWidth
                         />
                         <Input
                           label="Citation Number"
@@ -851,6 +901,7 @@ export default function MyNuggets() {
                           onChange={handleInputChange}
                           placeholder="Citation number"
                           variant="bordered"
+                          fullWidth
                         />
                       </div>
                     </div>
@@ -865,6 +916,7 @@ export default function MyNuggets() {
                         placeholder="Enter the headnote"
                         minRows={3}
                         variant="bordered"
+                        fullWidth
                       />
                       <Textarea
                         label="Quote"
@@ -874,6 +926,7 @@ export default function MyNuggets() {
                         placeholder="Enter the quote"
                         minRows={3}
                         variant="bordered"
+                        fullWidth
                       />
                       <Input
                         label="DL Citation No"
@@ -882,8 +935,9 @@ export default function MyNuggets() {
                         onChange={handleInputChange}
                         placeholder="DL citation number"
                         variant="bordered"
+                        fullWidth
                       />
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
                           label="Status"
                           name="status"
@@ -891,6 +945,7 @@ export default function MyNuggets() {
                           onChange={handleInputChange}
                           placeholder="Status (e.g., Published)"
                           variant="bordered"
+                          fullWidth
                         />
                         <Input
                           label="Slug"
@@ -899,6 +954,7 @@ export default function MyNuggets() {
                           onChange={handleInputChange}
                           placeholder="URL slug"
                           variant="bordered"
+                          fullWidth
                         />
                       </div>
                     </div>
@@ -907,31 +963,31 @@ export default function MyNuggets() {
                     <div className="mt-4 space-y-4">
                       <Select
                         label="Judge"
-                        name="judge_id"
-                        defaultSelectedKeys={
-                          formData.judges ? [formData.judges] : []
-                        }
+                        placeholder="Select a judge"
+                        variant="bordered"
+                        selectedKeys={formData.judges ? [formData.judges] : []}
                         onChange={(e) => {
                           const value = e.target.value;
                           setFormData((prev) => ({
                             ...prev,
-                            judges: value ? value : undefined,
+                            judges: value || undefined,
                           }));
                         }}
-                        placeholder="Select a judge"
-                        variant="bordered"
+                        fullWidth
                       >
-                        <SelectItem key="none" value="">
-                          No Judge
-                        </SelectItem>
-                        {judges.map((judge) => (
-                          <SelectItem
-                            key={judge.id}
-                            value={judge.id.toString()}
-                          >
-                            {judge.fullname}
-                          </SelectItem>
-                        ))}
+                        {[
+                          <SelectItem key="" value="">
+                            No Judge
+                          </SelectItem>,
+                          ...judges.map((judge) => (
+                            <SelectItem
+                              key={judge.id.toString()}
+                              value={judge.id.toString()}
+                            >
+                              {judge.fullname}
+                            </SelectItem>
+                          )),
+                        ]}
                       </Select>
                       <Input
                         label="Judge Title"
@@ -940,6 +996,7 @@ export default function MyNuggets() {
                         onChange={handleInputChange}
                         placeholder="Judge title"
                         variant="bordered"
+                        fullWidth
                       />
                       <Input
                         label="Page Number"
@@ -949,6 +1006,7 @@ export default function MyNuggets() {
                         placeholder="Page number"
                         variant="bordered"
                         type="number"
+                        fullWidth
                       />
                       <Textarea
                         label="Courts"
@@ -958,6 +1016,7 @@ export default function MyNuggets() {
                         placeholder="Courts information"
                         minRows={2}
                         variant="bordered"
+                        fullWidth
                       />
                       <Textarea
                         label="Other Citations"
@@ -967,6 +1026,7 @@ export default function MyNuggets() {
                         placeholder="Other citations"
                         minRows={2}
                         variant="bordered"
+                        fullWidth
                       />
                       <Textarea
                         label="Areas of Law"
@@ -976,13 +1036,19 @@ export default function MyNuggets() {
                         placeholder="Areas of law (comma separated)"
                         minRows={2}
                         variant="bordered"
+                        fullWidth
                       />
                     </div>
                   </Tab>
                 </Tabs>
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="light" onPress={onEditClose}>
+                <Button
+                  color="danger"
+                  variant="light"
+                  onPress={onEditClose}
+                  className="w-full sm:w-auto"
+                >
                   Cancel
                 </Button>
                 <Button
@@ -990,6 +1056,7 @@ export default function MyNuggets() {
                   onPress={updatePersonalNugget}
                   isLoading={isSubmitting}
                   isDisabled={!formData.title || !formData.principle}
+                  className="w-full sm:w-auto"
                 >
                   Update Nugget
                 </Button>
@@ -1017,11 +1084,12 @@ export default function MyNuggets() {
                   cannot be undone.
                 </p>
               </ModalBody>
-              <ModalFooter>
+              <ModalFooter className="flex flex-col sm:flex-row gap-2">
                 <Button
                   color="default"
                   variant="light"
                   onPress={onDeleteConfirmClose}
+                  className="w-full sm:w-auto order-2 sm:order-1"
                 >
                   Cancel
                 </Button>
@@ -1029,6 +1097,7 @@ export default function MyNuggets() {
                   color="danger"
                   onPress={deletePersonalNugget}
                   isLoading={isDeleting}
+                  className="w-full sm:w-auto order-1 sm:order-2"
                 >
                   Delete
                 </Button>
