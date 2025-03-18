@@ -49,6 +49,7 @@ interface NuggetDrawerProps {
   parentName?: string;
   parentType?: "judge" | "court" | "area";
   onBookmarkChange?: () => void;
+  baseUrl?: string;
 }
 
 const NuggetDrawer = ({

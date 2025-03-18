@@ -22,7 +22,7 @@ const Profile = () => {
   });
   const navigate = useNavigate();
 
-  const { details, nuggets, baseUrl } = useLoaderData<typeof loader>();
+  const { baseUrl } = useLoaderData<typeof loader>();
 
   useEffect(() => {
     fetchUserData();
