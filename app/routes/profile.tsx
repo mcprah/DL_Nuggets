@@ -6,7 +6,28 @@ import profilePic from "~/images/logo.png";
 import axios from "axios";
 import { Nugget } from "~/components/NuggetDrawer";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import { LoaderFunction } from "@remix-run/node";
+import { LoaderFunction, MetaFunction } from "@remix-run/node";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "User Profile | Dennis Law" },
+    {
+      name: "description",
+      content:
+        "View and manage your profile information and bookmarked nuggets",
+    },
+    { name: "og:title", content: "User Profile | Dennis Law" },
+    {
+      name: "og:description",
+      content: "Manage your personal profile and bookmarked legal nuggets",
+    },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://dennislaw.com/profile",
+    },
+  ];
+};
 
 const Profile = () => {
   const [bookmarkedNuggets, setBookmarkedNuggets] = useState<Nugget[]>([]);

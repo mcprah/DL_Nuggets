@@ -11,7 +11,30 @@ import {
 } from "react-icons/md";
 import { useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
+import { MetaFunction } from "@remix-run/node";
 import backgroundImage from "~/images/Library-Postcard-004_2.webp";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Dashboard | Dennis Law" },
+    {
+      name: "description",
+      content:
+        "Explore legal principles, search cases, and build your legal knowledge",
+    },
+    { name: "og:title", content: "Dashboard | Dennis Law" },
+    {
+      name: "og:description",
+      content:
+        "Your personal dashboard for legal research and nugget exploration",
+    },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://dennislaw.com/dashboard",
+    },
+  ];
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();

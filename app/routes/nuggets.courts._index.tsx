@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLoaderData } from "@remix-run/react";
 import { MdArrowRight } from "react-icons/md";
 import axios from "axios";
-import { LoaderFunction } from "@remix-run/node";
+import { LoaderFunction, MetaFunction } from "@remix-run/node";
 
 // Define types for our data
 interface Court {
@@ -29,6 +29,26 @@ interface LoaderData {
   courts: PaginatedResponse;
   baseUrl: string;
 }
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Courts | Dennis Law" },
+    {
+      name: "description",
+      content: "Browse nuggets by different courts and jurisdictions",
+    },
+    { name: "og:title", content: "Courts | Dennis Law" },
+    {
+      name: "og:description",
+      content: "Access nuggets by different courts and judicial bodies",
+    },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://dennislaw.com/nuggets/courts",
+    },
+  ];
+};
 
 const Courts = () => {
   const { courts } = useLoaderData<LoaderData>();

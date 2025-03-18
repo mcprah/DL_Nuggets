@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { MdArrowRight } from "react-icons/md";
 import axios from "axios";
-import { LoaderFunction } from "@remix-run/node";
+import { LoaderFunction, MetaFunction } from "@remix-run/node";
 
 // Define types for our data
 interface AreaOfLaw {
@@ -29,6 +29,26 @@ interface LoaderData {
   areaOfLaw: PaginatedResponse;
   baseUrl: string;
 }
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Areas of Law | Dennis Law" },
+    {
+      name: "description",
+      content: "Browse nuggets by different areas of law",
+    },
+    { name: "og:title", content: "Areas of Law | Dennis Law" },
+    {
+      name: "og:description",
+      content: "Explore legal principles categorized by different areas of law",
+    },
+    {
+      tagName: "link",
+      rel: "canonical",
+      href: "https://dennislaw.com/nuggets",
+    },
+  ];
+};
 
 const AreaOfLaw = () => {
   const { areaOfLaw } = useLoaderData<LoaderData>();
