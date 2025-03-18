@@ -1,6 +1,6 @@
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 import {
   MdEmail,
@@ -36,9 +36,22 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { baseUrl } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+
+  // Use useEffect to safely interact with browser APIs
+  useEffect(() => {
+    // This code will only run in the browser, not during server-side rendering
+    if (typeof window !== "undefined") {
+      const storedMessage = window.sessionStorage.getItem("signupSuccess");
+      if (storedMessage) {
+        setSuccessMessage(storedMessage);
+        window.sessionStorage.removeItem("signupSuccess");
+      }
+    }
+  }, []);
 
   // Email validation
   const isValidEmail = (email: string): boolean => {
@@ -98,15 +111,20 @@ const Login = () => {
         setPassword("");
         setConfirmPassword("");
         // Store success message in session storage to display after redirect
-        sessionStorage.setItem(
-          "signupSuccess",
-          "Account created successfully! Please log in."
-        );
-        // Could also use Remix's session mechanism for this
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(
+            "signupSuccess",
+            "Account created successfully! Please log in."
+          );
+        }
+        // Set success message directly as well
+        setSuccessMessage("Account created successfully! Please log in.");
       } else {
         // Store token securely for login
         const token = response.data.access_token;
-        localStorage.setItem("access_token", token);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("access_token", token);
+        }
 
         // Redirect to dashboard after login
         navigate("/dashboard");
@@ -127,13 +145,6 @@ const Login = () => {
       setLoading(false);
     }
   };
-
-  // Check for success message from sign-up
-  const successMessage = sessionStorage.getItem("signupSuccess");
-  if (successMessage) {
-    // Clear the message once retrieved
-    sessionStorage.removeItem("signupSuccess");
-  }
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gray-100 p-4">
