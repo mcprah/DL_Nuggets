@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { json, LoaderFunction } from "@remix-run/node";
 import {
   useLoaderData,
@@ -23,6 +23,10 @@ import {
   Input,
   Textarea,
   Spinner,
+  Tabs,
+  Tab,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
 import axios from "axios";
 import NuggetDrawer, { Nugget } from "~/components/NuggetDrawer";
@@ -39,12 +43,13 @@ interface ClientLoaderData {
   currentPage: number;
   perPage: number;
   error: string | null;
+  baseUrl: string;
 }
 
 // Server loader - gets base URL but doesn't try to authenticate
 export const loader: LoaderFunction = async () => {
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
-  return { baseUrl };
+  return json({ baseUrl });
 };
 
 // Client loader that runs on the client side and can access localStorage
@@ -69,6 +74,7 @@ export const clientLoader = async ({
       currentPage: 1,
       perPage: 10,
       error: "Not authenticated",
+      baseUrl,
     };
   }
 
@@ -94,6 +100,7 @@ export const clientLoader = async ({
       currentPage: parseInt(page),
       perPage: response.data?.meta?.per_page || 10,
       error: null,
+      baseUrl,
     };
   } catch (error: any) {
     console.error("Error fetching user nuggets:", error);
@@ -103,6 +110,7 @@ export const clientLoader = async ({
       currentPage: 1,
       perPage: 10,
       error: error.response?.data?.message || "Failed to fetch nuggets",
+      baseUrl,
     };
   }
 };
@@ -113,8 +121,19 @@ clientLoader.hydrate = true;
 interface NuggetFormData {
   title: string;
   principle: string;
+  headnote?: string;
+  quote?: string;
+  dl_citation_no?: string;
   year?: string;
   citation_no?: string;
+  judge_title?: string;
+  page_number?: string;
+  courts?: string;
+  other_citations?: string;
+  status?: string;
+  slug?: string;
+  judges?: number;
+  personal_areas_of_law?: string;
 }
 
 export default function MyNuggets() {
@@ -125,7 +144,6 @@ export default function MyNuggets() {
   const [selectedNugget, setSelectedNugget] = useState<Nugget | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   const {
     isOpen: isEditOpen,
     onOpen: onEditOpen,
@@ -139,13 +157,55 @@ export default function MyNuggets() {
   const [formData, setFormData] = useState<NuggetFormData>({
     title: "",
     principle: "",
+    headnote: "",
+    quote: "",
+    dl_citation_no: "",
     year: "",
     citation_no: "",
+    judge_title: "",
+    page_number: "",
+    courts: "",
+    other_citations: "",
+    status: "",
+    slug: "",
+    judges: undefined,
+    personal_areas_of_law: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [nuggetToDelete, setNuggetToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  // Define judges for the dropdown
+  const [judges, setJudges] = useState<{ id: number; fullname: string }[]>([]);
+  const [loadingJudges, setLoadingJudges] = useState(false);
+
+  // Fetch judges on component mount
+  useEffect(() => {
+    fetchJudges();
+  }, []);
+
+  // Function to fetch judges
+  const fetchJudges = async () => {
+    setLoadingJudges(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) return;
+
+      const response = await axios.get(`${baseUrl}/judges`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data && response.data.data) {
+        setJudges(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching judges:", error);
+    } finally {
+      setLoadingJudges(false);
+    }
+  };
 
   // Open drawer with selected nugget details
   const openDrawer = (nugget: Nugget) => {
@@ -177,11 +237,24 @@ export default function MyNuggets() {
 
   // Open edit modal with nugget data
   const openEditModal = (nugget: Nugget) => {
+    console.log(nugget);
+
     setFormData({
       title: nugget.title || "",
       principle: nugget.principle || "",
+      headnote: nugget.headnote || "",
+      quote: nugget.quote || "",
+      dl_citation_no: nugget.dl_citation_no || "",
       year: nugget.year ? String(nugget.year) : "",
-      citation_no: nugget.citation_no || nugget.dl_citation_no || "",
+      citation_no: nugget.citation_no || "",
+      judge_title: nugget.judge_title || "",
+      page_number: nugget.page_number ? String(nugget.page_number) : "",
+      courts: nugget.courts || "",
+      other_citations: nugget.other_citations || "",
+      status: nugget.status || "",
+      slug: nugget.slug || "",
+      judges: nugget.judge?.id,
+      personal_areas_of_law: "",
     });
     setSelectedNugget(nugget);
     onEditOpen();
@@ -215,8 +288,19 @@ export default function MyNuggets() {
       setFormData({
         title: "",
         principle: "",
+        headnote: "",
+        quote: "",
+        dl_citation_no: "",
         year: "",
         citation_no: "",
+        judge_title: "",
+        page_number: "",
+        courts: "",
+        other_citations: "",
+        status: "",
+        slug: "",
+        judges: undefined,
+        personal_areas_of_law: "",
       });
       onClose();
 
@@ -268,8 +352,19 @@ export default function MyNuggets() {
       setFormData({
         title: "",
         principle: "",
+        headnote: "",
+        quote: "",
+        dl_citation_no: "",
         year: "",
         citation_no: "",
+        judge_title: "",
+        page_number: "",
+        courts: "",
+        other_citations: "",
+        status: "",
+        slug: "",
+        judges: undefined,
+        personal_areas_of_law: "",
       });
       onEditClose();
 
@@ -518,44 +613,172 @@ export default function MyNuggets() {
                     {formError}
                   </div>
                 )}
-                <Input
-                  label="Title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Enter nugget title"
-                  variant="bordered"
-                  isRequired
-                />
-                <Textarea
-                  label="Principle"
-                  name="principle"
-                  value={formData.principle}
-                  onChange={handleInputChange}
-                  placeholder="Enter the legal principle"
-                  minRows={4}
-                  variant="bordered"
-                  isRequired
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Year"
-                    name="year"
-                    value={formData.year}
-                    onChange={handleInputChange}
-                    placeholder="YYYY"
-                    variant="bordered"
-                    type="number"
-                  />
-                  <Input
-                    label="Citation Number"
-                    name="citation_no"
-                    value={formData.citation_no}
-                    onChange={handleInputChange}
-                    placeholder="Optional citation number"
-                    variant="bordered"
-                  />
-                </div>
+                <Tabs aria-label="Nugget form sections">
+                  <Tab key="basic" title="Basic Information">
+                    <div className="mt-4 space-y-4">
+                      <Input
+                        label="Title"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        placeholder="Enter nugget title"
+                        variant="bordered"
+                        isRequired
+                      />
+                      <Textarea
+                        label="Principle"
+                        name="principle"
+                        value={formData.principle}
+                        onChange={handleInputChange}
+                        placeholder="Enter the legal principle"
+                        minRows={4}
+                        variant="bordered"
+                        isRequired
+                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          label="Year"
+                          name="year"
+                          value={formData.year}
+                          onChange={handleInputChange}
+                          placeholder="YYYY"
+                          variant="bordered"
+                          type="number"
+                        />
+                        <Input
+                          label="Citation Number"
+                          name="citation_no"
+                          value={formData.citation_no}
+                          onChange={handleInputChange}
+                          placeholder="Citation number"
+                          variant="bordered"
+                        />
+                      </div>
+                    </div>
+                  </Tab>
+                  <Tab key="details" title="Additional Details">
+                    <div className="mt-4 space-y-4">
+                      <Textarea
+                        label="Headnote"
+                        name="headnote"
+                        value={formData.headnote}
+                        onChange={handleInputChange}
+                        placeholder="Enter the headnote"
+                        minRows={3}
+                        variant="bordered"
+                      />
+                      <Textarea
+                        label="Quote"
+                        name="quote"
+                        value={formData.quote}
+                        onChange={handleInputChange}
+                        placeholder="Enter the quote"
+                        minRows={3}
+                        variant="bordered"
+                      />
+                      <Input
+                        label="DL Citation No"
+                        name="dl_citation_no"
+                        value={formData.dl_citation_no}
+                        onChange={handleInputChange}
+                        placeholder="DL citation number"
+                        variant="bordered"
+                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          label="Status"
+                          name="status"
+                          value={formData.status}
+                          onChange={handleInputChange}
+                          placeholder="Status (e.g., Published)"
+                          variant="bordered"
+                        />
+                        <Input
+                          label="Slug"
+                          name="slug"
+                          value={formData.slug}
+                          onChange={handleInputChange}
+                          placeholder="URL slug"
+                          variant="bordered"
+                        />
+                      </div>
+                    </div>
+                  </Tab>
+                  <Tab key="source" title="Source Information">
+                    <div className="mt-4 space-y-4">
+                      <Select
+                        label="Judge"
+                        name="judge_id"
+                        value={formData.judges?.toString() || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData((prev) => ({
+                            ...prev,
+                            judges: value ? value : undefined,
+                          }));
+                        }}
+                        placeholder="Select a judge"
+                        variant="bordered"
+                      >
+                        <SelectItem key="none" value="">
+                          No Judge
+                        </SelectItem>
+                        {judges.map((judge) => (
+                          <SelectItem
+                            key={judge.id}
+                            value={judge.id.toString()}
+                          >
+                            {judge.fullname}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                      <Input
+                        label="Judge Title"
+                        name="judge_title"
+                        value={formData.judge_title}
+                        onChange={handleInputChange}
+                        placeholder="Judge title"
+                        variant="bordered"
+                      />
+                      <Input
+                        label="Page Number"
+                        name="page_number"
+                        value={formData.page_number}
+                        onChange={handleInputChange}
+                        placeholder="Page number"
+                        variant="bordered"
+                        type="number"
+                      />
+                      <Textarea
+                        label="Courts"
+                        name="courts"
+                        value={formData.courts}
+                        onChange={handleInputChange}
+                        placeholder="Courts information"
+                        minRows={2}
+                        variant="bordered"
+                      />
+                      <Textarea
+                        label="Other Citations"
+                        name="other_citations"
+                        value={formData.other_citations}
+                        onChange={handleInputChange}
+                        placeholder="Other citations"
+                        minRows={2}
+                        variant="bordered"
+                      />
+                      <Textarea
+                        label="Areas of Law"
+                        name="personal_areas_of_law"
+                        value={formData.personal_areas_of_law}
+                        onChange={handleInputChange}
+                        placeholder="Areas of law (comma separated)"
+                        minRows={2}
+                        variant="bordered"
+                      />
+                    </div>
+                  </Tab>
+                </Tabs>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
@@ -589,44 +812,174 @@ export default function MyNuggets() {
                     {formError}
                   </div>
                 )}
-                <Input
-                  label="Title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Enter nugget title"
-                  variant="bordered"
-                  isRequired
-                />
-                <Textarea
-                  label="Principle"
-                  name="principle"
-                  value={formData.principle}
-                  onChange={handleInputChange}
-                  placeholder="Enter the legal principle"
-                  minRows={4}
-                  variant="bordered"
-                  isRequired
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Year"
-                    name="year"
-                    value={formData.year}
-                    onChange={handleInputChange}
-                    placeholder="YYYY"
-                    variant="bordered"
-                    type="number"
-                  />
-                  <Input
-                    label="Citation Number"
-                    name="citation_no"
-                    value={formData.citation_no}
-                    onChange={handleInputChange}
-                    placeholder="Optional citation number"
-                    variant="bordered"
-                  />
-                </div>
+                <Tabs aria-label="Nugget form sections">
+                  <Tab key="basic" title="Basic Information">
+                    <div className="mt-4 space-y-4">
+                      <Input
+                        label="Title"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        placeholder="Enter nugget title"
+                        variant="bordered"
+                        isRequired
+                      />
+                      <Textarea
+                        label="Principle"
+                        name="principle"
+                        value={formData.principle}
+                        onChange={handleInputChange}
+                        placeholder="Enter the legal principle"
+                        minRows={4}
+                        variant="bordered"
+                        isRequired
+                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          label="Year"
+                          name="year"
+                          value={formData.year}
+                          onChange={handleInputChange}
+                          placeholder="YYYY"
+                          variant="bordered"
+                          type="number"
+                        />
+                        <Input
+                          label="Citation Number"
+                          name="citation_no"
+                          value={formData.citation_no}
+                          onChange={handleInputChange}
+                          placeholder="Citation number"
+                          variant="bordered"
+                        />
+                      </div>
+                    </div>
+                  </Tab>
+                  <Tab key="details" title="Additional Details">
+                    <div className="mt-4 space-y-4">
+                      <Textarea
+                        label="Headnote"
+                        name="headnote"
+                        value={formData.headnote}
+                        onChange={handleInputChange}
+                        placeholder="Enter the headnote"
+                        minRows={3}
+                        variant="bordered"
+                      />
+                      <Textarea
+                        label="Quote"
+                        name="quote"
+                        value={formData.quote}
+                        onChange={handleInputChange}
+                        placeholder="Enter the quote"
+                        minRows={3}
+                        variant="bordered"
+                      />
+                      <Input
+                        label="DL Citation No"
+                        name="dl_citation_no"
+                        value={formData.dl_citation_no}
+                        onChange={handleInputChange}
+                        placeholder="DL citation number"
+                        variant="bordered"
+                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          label="Status"
+                          name="status"
+                          value={formData.status}
+                          onChange={handleInputChange}
+                          placeholder="Status (e.g., Published)"
+                          variant="bordered"
+                        />
+                        <Input
+                          label="Slug"
+                          name="slug"
+                          value={formData.slug}
+                          onChange={handleInputChange}
+                          placeholder="URL slug"
+                          variant="bordered"
+                        />
+                      </div>
+                    </div>
+                  </Tab>
+                  <Tab key="source" title="Source Information">
+                    <div className="mt-4 space-y-4">
+                      <Select
+                        label="Judge"
+                        name="judge_id"
+                        defaultSelectedKeys={
+                          formData.judges ? [formData.judges] : []
+                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData((prev) => ({
+                            ...prev,
+                            judges: value ? value : undefined,
+                          }));
+                        }}
+                        placeholder="Select a judge"
+                        variant="bordered"
+                      >
+                        <SelectItem key="none" value="">
+                          No Judge
+                        </SelectItem>
+                        {judges.map((judge) => (
+                          <SelectItem
+                            key={judge.id}
+                            value={judge.id.toString()}
+                          >
+                            {judge.fullname}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                      <Input
+                        label="Judge Title"
+                        name="judge_title"
+                        value={formData.judge_title}
+                        onChange={handleInputChange}
+                        placeholder="Judge title"
+                        variant="bordered"
+                      />
+                      <Input
+                        label="Page Number"
+                        name="page_number"
+                        value={formData.page_number}
+                        onChange={handleInputChange}
+                        placeholder="Page number"
+                        variant="bordered"
+                        type="number"
+                      />
+                      <Textarea
+                        label="Courts"
+                        name="courts"
+                        value={formData.courts}
+                        onChange={handleInputChange}
+                        placeholder="Courts information"
+                        minRows={2}
+                        variant="bordered"
+                      />
+                      <Textarea
+                        label="Other Citations"
+                        name="other_citations"
+                        value={formData.other_citations}
+                        onChange={handleInputChange}
+                        placeholder="Other citations"
+                        minRows={2}
+                        variant="bordered"
+                      />
+                      <Textarea
+                        label="Areas of Law"
+                        name="personal_areas_of_law"
+                        value={formData.personal_areas_of_law}
+                        onChange={handleInputChange}
+                        placeholder="Areas of law (comma separated)"
+                        minRows={2}
+                        variant="bordered"
+                      />
+                    </div>
+                  </Tab>
+                </Tabs>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onEditClose}>
