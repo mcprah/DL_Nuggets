@@ -183,7 +183,9 @@ const NuggetDrawer = ({
         {/* Quoted From Section */}
         <div className="mt-4">
           <p className="text-gray-700 font-semibold">Quoted from</p>
-          <p className="text-gray-500 text-sm">Tap title below for full case</p>
+          <p className="text-gray-500 text-xs italic">
+            Tap title below for full case
+          </p>
         </div>
 
         {/* Title with Link */}
@@ -208,9 +210,12 @@ const NuggetDrawer = ({
         {/* Judge Information */}
         {nugget.judge && (
           <div className="mt-3">
-            <p className="font-semibold">
+            <Link
+              to={`/nuggets/${nugget.id}`}
+              className="font-semibold hover:underline"
+            >
               - {nugget.judge.fullname} {nugget.judge_title}
-            </p>
+            </Link>
           </div>
         )}
 

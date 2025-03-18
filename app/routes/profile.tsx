@@ -95,8 +95,6 @@ const Profile = () => {
       const token = localStorage.getItem("access_token");
       if (!token) return;
 
-      const baseUrl =
-        process.env.NEXT_PUBLIC_DL_LIVE_URL || localStorage.getItem("base_url");
       await axios.delete(`${baseUrl}/bookmark-nugget/${nuggetId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -118,8 +116,6 @@ const Profile = () => {
       const token = localStorage.getItem("access_token");
       if (!token) return;
 
-      const baseUrl =
-        process.env.NEXT_PUBLIC_DL_LIVE_URL || localStorage.getItem("base_url");
       await axios.delete(`${baseUrl}/bookmark-nugget`, {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -560,8 +560,8 @@ export default function MyNuggets() {
                         isIconOnly
                         variant="light"
                         color="primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onPress={(e) => {
+                          //   e.stopPropagation();
                           openEditModal(nugget);
                         }}
                       >
@@ -572,8 +572,8 @@ export default function MyNuggets() {
                         isIconOnly
                         variant="light"
                         color="danger"
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onPress={(e) => {
+                          //   e.stopPropagation();
                           setNuggetToDelete(nugget.id);
                           onDeleteConfirmOpen();
                         }}
@@ -586,8 +586,8 @@ export default function MyNuggets() {
                       variant="flat"
                       color="primary"
                       className="w-full sm:w-auto"
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onPress={(e) => {
+                        // e.stopPropagation();
                         openDrawer(nugget);
                       }}
                     >
