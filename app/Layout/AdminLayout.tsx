@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, useLocation, useNavigation } from "@remix-run/react";
+import { Link, NavLink, useLocation, useNavigation } from "@remix-run/react";
 import {
   Button,
   User,
@@ -41,7 +41,7 @@ const navItems: NavItem[] = [
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -100,10 +100,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="overflow-y-hidden min-h-screen bg-slate-50">
-      <div className="flex px-2 py-2">
+      <div className="flex px-2 py-2 gap-4">
         {/* Sidebar */}
         <aside
-          className={`fixed md:relative h-[97vh] rounded-xl bg-[#1B1464] text-white shadow-lg transition-all duration-300 z-50
+          className={`fixed md:flex hidden h-[97vh] gap-4 flex flex-col transition-all duration-300 z-50
           ${
             isMobile
               ? isCollapsed
@@ -115,7 +115,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           }`}
         >
           {/* Sidebar Header */}
-          <div className="h-16 flex items-center justify-between px-4 border-b">
+          <div className="h-16 flex items-center justify-between px-4 bg-white rounded-xl shadow-lg">
             {!isCollapsed && <h1 className="text-xl font-bold">DL Nuggets</h1>}
             <Button
               isIconOnly
@@ -129,8 +129,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
           {/* Navigation Items */}
           <nav
-            className={`p-2 flex flex-col gap-1 ${
-              isCollapsed ? "justify-center items-center" : ""
+            className={`p-2 flex flex-col gap-3 shadow-lg h-full bg-white text-gray-500 rounded-xl  ${
+              isCollapsed ? " items-center" : ""
             }`}
           >
             {navItems.map((item) => (
@@ -140,7 +140,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                   ${
                     location.pathname === item.path
-                      ? " text-white"
+                      ? " text-blue-600"
                       : "hover:bg-white hover:shadow-sm hover:text-[#249DD0]"
                   }
                 `}
@@ -152,7 +152,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           </nav>
         </aside>
 
-        <main className="flex-1 overflow-auto pl-4">
+        <main className="flex-1 overflow-auto">
           <header className="h-16 bg-white shadow-sm border border-black/5 px-4 flex items-center justify-between rounded-xl">
             {isMobile && (
               <Button
@@ -176,7 +176,39 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <MdSearch className="text-2xl" />
             </Button>
           </header>
-          <div>{children}</div>
+
+          <div className="mb-16 md:mb-0">{children}</div>
+
+          <div className="flex-1 md:hidden flex text-gray-500 overflow-auto fixed bottom-0 w-full bg-white h-14 p-2 border-t border-gray-200">
+            <NavLink
+              to="/dashboard"
+              className="flex-1 flex flex-col items-center justify-center"
+            >
+              <MdHome className="text-2xl" />
+              <span className="text-xs">Home</span>
+            </NavLink>
+            <NavLink
+              to="/nuggets"
+              className="flex-1 flex flex-col items-center justify-center"
+            >
+              <MdBookmark className="text-2xl" />
+              <span className="text-xs">Nuggets</span>
+            </NavLink>
+            <NavLink
+              to="/search"
+              className="flex-1 flex flex-col items-center justify-center"
+            >
+              <MdSearch className="text-2xl" />
+              <span className="text-xs">Search</span>
+            </NavLink>
+            <NavLink
+              to="/profile"
+              className="flex-1 flex flex-col items-center justify-center"
+            >
+              <MdVerifiedUser className="text-2xl" />
+              <span className="text-xs">Profile</span>
+            </NavLink>
+          </div>
         </main>
       </div>
 

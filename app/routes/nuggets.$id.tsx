@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate, useLoaderData } from "@remix-run/react";
+import { useParams, useNavigate, useLoaderData, Link } from "@remix-run/react";
 import { MdArrowBack } from "react-icons/md";
 import { Pagination, Chip } from "@nextui-org/react";
 import { LoaderFunction } from "@remix-run/node";
@@ -144,27 +144,54 @@ const AreaOfLawDetails = () => {
               className="text-gray-600 hover:text-primary self-end"
               onClick={() => setIsDrawerOpen(false)}
             >
-              ✕ Close
+              ✕
             </button>
 
-            {/* Citation */}
-            <div className="mt-4 flex justify-between items-center">
-              <span className="text-sm font-semibold">
-                {selectedSubNugget.citation_no ||
-                  selectedSubNugget.dl_citation_no}
-              </span>
-              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-                {selectedSubNugget.year}
-              </span>
+            <div className="">
+              <p className="text-gray-700 text-semibold">Quoted from</p>
+              <p className="text-gray-500 text-sm">
+                Tap title below for full case
+              </p>
             </div>
 
             {/* Headnote */}
             {selectedSubNugget.headnote && (
               <div className="mt-4">
-                <p className="text-sm text-gray-500 font-semibold">TITLE:</p>
-                <p className="text-sm mt-1 italic">{selectedSubNugget.title}</p>
+                <Link
+                  to={`/nuggets/${selectedSubNugget.id}`}
+                  className="text-sm mt-1 text-blue-600"
+                >
+                  {selectedSubNugget.title}
+                  <span className="text-sm font-semibold ml-2">
+                    {selectedSubNugget.citation_no ||
+                      selectedSubNugget.dl_citation_no}
+                  </span>
+                  {selectedSubNugget.page_number && (
+                    <p className="text-gray-500">
+                      at page {selectedSubNugget.page_number}
+                    </p>
+                  )}
+                </Link>
               </div>
             )}
+
+            {selectedSubNugget.judge && (
+              <div className="mt-2">
+                <p className="font-semibold">
+                  - {selectedSubNugget.judge.fullname}{" "}
+                  {selectedSubNugget.judge_title}
+                </p>
+              </div>
+            )}
+
+            {/* Citation */}
+            <div className="mt-4 flex justify-between items-center">
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                {selectedSubNugget.year}
+              </span>
+            </div>
+
+            <div className="border-b border-gray-300 my-4"></div>
 
             {/* Source Quote */}
             {/* <div className="mt-4">
@@ -177,14 +204,12 @@ const AreaOfLawDetails = () => {
             </div> */}
 
             {/* Nugget Title */}
-            <h2 className="font-bold text-xl mt-4">
-              {selectedSubNugget.headnote}
-            </h2>
+            <h2 className="font-bold text-xl">{selectedSubNugget.headnote}</h2>
 
             {/* Description */}
             <div className="mt-4">
               <p className="text-sm text-gray-500 font-semibold">PRINCIPLE:</p>
-              <p className="text-gray-700 mt-1">
+              <p className="text-gray-700 mt-1 line-clamp-2">
                 {selectedSubNugget.principle}
               </p>
             </div>
@@ -237,31 +262,6 @@ const AreaOfLawDetails = () => {
                   </Chip>
                 )}
               </div>
-            </div>
-
-            {/* Metadata */}
-            <div className="mt-6 grid grid-cols-2 gap-4">
-              {selectedSubNugget.judge && (
-                <div>
-                  <p className="text-sm text-gray-500">Judge</p>
-                  <p className="font-semibold">
-                    {selectedSubNugget.judge.fullname}
-                  </p>
-                  {selectedSubNugget.judge_title && (
-                    <p className="text-xs text-gray-500">
-                      {selectedSubNugget.judge_title}
-                    </p>
-                  )}
-                </div>
-              )}
-              {selectedSubNugget.page_number && (
-                <div>
-                  <p className="text-sm text-gray-500">Page Number</p>
-                  <p className="font-semibold">
-                    {selectedSubNugget.page_number}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         )}
