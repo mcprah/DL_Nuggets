@@ -28,6 +28,9 @@ import {
   MdNotifications,
   MdChevronLeft,
   MdChevronRight,
+  MdBookOnline,
+  MdBook,
+  MdBookmarks,
 } from "react-icons/md";
 import logo from "~/images/logo.png";
 
@@ -52,14 +55,19 @@ const navItems: NavItem[] = [
     path: "/dashboard",
   },
   {
-    icon: <MdBookmark className="text-xl" />,
-    label: "Lex Nuggets",
+    icon: <MdBook className="text-xl" />,
+    label: "Nuggets",
     path: "/nuggets",
   },
   {
     icon: <MdVerifiedUser className="text-xl" />,
     label: "My Profile",
     path: "/profile",
+  },
+  {
+    icon: <MdBookmarks className="text-xl" />,
+    label: "My Nuggets",
+    path: "/my-nuggets",
   },
 ];
 
