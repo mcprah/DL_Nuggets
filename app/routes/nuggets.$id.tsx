@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useParams, useNavigate, useLoaderData, Link } from "@remix-run/react";
 import { MdArrowBack } from "react-icons/md";
 import { Pagination } from "@nextui-org/react";
-import { LoaderFunction } from "@remix-run/node";
+import { LoaderFunction, MetaFunction } from "@remix-run/node";
 import axios from "axios";
 import NuggetDrawer, { Nugget } from "~/components/NuggetDrawer";
+import NuggetCard from "~/components/NuggetCard";
 
 interface AreaOfLawDetail {
   id: number;
@@ -20,6 +21,26 @@ interface LoaderData {
   totalPages: number;
   perPage: number;
 }
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data) {
+    return [
+      { title: "Area of Law | Dennis Law" },
+      { name: "description", content: "View nuggets by area of law" },
+    ];
+  }
+
+  const { details } = data;
+  return [
+    { title: `${details?.display_name || "Area of Law"} | Dennis Law` },
+    {
+      name: "description",
+      content: `Legal nuggets related to ${
+        details?.display_name || "area of law"
+      }`,
+    },
+  ];
+};
 
 const AreaOfLawDetails = () => {
   const { id } = useParams();
@@ -67,62 +88,13 @@ const AreaOfLawDetails = () => {
         {/* Grid Layout for Sub-Nuggets */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 bg-white rounded-xl shadow-sm border border-black/10 p-4">
           {nuggets.length > 0 ? (
-            nuggets.map((nugget: Nugget, index: number) => (
-              <div
+            nuggets.map((nugget: Nugget) => (
+              <NuggetCard
                 key={nugget.id}
-                className={`p-4 border rounded-lg bg-gray-50 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-md ${
-                  selectedSubNugget?.id === nugget.id
-                    ? "border-primary"
-                    : "hover:bg-gray-100"
-                }`}
-                onClick={() => openDrawer(nugget)}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs bg-blue-50 text-blue-800 px-2 py-1 rounded-full">
-                    {nugget.status || "Published"}
-                  </span>
-                  <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">
-                    {nugget.year}
-                  </span>
-                </div>
-
-                <p className="font-semibold line-clamp-3">
-                  {nugget.headnote || nugget.title}
-                </p>
-                <p className="text-sm mt-1 line-clamp-3 text-gray-600">
-                  {nugget.principle}
-                </p>
-
-                <div className="mt-2 flex justify-between items-center">
-                  <span className="text-xs text-gray-500">
-                    {nugget.citation_no || nugget.dl_citation_no}
-                  </span>
-
-                  {nugget.judge && (
-                    <span className="text-xs text-gray-500 italic">
-                      {nugget.judge.fullname}
-                    </span>
-                  )}
-                </div>
-
-                {nugget.keywords && nugget.keywords.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {nugget.keywords.slice(0, 2).map((keywordObj, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-gray-100 px-2 py-0.5 rounded-full"
-                      >
-                        {keywordObj?.keyword?.value || "No keywords"}
-                      </span>
-                    ))}
-                    {nugget.keywords.length > 2 && (
-                      <span className="text-xs text-gray-500">
-                        +{nugget.keywords.length - 2} more
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
+                nugget={nugget}
+                isSelected={selectedSubNugget?.id === nugget.id}
+                onClick={openDrawer}
+              />
             ))
           ) : (
             <p className="text-gray-500">No related nuggets available.</p>

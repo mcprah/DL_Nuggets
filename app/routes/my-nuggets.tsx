@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { json, LoaderFunction } from "@remix-run/node";
+import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   useNavigate,
@@ -30,6 +30,7 @@ import {
 } from "@nextui-org/react";
 import axios from "axios";
 import NuggetDrawer, { Nugget } from "~/components/NuggetDrawer";
+import NuggetListCard from "~/components/NuggetListCard";
 
 // Define the server loader data type
 interface ServerLoaderData {
@@ -135,6 +136,19 @@ interface NuggetFormData {
   judges?: string;
   personal_areas_of_law?: string;
 }
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "My Nuggets | Dennis Law" },
+    { name: "description", content: "Manage your personal legal nuggets" },
+    { name: "og:title", content: "My Nuggets | Dennis Law" },
+    {
+      name: "og:description",
+      content:
+        "Create, edit, and manage your personal collection of legal nuggets",
+    },
+  ];
+};
 
 export default function MyNuggets() {
   const { nuggets, totalPages, currentPage, error, baseUrl } =
@@ -522,79 +536,16 @@ export default function MyNuggets() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {nuggets?.map((nugget) => (
-                <Card
+                <NuggetListCard
                   key={`${nugget.id}-${refreshKey}`}
-                  className="h-full shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <CardHeader className="flex justify-between overflow-hidden">
-                    <div className="truncate max-w-[70%]">
-                      <p className="text-sm text-gray-500 truncate">
-                        {nugget.citation_no ||
-                          nugget.dl_citation_no ||
-                          "No citation"}
-                      </p>
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                      {nugget.year && (
-                        <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs whitespace-nowrap">
-                          {nugget.year}
-                        </span>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardBody
-                    className="cursor-pointer pt-1"
-                    onClick={() => openDrawer(nugget)}
-                  >
-                    <h3 className="font-semibold line-clamp-2 mb-2 text-sm sm:text-base">
-                      {nugget.headnote || nugget.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">
-                      {nugget.principle}
-                    </p>
-                  </CardBody>
-                  <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-2">
-                    <div className="flex gap-2 w-full sm:w-auto">
-                      <Button
-                        size="sm"
-                        isIconOnly
-                        variant="light"
-                        color="primary"
-                        onPress={(e) => {
-                          //   e.stopPropagation();
-                          openEditModal(nugget);
-                        }}
-                      >
-                        <MdEdit />
-                      </Button>
-                      <Button
-                        size="sm"
-                        isIconOnly
-                        variant="light"
-                        color="danger"
-                        onPress={(e) => {
-                          //   e.stopPropagation();
-                          setNuggetToDelete(nugget.id);
-                          onDeleteConfirmOpen();
-                        }}
-                      >
-                        <MdDelete />
-                      </Button>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      color="primary"
-                      className="w-full sm:w-auto"
-                      onPress={(e) => {
-                        // e.stopPropagation();
-                        openDrawer(nugget);
-                      }}
-                    >
-                      View Details
-                    </Button>
-                  </CardFooter>
-                </Card>
+                  nugget={nugget}
+                  onView={openDrawer}
+                  onEdit={openEditModal}
+                  onDelete={(id) => {
+                    setNuggetToDelete(id);
+                    onDeleteConfirmOpen();
+                  }}
+                />
               ))}
             </div>
 
