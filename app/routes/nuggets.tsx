@@ -114,53 +114,58 @@ const Nuggets = () => {
   return (
     <AdminLayout>
       <div className="pt-2 flex flex-col gap-2">
-        <p className="font-nunito">
-          Quickly and easily access catalogues of legal principles at play in
-          any case
-        </p>
+        {["/nuggets", "/nuggets/courts", "/nuggets/judges"].includes(
+          pathname
+        ) && (
+          <div>
+            <p className="font-nunito">
+              Quickly and easily access catalogues of legal principles at play
+              in any case
+            </p>
 
-        {/* Category Selection Buttons */}
-        <div className="flex gap-4 p-2 rounded-xl shadow-sm max-w-max bg-white">
-          <Button
-            size="sm"
-            onPress={() => navigate("/nuggets")}
-            className={`transition-all duration-300 px-6 py-2 rounded-lg 
+            <div className="flex gap-4 p-2 rounded-xl shadow-sm max-w-max bg-white">
+              <Button
+                size="sm"
+                onPress={() => navigate("/nuggets")}
+                className={`transition-all duration-300 px-6 py-2 rounded-lg 
                             ${
                               pathname === "/nuggets"
                                 ? "bg-primary text-white"
                                 : "bg-gray-200 text-black hover:bg-primary hover:text-white active:bg-primary"
                             }
                         `}
-          >
-            Area of Law
-          </Button>
-          <Button
-            size="sm"
-            onPress={() => navigate("/nuggets/courts")}
-            className={`transition-all duration-300 px-6 py-2 rounded-lg 
+              >
+                Area of Law
+              </Button>
+              <Button
+                size="sm"
+                onPress={() => navigate("/nuggets/courts")}
+                className={`transition-all duration-300 px-6 py-2 rounded-lg 
                             ${
                               pathname === "/nuggets/courts"
                                 ? "bg-primary text-white"
                                 : "bg-gray-200 text-black hover:bg-primary hover:text-white active:bg-primary"
                             }
                         `}
-          >
-            Courts
-          </Button>
-          <Button
-            size="sm"
-            onPress={() => navigate("/nuggets/judges")}
-            className={`transition-all duration-300 px-6 py-2 rounded-lg 
+              >
+                Courts
+              </Button>
+              <Button
+                size="sm"
+                onPress={() => navigate("/nuggets/judges")}
+                className={`transition-all duration-300 px-6 py-2 rounded-lg 
                             ${
                               pathname === "/nuggets/judges"
                                 ? "bg-primary text-white"
                                 : "bg-gray-200 text-black hover:bg-primary hover:text-white active:bg-primary"
                             }
                         `}
-          >
-            Judges
-          </Button>
-        </div>
+              >
+                Judges
+              </Button>
+            </div>
+          </div>
+        )}
 
         <Outlet />
       </div>

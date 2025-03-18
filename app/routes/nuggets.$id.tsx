@@ -103,7 +103,7 @@ const AreaOfLawDetails = () => {
                 }`}
                 onClick={() => openDrawer(nugget)}
               >
-                <p className="font-bold line-clamp-3">{nugget.title}</p>
+                <p className="font-semibold line-clamp-3">{nugget.headnote}</p>
                 <p className="text-sm mt-1 line-clamp-3">{nugget.principle}</p>
                 <div className="mt-2 flex justify-between items-center">
                   <span className="text-xs text-gray-500">
@@ -161,26 +161,24 @@ const AreaOfLawDetails = () => {
             {/* Headnote */}
             {selectedSubNugget.headnote && (
               <div className="mt-4">
-                <p className="text-sm text-gray-500 font-semibold">HEADNOTE:</p>
-                <p className="text-sm mt-1 italic">
-                  {selectedSubNugget.headnote}
-                </p>
+                <p className="text-sm text-gray-500 font-semibold">TITLE:</p>
+                <p className="text-sm mt-1 italic">{selectedSubNugget.title}</p>
               </div>
             )}
 
             {/* Source Quote */}
-            <div className="mt-4">
+            {/* <div className="mt-4">
               <p className="text-sm text-gray-500 font-semibold">
                 CASE CITATION:
               </p>
               <p className="text-sm mt-1 font-medium">
                 {selectedSubNugget.quote || selectedSubNugget.title}
               </p>
-            </div>
+            </div> */}
 
             {/* Nugget Title */}
             <h2 className="font-bold text-xl mt-4">
-              {selectedSubNugget.title}
+              {selectedSubNugget.headnote}
             </h2>
 
             {/* Description */}

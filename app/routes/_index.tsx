@@ -2,9 +2,28 @@ import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useState } from "react";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
-import { MdEmail, MdLock, MdPerson, MdPhone } from "react-icons/md";
+import {
+  MdEmail,
+  MdLock,
+  MdPerson,
+  MdPhone,
+  MdVisibility,
+  MdVisibilityOff,
+} from "react-icons/md";
 import axios from "axios";
 import logo from "~/images/logo-removebg-preview.png";
+
+interface APIError {
+  response?: {
+    data?: {
+      msg?: string;
+      error?: string;
+      message?: string;
+    };
+    status?: number;
+  };
+  message?: string;
+}
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,16 +33,38 @@ const Login = () => {
   const [phone, setPhone] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { baseUrl } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+
+  // Email validation
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = async () => {
-    if (
-      isSignUp &&
-      (!fullName || !phone || !email || !password || !confirmPassword)
-    ) {
+    // Form validation
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (isSignUp && (!fullName || !phone)) {
       setError("All fields are required for sign-up.");
+      return;
+    }
+
+    if (isSignUp && password.length < 8) {
+      setError("Password must be at least 8 characters long.");
       return;
     }
 
@@ -49,31 +90,55 @@ const Login = () => {
       });
 
       if (isSignUp) {
-        // Redirect to login page after sign-up
-        navigate("/");
+        // Redirect to login page after sign-up with a success message
+        setIsSignUp(false);
+        setFullName("");
+        setPhone("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        // Store success message in session storage to display after redirect
+        sessionStorage.setItem(
+          "signupSuccess",
+          "Account created successfully! Please log in."
+        );
+        // Could also use Remix's session mechanism for this
       } else {
         // Store token securely for login
         const token = response.data.access_token;
         localStorage.setItem("access_token", token);
-        console.log(token);
 
         // Redirect to dashboard after login
         navigate("/dashboard");
       }
     } catch (err) {
-      console.log(err);
+      const apiError = err as APIError;
+      console.error("Login error:", apiError);
 
-      setError(err.response?.msg || "An error occurred. Please try again.");
+      const errorMessage =
+        apiError.response?.data?.msg ||
+        apiError.response?.data?.error ||
+        apiError.response?.data?.message ||
+        apiError.message ||
+        "An error occurred. Please try again.";
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  // Check for success message from sign-up
+  const successMessage = sessionStorage.getItem("signupSuccess");
+  if (successMessage) {
+    // Clear the message once retrieved
+    sessionStorage.removeItem("signupSuccess");
+  }
+
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gray-100 p-4">
       <div className="flex flex-col md:flex-row bg-white rounded-2xl shadow-lg overflow-hidden w-full max-w-4xl">
         {/* Left Side */}
-
         <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
           <h2 className="text-2xl font-bold text-gray-900 font-montserrat">
             {isSignUp ? "Create an Account" : "Welcome Back"}
@@ -81,110 +146,210 @@ const Login = () => {
           <p className="text-gray-500 mb-6 font-nunito">
             {isSignUp
               ? "Please enter your details to sign up"
-              : "Please enter your details"}
+              : "Please enter your details to login"}
           </p>
-          <div className="flex mb-4">
+
+          {/* Toggle between Sign In and Sign Up */}
+          <div className="flex mb-6">
             <button
-              className={`font-montserrat flex-1 py-2 rounded-lg font-semibold ${
-                !isSignUp ? "bg-gray-200" : "text-gray-500"
+              className={`font-montserrat flex-1 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                !isSignUp
+                  ? "bg-primary text-white"
+                  : "text-gray-500 hover:bg-gray-100"
               }`}
               onClick={() => setIsSignUp(false)}
             >
               Sign In
             </button>
             <button
-              className={`flex-1 py-2 rounded-lg font-semibold font-montserrat ${
-                isSignUp ? "bg-gray-200" : "text-gray-500"
+              className={`flex-1 py-2 rounded-lg font-semibold font-montserrat transition-all duration-300 ${
+                isSignUp
+                  ? "bg-primary text-white"
+                  : "text-gray-500 hover:bg-gray-100"
               }`}
               onClick={() => setIsSignUp(true)}
             >
-              Signup
+              Sign Up
             </button>
           </div>
-          {isSignUp && (
-            <>
-              <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
-                <MdPerson className="text-gray-400 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  className="flex-1 outline-none text-nunito"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                />
-              </div>
-              <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
-                <MdPhone className="text-gray-400 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Phone Number"
-                  className="flex-1 outline-none text-nunito"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-            </>
-          )}
-          <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
-            <MdEmail className="text-gray-400 mr-2" />
-            <input
-              type="email"
-              placeholder="Email Address"
-              className="flex-1 outline-none text-nunito"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
-            <MdLock className="text-gray-400 mr-2" />
-            <input
-              type="password"
-              placeholder="Password"
-              className="flex-1 outline-none text-nunito"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          {isSignUp && (
-            <div className="relative flex items-center border rounded-lg px-3 py-2 mb-3">
-              <MdLock className="text-gray-400 mr-2" />
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                className="flex-1 outline-none text-nunito"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+
+          {/* Success message from sign-up */}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+              {successMessage}
             </div>
           )}
-          {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-          <button
-            className="mt-4 w-full py-2 bg-[#1B1464] font-montserrat text-white font-bold rounded-lg"
-            onClick={handleSubmit}
-            disabled={loading}
+
+          {/* Form Fields */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+            className="space-y-4"
           >
-            {loading ? "Processing..." : isSignUp ? "Sign Up" : "Continue"}
-          </button>
-          <p className="text-center text-gray-500 my-4 font-nunito">
-            Or Continue With
-          </p>
-          <div className="flex justify-center gap-4">
-            <button className="p-3 rounded-full bg-gray-200">
-              <FaGoogle className="text-gray-700" />
+            {isSignUp && (
+              <>
+                <div className="relative flex items-center border rounded-lg px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-300">
+                  <MdPerson className="text-gray-400 mr-2 text-lg" />
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    className="flex-1 outline-none font-nunito"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                  />
+                </div>
+                <div className="relative flex items-center border rounded-lg px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-300">
+                  <MdPhone className="text-gray-400 mr-2 text-lg" />
+                  <input
+                    type="tel"
+                    placeholder="Phone Number"
+                    className="flex-1 outline-none font-nunito"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+            <div className="relative flex items-center border rounded-lg px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-300">
+              <MdEmail className="text-gray-400 mr-2 text-lg" />
+              <input
+                type="email"
+                placeholder="Email Address"
+                className="flex-1 outline-none font-nunito"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="relative flex items-center border rounded-lg px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-300">
+              <MdLock className="text-gray-400 mr-2 text-lg" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="flex-1 outline-none font-nunito"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-gray-400 hover:text-primary transition-colors duration-300"
+              >
+                {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+              </button>
+            </div>
+            {isSignUp && (
+              <div className="relative flex items-center border rounded-lg px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all duration-300">
+                <MdLock className="text-gray-400 mr-2 text-lg" />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  className="flex-1 outline-none font-nunito"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="text-gray-400 hover:text-primary transition-colors duration-300"
+                >
+                  {showConfirmPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                </button>
+              </div>
+            )}
+
+            {/* Remember me and forgot password */}
+            {!isSignUp && (
+              <div className="flex justify-between items-center text-sm">
+                <label className="flex items-center text-gray-600">
+                  <input type="checkbox" className="mr-2" />
+                  Remember me
+                </label>
+                <a
+                  href="/forgot-password"
+                  className="text-primary hover:underline"
+                >
+                  Forgot password?
+                </a>
+              </div>
+            )}
+
+            {/* Error display */}
+            {error && (
+              <div className="text-red-500 text-sm p-2 bg-red-50 rounded-lg border border-red-100">
+                {error}
+              </div>
+            )}
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              className="mt-4 w-full py-2.5 bg-primary text-white font-montserrat font-bold rounded-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Processing...
+                </>
+              ) : isSignUp ? (
+                "Create Account"
+              ) : (
+                "Sign In"
+              )}
             </button>
-            <button className="p-3 rounded-full bg-black">
-              <FaApple className="text-white" />
-            </button>
-            <button className="p-3 rounded-full bg-blue-600">
-              <FaFacebook className="text-white" />
-            </button>
+          </form>
+
+          {/* Social login options */}
+          <div className="mt-6">
+            <p className="text-center text-gray-500 my-4 font-nunito relative before:content-[''] before:absolute before:left-0 before:top-1/2 before:h-px before:w-1/3 before:bg-gray-300 after:content-[''] after:absolute after:right-0 after:top-1/2 after:h-px after:w-1/3 after:bg-gray-300">
+              Or Continue With
+            </p>
+            <div className="flex justify-center gap-4">
+              <button className="p-3 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-300">
+                <FaGoogle className="text-gray-700" />
+              </button>
+              <button className="p-3 rounded-full bg-black hover:bg-gray-800 transition-colors duration-300">
+                <FaApple className="text-white" />
+              </button>
+              <button className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors duration-300">
+                <FaFacebook className="text-white" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Right Side */}
-        <div className="w-full md:w-1/2 bg-blue-100 flex flex-col items-center justify-center p-8">
-          <p className="text-2xl font-montserrat text-[#1B1464]">Lex Nuggets</p>
-          <img src={logo} alt="Secure Login" className="w-3/4" />
+        <div className="w-full md:w-1/2 bg-gradient-to-br from-blue-100 to-blue-50 flex flex-col items-center justify-center p-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-montserrat font-bold text-primary mb-4">
+              Lex Nuggets
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Access legal principles at your fingertips
+            </p>
+          </div>
+          <img src={logo} alt="Lex Nuggets" className="w-3/4 drop-shadow-lg" />
         </div>
       </div>
     </div>
@@ -195,6 +360,5 @@ export default Login;
 
 export const loader: LoaderFunction = async () => {
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
-
   return json({ baseUrl });
 };
