@@ -253,7 +253,7 @@ const Profile = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="text-sm text-gray-500">
-                            {nugget.citation_no || nugget.dl_citation_no}
+                            {nugget.dl_citation_no || nugget.citation_no}
                             {nugget.year && ` (${nugget.year})`}
                           </p>
                           <h3 className="font-semibold line-clamp-2 mt-1">
@@ -276,7 +276,9 @@ const Profile = () => {
                         <Button
                           size="sm"
                           color="primary"
-                          onClick={() => navigate(`/nuggets/${nugget.id}`)}
+                          onClick={() =>
+                            navigate(`/nuggets/details/${nugget.id}`)
+                          }
                         >
                           View Details
                         </Button>
