@@ -118,11 +118,6 @@ const Nuggets = () => {
           pathname
         ) && (
           <div>
-            <p className="font-nunito">
-              Quickly and easily access catalogues of legal principles at play
-              in any case
-            </p>
-
             <div className="flex gap-4 p-2 rounded-xl shadow-sm max-w-max bg-white">
               <Button
                 size="sm"
