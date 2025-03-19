@@ -1,5 +1,5 @@
 import { Chip, Button } from "@nextui-org/react";
-import { Link } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { MdBookmarkAdd, MdBookmarkRemove } from "react-icons/md";
 import axios from "axios";
@@ -61,6 +61,7 @@ const NuggetDrawer = ({
   onBookmarkChange,
   baseUrl,
 }: NuggetDrawerProps) => {
+  const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [isBookmarking, setIsBookmarking] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -121,6 +122,16 @@ const NuggetDrawer = ({
     } finally {
       setIsBookmarking(false);
     }
+  };
+
+  const handleKeywordClick = (keyword: string) => {
+    onClose(); // Close the drawer first
+    navigate(`/search?q=${encodeURIComponent(keyword)}`);
+  };
+
+  const handleAreaOfLawClick = (areaId: number) => {
+    onClose(); // Close the drawer first
+    navigate(`/nuggets/${areaId}`);
   };
 
   return (
@@ -191,7 +202,10 @@ const NuggetDrawer = ({
         {/* Title with Link */}
         <div className="mt-2">
           <Link
-            to={`/nuggets/${nugget.id}`}
+            to={`https://www.dennislawgh.com/case-preview?dl_citation_no=${
+              nugget.dl_citation_no || nugget.citation_no
+            }`}
+            target="_blank"
             className="text-sm font-medium text-blue-600 hover:underline"
           >
             {nugget.title}
@@ -211,7 +225,7 @@ const NuggetDrawer = ({
         {nugget.judge && (
           <div className="mt-3">
             <Link
-              to={`/nuggets/${nugget.id}`}
+              to={`/nuggets/judges/${nugget.judge.id}`}
               className="font-semibold hover:underline"
             >
               - {nugget.judge.fullname} {nugget.judge_title}
@@ -248,7 +262,8 @@ const NuggetDrawer = ({
                 size="sm"
                 variant="flat"
                 color="secondary"
-                className="bg-gray-200 text-gray-700"
+                className="bg-gray-200 text-gray-700 cursor-pointer hover:bg-gray-300 transition-colors"
+                onClick={() => handleKeywordClick(keywordObj.keyword.value)}
               >
                 {keywordObj.keyword.value}
               </Chip>
@@ -268,7 +283,8 @@ const NuggetDrawer = ({
                 size="sm"
                 variant="flat"
                 color="primary"
-                className="bg-primary/10 text-primary"
+                className="bg-primary/10 text-primary cursor-pointer hover:bg-primary/20 transition-colors"
+                onClick={() => handleAreaOfLawClick(areaObj.area_of_law.id)}
               >
                 {areaObj.area_of_law.display_name}
               </Chip>

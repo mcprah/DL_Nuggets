@@ -20,14 +20,14 @@ export default function NuggetCard({
       } ${className}`}
       onClick={() => onClick(nugget)}
     >
-      <div className="flex justify-between items-start mb-2">
+      {/* <div className="flex justify-between items-start mb-2">
         <span className="text-xs bg-blue-50 text-blue-800 px-2 py-1 rounded-full">
           {nugget.status || "Published"}
         </span>
         <span className="text-xs bg-gray-200 px-2 py-1 rounded-full whitespace-nowrap">
           {nugget.year}
         </span>
-      </div>
+      </div> */}
 
       <p className="font-semibold line-clamp-3">
         {nugget.headnote || nugget.title}
@@ -38,12 +38,12 @@ export default function NuggetCard({
 
       <div className="mt-2 flex justify-between items-center">
         <span className="text-xs text-gray-500 truncate max-w-[70%]">
-          {nugget.citation_no || nugget.dl_citation_no || "No citation"}
+          {nugget.dl_citation_no || nugget.citation_no || "No citation"}
         </span>
 
         {nugget.judge && (
           <span className="text-xs text-gray-500 italic">
-            {nugget.judge.fullname}
+            {nugget.judge.fullname} {nugget.judge_title}
           </span>
         )}
       </div>

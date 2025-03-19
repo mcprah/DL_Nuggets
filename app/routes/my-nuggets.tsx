@@ -93,8 +93,6 @@ export const clientLoader = async ({
       }
     );
 
-    console.log(response.data);
-
     return {
       nuggets: response.data?.data || [],
       totalPages: response.data?.meta?.last_page || 1,
@@ -251,8 +249,6 @@ export default function MyNuggets() {
 
   // Open edit modal with nugget data
   const openEditModal = (nugget: Nugget) => {
-    console.log(nugget);
-
     setFormData({
       title: nugget.title || "",
       principle: nugget.principle || "",

@@ -99,13 +99,10 @@ const Nuggets = () => {
   };
   const location = useLocation();
   const pathname = location.pathname;
-  console.log(pathname);
 
   // Get data based on selected category
   const getCategoryData = () => {
     const data = categoryData[selectedCategory];
-    console.log(data?.data);
-
     return data?.data || [];
   };
 

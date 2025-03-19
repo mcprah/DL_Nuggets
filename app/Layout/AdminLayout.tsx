@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, NavLink, useLocation, useNavigation } from "@remix-run/react";
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+  useNavigation,
+} from "@remix-run/react";
 import {
   Button,
   User,
@@ -72,7 +78,19 @@ const navItems: NavItem[] = [
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Get initial state from localStorage or default to true (collapsed)
+  const getInitialSidebarState = () => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebarCollapsed");
+      return saved !== null ? saved === "true" : true;
+    }
+    return true;
+  };
+
+  // Initialize with the correct initial state
+  const [isCollapsed, setIsCollapsed] = useState(() =>
+    getInitialSidebarState()
+  );
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,15 +100,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
   const navigation = useNavigation();
+  const navigate = useNavigate();
   const isLoading = navigation.state === "loading";
 
+  // Effect for screen size checking
   useEffect(() => {
-    // Check if there's a saved sidebar state in localStorage
-    const savedSidebarState = localStorage.getItem("sidebarCollapsed");
-    if (savedSidebarState !== null) {
-      setIsCollapsed(savedSidebarState === "true");
-    }
-
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
@@ -106,8 +120,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   // Save sidebar state to localStorage when it changes
   useEffect(() => {
-    if (!isMobile) {
-      localStorage.setItem("sidebarCollapsed", isCollapsed.toString());
+    if (!isMobile && typeof window !== "undefined") {
+      localStorage.setItem("sidebarCollapsed", String(isCollapsed));
     }
   }, [isCollapsed, isMobile]);
 
@@ -144,6 +158,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       setSearchResults([]);
     }
     setLoading(false);
+  };
+
+  const handleSearchClick = () => {
+    navigate("/search");
   };
 
   const handleLogout = () => {
@@ -253,7 +271,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <Button
                 isIconOnly
                 variant="light"
-                onClick={() => setIsSearchOpen(true)}
+                onClick={handleSearchClick}
                 className="relative"
               >
                 <MdSearch className="text-2xl text-gray-600" />
