@@ -101,9 +101,9 @@ const NuggetDetails = () => {
           >
             <MdArrowBack className="text-2xl" />
           </button>
-          <h1 className="font-montserrat font-bold text-xl md:text-2xl">
+          {/* <h1 className="font-montserrat font-bold text-xl md:text-2xl">
             {nugget?.headnote || "Nugget Details"}
-          </h1>
+          </h1> */}
         </div>
 
         {/* Nugget Detail Card */}
