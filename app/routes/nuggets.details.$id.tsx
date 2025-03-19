@@ -195,7 +195,7 @@ const NuggetDetails = () => {
           )}
 
           {/* Additional Actions */}
-          <div className="mt-8 flex flex-wrap gap-4">
+          {/* <div className="mt-8 flex flex-wrap gap-4">
             <button
               className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
               onClick={() => window.print()}
@@ -226,16 +226,16 @@ const NuggetDetails = () => {
                 More from {nugget?.courts?.split(",")[0]}
               </Link>
             )}
-          </div>
+          </div> */}
         </div>
 
         {/* Related Nuggets Section (Placeholder) */}
-        <div className="bg-white rounded-xl shadow-sm border border-black/10 p-6">
+        {/* <div className="bg-white rounded-xl shadow-sm border border-black/10 p-6">
           <h3 className="text-lg font-semibold mb-4">Related Nuggets</h3>
           <p className="text-gray-500">
             Related nuggets will be displayed here in future updates.
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* Nugget Drawer */}
