@@ -1,3 +1,4 @@
+import { useNavigate } from "@remix-run/react";
 import { Nugget } from "./NuggetDrawer";
 
 interface NuggetCardProps {
@@ -5,6 +6,7 @@ interface NuggetCardProps {
   isSelected?: boolean;
   onClick: (nugget: Nugget) => void;
   className?: string;
+  detailsPath?: string | null;
 }
 
 export default function NuggetCard({
@@ -12,13 +14,18 @@ export default function NuggetCard({
   isSelected = false,
   onClick,
   className = "",
+  detailsPath = null,
 }: NuggetCardProps) {
+  const navigate = useNavigate();
+
   return (
     <div
       className={`p-4 border rounded-lg bg-gray-50 shadow-sm cursor-pointer transition-all duration-300 hover:shadow-md ${
         isSelected ? "border-primary" : "hover:bg-gray-100"
       } ${className}`}
-      onClick={() => onClick(nugget)}
+      onClick={() => {
+        detailsPath ? navigate(detailsPath) : onClick(nugget);
+      }}
     >
       {/* <div className="flex justify-between items-start mb-2">
         <span className="text-xs bg-blue-50 text-blue-800 px-2 py-1 rounded-full">
