@@ -123,9 +123,9 @@ const NuggetDetails = () => {
               <div>
                 <span className="font-semibold text-gray-700">Citation:</span>{" "}
                 <span>
-                  {nugget?.case_citation ||
-                    nugget?.citation_no ||
-                    nugget?.dl_citation_no}
+                  {nugget?.dl_citation_no ||
+                    nugget?.case_citation ||
+                    nugget?.citation_no}
                 </span>
               </div>
               <div>
