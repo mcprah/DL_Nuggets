@@ -99,7 +99,7 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // Allows cross-origin cookies (CORS fix)
+        // withCredentials: false, // Allows cross-origin cookies (CORS fix)
       });
 
       if (isSignUp) {

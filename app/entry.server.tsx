@@ -95,6 +95,17 @@ function handleBrowserRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
+  // Add CORS headers to all responses
+  responseHeaders.set("Access-Control-Allow-Origin", "*");
+  responseHeaders.set(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS"
+  );
+  responseHeaders.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type,Authorization"
+  );
+
   return new Promise((resolve, reject) => {
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
