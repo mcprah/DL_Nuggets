@@ -66,7 +66,7 @@ const Judges = () => {
           <Link
             key={judge.id}
             to={`/nuggets/judges/${judge.id}`}
-            className="bg-white border border-black/10 flex justify-between p-3 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition-all duration-300 h-24"
+            className="bg-white border border-black/10 flex justify-between p-3 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition-all duration-300"
           >
             <p className="text-black">{judge.fullname}</p>
             <MdArrowRight className="text-xl text-gray-700" />
