@@ -176,7 +176,6 @@ const Login = () => {
                   : "text-gray-500 hover:bg-gray-100"
               }`} to="https://www.dennislawgh.com/register"> <button
 
-              onClick={() => setIsSignUp(true)}
             >
               Sign Up
               </button></Link>
@@ -325,7 +324,7 @@ const Login = () => {
               ) : isSignUp ? (
                 "Create Account"
               ) : (
-                "Sign In"
+                    "Login In"
               )}
             </button>
           </form>
