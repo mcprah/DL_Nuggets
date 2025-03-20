@@ -371,7 +371,7 @@ const Search = () => {
                 variant="light"
                 color="danger"
                 startContent={<MdFilterListOff />}
-                onClick={handleClearFilters}
+                onPress={handleClearFilters}
               >
                 Clear Filters
               </Button>
@@ -448,7 +448,7 @@ const Search = () => {
           <Button
             className="w-full mt-4"
             color="secondary"
-            onClick={() => handleSearch(searchQuery, 1)}
+            onPress={() => handleSearch(searchQuery, 1)}
           >
             Apply Filters
           </Button>
@@ -597,11 +597,12 @@ const Search = () => {
     <AdminLayout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-4">Search Dennislaw</h1>
+          {/* <h1 className="text-2xl font-bold mb-4">Search Dennislaw</h1> */}
 
           <div className="flex gap-2 mb-4">
             <Input
               type="text"
+              size="lg"
               placeholder="Search for cases, principles, keywords..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -623,17 +624,19 @@ const Search = () => {
               className="flex-1"
             />
             <Button
+              size="lg"
               color="primary"
               isLoading={loading}
-              onClick={() => handleSearch(searchQuery, 1)}
+              onPress={() => handleSearch(searchQuery, 1)}
             >
               Search
             </Button>
             <Button
               isIconOnly
+               size="lg"
               variant={hasActiveFilters ? "solid" : "flat"}
               color={hasActiveFilters ? "secondary" : "default"}
-              onClick={() => setShowFilters(!showFilters)}
+              onPress={() => setShowFilters(!showFilters)}
             >
               <MdFilterAlt />
             </Button>
@@ -697,7 +700,7 @@ const Search = () => {
                 size="sm"
                 variant="light"
                 color="danger"
-                onClick={handleClearRecentSearches}
+                onPress={handleClearRecentSearches}
               >
                 Clear
               </Button>
