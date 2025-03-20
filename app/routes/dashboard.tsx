@@ -200,33 +200,31 @@ const Dashboard = () => {
               isIndeterminate={isLoading}
             />
             <div className="mt-2 text-right flex justify-between">
-              <div className="">
-                <div className="flex gap-2 mb-2 flex-wrap">
-                  <Button
-                    size="sm"
-                    variant={timeFrame === 7 ? "solid" : "flat"}
-                    color="primary"
-                    onPress={() => changeTimeFrame(7)}
-                  >
-                    7 Days
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={timeFrame === 30 ? "solid" : "flat"}
-                    color="primary"
-                    onPress={() => changeTimeFrame(30)}
-                  >
-                    30 Days
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={timeFrame === 90 ? "solid" : "flat"}
-                    color="primary"
-                    onPress={() => changeTimeFrame(90)}
-                  >
-                    90 Days
-                  </Button>
-                </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  variant={timeFrame === 7 ? "solid" : "flat"}
+                  color="primary"
+                  onPress={() => changeTimeFrame(7)}
+                >
+                  7 Days
+                </Button>
+                <Button
+                  size="sm"
+                  variant={timeFrame === 30 ? "solid" : "flat"}
+                  color="primary"
+                  onPress={() => changeTimeFrame(30)}
+                >
+                  30 Days
+                </Button>
+                <Button
+                  size="sm"
+                  variant={timeFrame === 90 ? "solid" : "flat"}
+                  color="primary"
+                  onPress={() => changeTimeFrame(90)}
+                >
+                  90 Days
+                </Button>
               </div>
 
               <Button
@@ -260,7 +258,7 @@ const Dashboard = () => {
               value={stats.savedNuggets}
               maxValue={20}
               color="secondary"
-              className="mt-4"
+              className="mt-2"
               isIndeterminate={isLoading}
             />
             <div className="mt-2 text-right">

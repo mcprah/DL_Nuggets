@@ -29,6 +29,9 @@ interface PaginatedResponse {
 interface LoaderData {
   judges: PaginatedResponse;
   baseUrl: string;
+  currentPage: number;
+  totalPages: number;
+  perPage: number;
 }
 
 export const meta: MetaFunction = () => {
