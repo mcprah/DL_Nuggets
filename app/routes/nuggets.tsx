@@ -127,7 +127,7 @@ const Nuggets = () => {
                             }
                         `}
               >
-                Area of Law
+                Area of Lawsss
               </Button>
               <Button
                 // size="sm"
