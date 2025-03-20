@@ -41,7 +41,6 @@ const Dashboard = () => {
   const [userName, setUserName] = useState("User");
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalNuggets: 0,
     recentViews: 0,
     savedNuggets: 0,
   });
@@ -52,7 +51,6 @@ const Dashboard = () => {
       setIsLoading(false);
       // Mock data - in a real app, these would come from an API
       setStats({
-        totalNuggets: 1458,
         recentViews: 24,
         savedNuggets: 8,
       });
@@ -86,66 +84,8 @@ const Dashboard = () => {
   return (
     <AdminLayout>
       <div className="w-full">
-        {/* Welcome Section
-        <section className="mb-8">
-          <div className="bg-gradient-to-r from-primary to-blue-700 rounded-xl p-6 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-pattern opacity-10"></div>
-            <div className="relative z-10">
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">
-                Welcome back, {userName}!
-              </h1>
-              <p className="opacity-90 max-w-lg">
-                Explore legal principles, search cases, and build your legal
-                knowledge with Lex Nuggets.
-              </p>
-              <div className="flex gap-3 mt-4">
-                <Button
-                  className="bg-white text-primary font-semibold hover:bg-opacity-90"
-                  onPress={() => navigate("/nuggets")}
-                >
-                  Explore Nuggets
-                </Button>
-                <Button
-                  className="bg-transparent border border-white text-white font-semibold hover:bg-white/10"
-                  onPress={() => navigate("/profile")}
-                >
-                  View Profile
-                </Button>
-              </div>
-            </div>
-
-            <div className="absolute right-4 bottom-4 md:right-10 md:bottom-4 w-24 h-24 md:w-32 md:h-32 bg-white/10 rounded-full blur-xl"></div>
-            <div className="absolute right-20 top-10 w-16 h-16 bg-blue-400/20 rounded-full blur-lg"></div>
-          </div>
-        </section> */}
-
         {/* Statistics Row */}
         <section className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100 mr-4">
-                <MdLibraryBooks className="text-blue-600 text-xl" />
-              </div>
-              <div>
-                <p className="text-gray-500 text-sm">Total Nuggets</p>
-                {isLoading ? (
-                  <div className="h-6 w-16 bg-gray-200 animate-pulse rounded"></div>
-                ) : (
-                  <p className="font-bold text-xl">
-                    {stats.totalNuggets.toLocaleString()}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Progress
-              size="sm"
-              value={100}
-              color="primary"
-              className="mt-4"
-              isIndeterminate={isLoading}
-            />
-          </Card> */}
-
           <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-green-100 mr-4">
@@ -199,9 +139,7 @@ const Dashboard = () => {
           <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
             <div className="flex items-center gap-2 mb-4">
               <MdTrendingUp className="text-primary text-xl" />
-              <h2 className="text-xl font-bold text-gray-800">
-                Trending 
-              </h2>
+              <h2 className="text-xl font-bold text-gray-800">Trending</h2>
             </div>
 
             <div className="flex flex-wrap gap-2">
