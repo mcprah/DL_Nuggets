@@ -31,19 +31,34 @@ interface LoaderData {
   entityType: string;
 }
 
-export const loader: LoaderFunction = async ({ params }) => {
+// Export function to fetch loader data
+export async function getLoaderData(params: any, request?: Request) {
   const { entity } = params;
 
   // Handle invalid entity type
-  if (!entity || !["courts", "judges"].includes(entity)) {
+  if (!entity || !["courts", "judges", "area-of-law"].includes(entity)) {
     throw new Error(`Invalid entity type: ${entity}`);
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
 
+  // Handle pagination if request is provided
+  let page = "1";
+  if (request) {
+    const url = new URL(request.url);
+    const searchParams = new URLSearchParams(url.search);
+    page = searchParams.get("page") || "1";
+  }
+
   try {
     // Determine the API endpoint based on entity type
-    const endpoint = `${baseUrl}/${entity}`;
+    let endpoint;
+    if (entity === "area-of-law") {
+      endpoint = `${baseUrl}/area-of-law?page=${page}`;
+    } else {
+      endpoint = `${baseUrl}/${entity}?page=${page}`;
+    }
+
     const response = await axios.get(endpoint);
 
     return {
@@ -54,6 +69,10 @@ export const loader: LoaderFunction = async ({ params }) => {
   } catch (error) {
     throw new Error(`Failed to fetch ${entity}`);
   }
+}
+
+export const loader: LoaderFunction = async ({ params, request }) => {
+  return getLoaderData(params, request);
 };
 
 const EntityContainer = () => {
