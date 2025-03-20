@@ -200,17 +200,19 @@ const EntityDetails = () => {
           )}
         </div>
 
-        <div className="flex justify-center mt-6">
-          <Pagination
-            color="primary"
-            page={currentPage}
-            total={Math.ceil(totalPages / perPage)}
-            showControls
-            onChange={(page) =>
-              navigate(`/nuggets/${entity}/${id}?page=${page}`)
-            }
-          />
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6">
+            <Pagination
+              color="primary"
+              page={currentPage}
+              total={Math.ceil(totalPages / perPage)}
+              showControls
+              onChange={(page) =>
+                navigate(`/nuggets/${entity}/${id}?page=${page}`)
+              }
+            />
+          </div>
+        )}
       </div>
 
       {/* Use the NuggetDrawer component */}

@@ -93,15 +93,17 @@ const AreaOfLaw = () => {
         ))}
       </div>
 
-      <div className="flex justify-center mt-6">
-        <Pagination
-          color="primary"
-          page={currentPage}
-          total={Math.ceil(totalPages / perPage)}
-          showControls
-          onChange={(page) => navigate(`/nuggets?page=${page}`)}
-        />
-      </div>
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            color="primary"
+            page={currentPage}
+            total={Math.ceil(totalPages / perPage)}
+            showControls
+            onChange={(page) => navigate(`/nuggets?page=${page}`)}
+          />
+        </div>
+      )}
     </div>
   );
 };
