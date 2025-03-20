@@ -1,5 +1,5 @@
 import { json, LoaderFunction } from "@remix-run/node";
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { FaGoogle, FaApple, FaFacebook } from "react-icons/fa";
 import {
@@ -155,13 +155,11 @@ const Login = () => {
             {isSignUp ? "Create an Account" : "Welcome Back"}
           </h2>
           <p className="text-gray-500 mb-6 font-nunito">
-            {isSignUp
-              ? "Please enter your details to sign up"
-              : "Please enter your details to login"}
+            Use your Dennislaw credentials to access your account. Need an account? <Link to="https://www.dennislawgh.com/register "><span className="text-primary">Click Sign Up</span></Link>.
           </p>
 
           {/* Toggle between Sign In and Sign Up */}
-          <div className="flex mb-6">
+          <div className="flex gap-4 mb-6">
             <button
               className={`font-montserrat flex-1 py-2 rounded-lg font-semibold transition-all duration-300 ${
                 !isSignUp
@@ -172,16 +170,17 @@ const Login = () => {
             >
               Sign In
             </button>
-            <button
-              className={`flex-1 py-2 rounded-lg font-semibold font-montserrat transition-all duration-300 ${
+            <Link className={`flex-1 py-2 rounded-lg text-center font-semibold font-montserrat transition-all duration-300 ${
                 isSignUp
                   ? "bg-primary text-white"
                   : "text-gray-500 hover:bg-gray-100"
-              }`}
+              }`} to="https://www.dennislawgh.com/register"> <button
+
               onClick={() => setIsSignUp(true)}
             >
               Sign Up
-            </button>
+              </button></Link>
+
           </div>
 
           {/* Success message from sign-up */}
