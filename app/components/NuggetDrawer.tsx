@@ -174,77 +174,62 @@ const NuggetDrawer = ({
           </div>
         )}
 
-        {/* Case Information */}
-        <div className="mt-2">
-          <span className="bg-blue-50 text-blue-800 px-2 py-1 text-xs rounded-full">
-            {nugget.status || "Published"}
-          </span>
-        </div>
-
-        {/* Citation */}
-        <div className="mt-4 flex justify-between items-center">
-          <span className="text-sm font-semibold">
-            {nugget.citation_no || nugget.dl_citation_no}
-          </span>
-          <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-            {nugget.year}
-          </span>
-        </div>
-
-        {/* Quoted From Section */}
-        <div className="mt-4">
-          <p className="text-gray-700 font-semibold">Quoted from</p>
-          <p className="text-gray-500 text-xs italic">
-            Tap title below for full case
-          </p>
-        </div>
-
-        {/* Title with Link */}
-        <div className="mt-2">
-          <Link
-            to={`https://www.dennislawgh.com/case-preview?dl_citation_no=${
-              nugget.dl_citation_no || nugget.citation_no
-            }`}
-            target="_blank"
-            className="text-sm font-medium text-blue-600 hover:underline"
-          >
-            {nugget.title}
-          </Link>
-
-          <div className="flex items-center text-sm text-gray-500 mt-1">
-            <span className="font-medium">
-              {nugget.citation_no || nugget.dl_citation_no}
-            </span>
-            {nugget.page_number && (
-              <span className="ml-2">at page {nugget.page_number}</span>
-            )}
-          </div>
-        </div>
-
-        {/* Judge Information */}
-        {nugget.judge && (
-          <div className="mt-3">
-            <Link
-              to={`/nuggets/judges/${nugget.judge.id}`}
-              className="font-semibold hover:underline"
-            >
-              - {nugget.judge.fullname} {nugget.judge_title}
-            </Link>
-          </div>
-        )}
-
-        <div className="border-b border-gray-300 my-4"></div>
-
-        {/* Headnote */}
-        <h2 className="font-bold text-xl">{nugget.headnote || nugget.title}</h2>
-
         {/* Quote */}
         {nugget.quote && (
           <div className="mt-4 bg-gray-50 p-3 rounded-lg border-l-4 border-gray-300">
-            <p className="text-sm text-gray-500 font-semibold mb-1">QUOTE:</p>
-            <p className="text-sm italic text-gray-700">{nugget.quote}</p>
+            {/* Quoted From Section */}
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-gray-700 font-semibold">Quoted from</p>
+                <p className="text-gray-500 text-xs italic">
+                  Tap title below for full case
+                </p>
+              </div>
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                {nugget.year}
+              </span>
+            </div>
+
+            {/* Title with Link */}
+            <div className="mt-2">
+              <Link
+                to={`https://www.dennislawgh.com/case-preview?dl_citation_no=${
+                  nugget.dl_citation_no || nugget.citation_no
+                }`}
+                target="_blank"
+                className="text-sm font-medium text-blue-600 hover:underline"
+              >
+                {nugget.title}
+              </Link>
+
+              <div className="flex items-center text-sm text-gray-500 mt-1">
+                <span className="font-medium">
+                  {nugget.citation_no || nugget.dl_citation_no}
+                </span>
+                {nugget.page_number && (
+                  <span className="ml-2">at page {nugget.page_number}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Judge Information */}
+            {nugget.judge && (
+              <div className="mt-3">
+                <Link
+                  to={`/nuggets/judges/${nugget.judge.id}`}
+                  className="font-semibold hover:underline"
+                >
+                  - {nugget.judge.fullname} {nugget.judge_title}
+                </Link>
+              </div>
+            )}
           </div>
         )}
+
+        {/* Headnote */}
+        <h2 className="font-bold text-xl mt-4">
+          {nugget.headnote || nugget.title}
+        </h2>
 
         {/* Principle */}
         <div className="mt-4">

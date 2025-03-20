@@ -775,6 +775,7 @@ const Search = () => {
                   nugget={nugget}
                   onClick={handleViewNugget}
                   isSelected={false}
+                  detailsPath={`/nuggets/details/${nugget.id}`}
                 />
               ))}
             </div>
