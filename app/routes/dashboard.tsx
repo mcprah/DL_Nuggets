@@ -194,6 +194,29 @@ const Dashboard = () => {
             />
           </Card>
         </section>
+        {/* Trending Section */}
+        <section className="mb-8">
+          <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+            <div className="flex items-center gap-2 mb-4">
+              <MdTrendingUp className="text-primary text-xl" />
+              <h2 className="text-xl font-bold text-gray-800">
+                Trending 
+              </h2>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {trendingKeywords.map((keyword, index) => (
+                <Button
+                  key={index}
+                  className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-100"
+                  onPress={() => navigate(`/search?q=${keyword}`)}
+                >
+                  {keyword}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* Main Categories Section */}
         <section className="mb-8">
@@ -278,30 +301,6 @@ const Dashboard = () => {
                 </Button>
               </div>
             </Card>
-          </div>
-        </section>
-
-        {/* Trending Section */}
-        <section className="mb-8">
-          <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-            <div className="flex items-center gap-2 mb-4">
-              <MdTrendingUp className="text-primary text-xl" />
-              <h2 className="text-xl font-bold text-gray-800">
-                Trending Topics
-              </h2>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {trendingKeywords.map((keyword, index) => (
-                <Button
-                  key={index}
-                  className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-100"
-                  onPress={() => navigate(`/nuggets?search=${keyword}`)}
-                >
-                  {keyword}
-                </Button>
-              ))}
-            </div>
           </div>
         </section>
 
