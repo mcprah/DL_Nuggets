@@ -8,10 +8,12 @@ import {
   MdLibraryBooks,
   MdOutlineGavel,
   MdPerson,
+  MdCalendarToday,
 } from "react-icons/md";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate, useLoaderData } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { MetaFunction } from "@remix-run/node";
+import { MetaFunction, LoaderFunction, json } from "@remix-run/node";
+import axios from "axios";
 import backgroundImage from "~/images/Library-Postcard-004_2.webp";
 
 export const meta: MetaFunction = () => {
@@ -36,36 +38,106 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+// Server loader to provide base URL
+export const loader: LoaderFunction = async () => {
+  return json({
+    baseUrl: process.env.NEXT_PUBLIC_DL_LIVE_URL,
+  });
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { baseUrl } = useLoaderData<{ baseUrl: string }>();
   const [userName, setUserName] = useState("User");
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [timeFrame, setTimeFrame] = useState(30); // Default 30 days
   const [stats, setStats] = useState({
     recentViews: 0,
     savedNuggets: 0,
+    timeFrameLabel: "30 days",
   });
 
   useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      // Mock data - in a real app, these would come from an API
-      setStats({
-        recentViews: 24,
-        savedNuggets: 8,
-      });
+    const fetchData = async () => {
+      setIsLoading(true);
 
-      // Get user name from localStorage if available
-      if (typeof window !== "undefined") {
-        const storedName = window.localStorage.getItem("user_name");
-        if (storedName) {
-          setUserName(storedName);
-        }
+      // Get token from localStorage
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
       }
-    }, 1000);
 
-    return () => clearTimeout(timer);
-  }, []);
+      setIsAuthenticated(true);
+
+      try {
+        // Fetch user data
+        const userResponse = await axios.get(`${baseUrl}/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (userResponse.data && userResponse.data.data) {
+          const userData = userResponse.data.data;
+          setUserName(userData.name || userData.fullname || "User");
+          // Store user name in localStorage for other components
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(
+              "user_name",
+              userData.name || userData.fullname || "User"
+            );
+          }
+        }
+
+        // Fetch recently viewed count with time frame
+        const recentViewsResponse = await axios.get(
+          `${baseUrl}/recently-viewed-count?days=${timeFrame}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        // Fetch bookmarked nuggets count
+        const bookmarksResponse = await axios.get(
+          `${baseUrl}/bookmarked-nuggets?page=1&limit=1`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setStats({
+          recentViews: recentViewsResponse.data?.data?.count || 0,
+          savedNuggets: bookmarksResponse.data?.data?.length || 0,
+          timeFrameLabel:
+            recentViewsResponse.data?.data?.time_frame || `${timeFrame} days`,
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        // Set default values in case of error
+        setStats({
+          recentViews: 0,
+          savedNuggets: 0,
+          timeFrameLabel: `${timeFrame} days`,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [baseUrl, timeFrame]);
+
+  // Function to change time frame
+  const changeTimeFrame = (days: number) => {
+    setTimeFrame(days);
+  };
 
   const goToCategory = (category: string) => {
     navigate(`/nuggets?category=${category}`);
@@ -84,30 +156,89 @@ const Dashboard = () => {
   return (
     <AdminLayout>
       <div className="w-full">
+        {/* <section className="mb-8">
+          <div className="bg-gradient-to-r from-primary to-secondary p-6 rounded-xl text-white">
+            <h1 className="text-2xl font-bold">Welcome, {userName}!</h1>
+            <p className="mt-2 opacity-90">
+              Discover legal nuggets, bookmark important principles, and enhance
+              your legal knowledge.
+            </p>
+          </div>
+        </section> */}
+
         {/* Statistics Row */}
         <section className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100 mr-4">
-                <MdSearch className="text-green-600 text-xl" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-green-100 mr-4">
+                  <MdSearch className="text-green-600 text-xl" />
+                </div>
+                <div>
+                  <p className="text-gray-500 text-sm">Recent Views</p>
+                  {isLoading ? (
+                    <div className="h-6 w-16 bg-gray-200 animate-pulse rounded"></div>
+                  ) : (
+                    <p className="font-bold text-xl">{stats.recentViews}</p>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className="text-gray-500 text-sm">Recent Views</p>
-                {isLoading ? (
-                  <div className="h-6 w-16 bg-gray-200 animate-pulse rounded"></div>
-                ) : (
-                  <p className="font-bold text-xl">{stats.recentViews}</p>
-                )}
+              <div className="flex items-center">
+                <MdCalendarToday className="text-gray-400 mr-2" />
+                <span className="text-xs text-gray-500">
+                  {stats.timeFrameLabel}
+                </span>
               </div>
             </div>
+
             <Progress
               size="sm"
               value={stats.recentViews}
               maxValue={100}
               color="success"
-              className="mt-4"
+              className="mt-2"
               isIndeterminate={isLoading}
             />
+            <div className="mt-2 text-right flex justify-between">
+              <div className="">
+                <div className="flex gap-2 mb-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant={timeFrame === 7 ? "solid" : "flat"}
+                    color="primary"
+                    onPress={() => changeTimeFrame(7)}
+                  >
+                    7 Days
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={timeFrame === 30 ? "solid" : "flat"}
+                    color="primary"
+                    onPress={() => changeTimeFrame(30)}
+                  >
+                    30 Days
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={timeFrame === 90 ? "solid" : "flat"}
+                    color="primary"
+                    onPress={() => changeTimeFrame(90)}
+                  >
+                    90 Days
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                variant="light"
+                color="success"
+                size="sm"
+                endContent={<MdArrowRight />}
+                onPress={() => navigate(`/recently-viewed?days=${timeFrame}`)}
+              >
+                View History
+              </Button>
+            </div>
           </Card>
 
           <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
@@ -132,8 +263,20 @@ const Dashboard = () => {
               className="mt-4"
               isIndeterminate={isLoading}
             />
+            <div className="mt-2 text-right">
+              <Button
+                variant="light"
+                color="secondary"
+                size="sm"
+                endContent={<MdArrowRight />}
+                onPress={() => navigate("/profile")}
+              >
+                View Saved
+              </Button>
+            </div>
           </Card>
         </section>
+
         {/* Trending Section */}
         <section className="mb-8">
           <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
