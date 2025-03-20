@@ -52,7 +52,7 @@ interface LoaderData {
 export const meta: MetaFunction = ({ data }) => {
   const query = (data as LoaderData)?.initialQuery || "";
   return [
-    { title: query ? `Search: ${query} | Dennis Law` : "Search | Dennis Law" },
+    { title: query ? `Search: ${query} | Dennislaw` : "Search | Dennislaw" },
     {
       name: "description",
       content:
@@ -60,7 +60,7 @@ export const meta: MetaFunction = ({ data }) => {
     },
     {
       name: "og:title",
-      content: query ? `Search: ${query} | Dennis Law` : "Search | Dennis Law",
+      content: query ? `Search: ${query} | Dennislaw` : "Search | Dennislaw",
     },
     {
       name: "og:description",
@@ -597,7 +597,7 @@ const Search = () => {
     <AdminLayout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-4">Search Dennis Law</h1>
+          <h1 className="text-2xl font-bold mb-4">Search Dennislaw</h1>
 
           <div className="flex gap-2 mb-4">
             <Input

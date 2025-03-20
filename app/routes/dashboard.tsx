@@ -16,13 +16,13 @@ import backgroundImage from "~/images/Library-Postcard-004_2.webp";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Dashboard | Dennis Law" },
+    { title: "Dashboard | Dennislaw" },
     {
       name: "description",
       content:
         "Explore legal principles, search cases, and build your legal knowledge",
     },
-    { name: "og:title", content: "Dashboard | Dennis Law" },
+    { name: "og:title", content: "Dashboard | Dennislaw" },
     {
       name: "og:description",
       content:
@@ -101,13 +101,13 @@ const Dashboard = () => {
               <div className="flex gap-3 mt-4">
                 <Button
                   className="bg-white text-primary font-semibold hover:bg-opacity-90"
-                  onClick={() => navigate("/nuggets")}
+                  onPress={() => navigate("/nuggets")}
                 >
                   Explore Nuggets
                 </Button>
                 <Button
                   className="bg-transparent border border-white text-white font-semibold hover:bg-white/10"
-                  onClick={() => navigate("/profile")}
+                  onPress={() => navigate("/profile")}
                 >
                   View Profile
                 </Button>
@@ -204,7 +204,7 @@ const Dashboard = () => {
             </h2>
             <Button
               className="text-primary bg-transparent"
-              onClick={() => navigate("/nuggets")}
+              onPress={() => navigate("/nuggets")}
               endContent={<MdArrowRight />}
             >
               View All
@@ -229,7 +229,7 @@ const Dashboard = () => {
                 </p>
                 <Button
                   className="w-full bg-gradient-to-r from-pink-500 to-pink-700 text-white"
-                  onClick={() => goToCategory("areaOfLaw")}
+                  onPress={() => navigate("/nuggets")}
                 >
                   Explore Areas
                 </Button>
@@ -251,7 +251,7 @@ const Dashboard = () => {
                 </p>
                 <Button
                   className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white"
-                  onClick={() => goToCategory("courts")}
+                  onPress={() => navigate("/nuggets/courts")}
                 >
                   Explore Courts
                 </Button>
@@ -273,7 +273,7 @@ const Dashboard = () => {
                 </p>
                 <Button
                   className="w-full bg-gradient-to-r from-green-500 to-green-700 text-white"
-                  onClick={() => goToCategory("judges")}
+                  onPress={() => navigate("/nuggets/judges")}
                 >
                   Explore Judges
                 </Button>
@@ -297,7 +297,7 @@ const Dashboard = () => {
                 <Button
                   key={index}
                   className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-100"
-                  onClick={() => navigate(`/nuggets?search=${keyword}`)}
+                  onPress={() => navigate(`/nuggets?search=${keyword}`)}
                 >
                   {keyword}
                 </Button>
@@ -317,7 +317,7 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  Dennis Law Library
+                  Dennislaw Library
                 </h3>
                 <p className="text-gray-600 mb-4">
                   Access comprehensive case law and legal resources in our
@@ -326,9 +326,9 @@ const Dashboard = () => {
                 <Button
                   className="bg-gradient-to-r from-indigo-700 to-blue-900 text-white"
                   endContent={<MdArrowRight />}
-                  onClick={() => navigate("/dennislaw")}
+                  onPress={() => navigate("/dennislaw")}
                 >
-                  Go to Dennis Law
+                  Go to Dennislaw
                 </Button>
               </div>
               <div className="md:w-1/3 bg-gradient-to-br from-indigo-500 to-blue-700 flex items-center justify-center p-6">

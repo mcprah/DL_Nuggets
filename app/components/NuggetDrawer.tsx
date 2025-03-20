@@ -136,7 +136,7 @@ const NuggetDrawer = ({
 
   return (
     <div
-      className={`fixed z-50 right-0 top-0 h-full w-[400px] bg-white shadow-lg transition-transform duration-300 border-l overflow-y-auto ${
+      className={`fixed z-50 right-0 top-0 h-full w-full sm:w-lg lg:max-w-lg xl:max-w-2xl bg-white shadow-lg transition-transform duration-300 border-l overflow-y-auto ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
@@ -151,7 +151,7 @@ const NuggetDrawer = ({
               isBookmarked ? "Remove from bookmarks" : "Add to bookmarks"
             }
             isLoading={isBookmarking}
-            onClick={handleBookmarkToggle}
+            onPress={handleBookmarkToggle}
           >
             {isBookmarked ? (
               <MdBookmarkRemove className="text-xl" />
@@ -204,7 +204,7 @@ const NuggetDrawer = ({
 
               <div className="flex items-center text-sm text-gray-500 mt-1">
                 <span className="font-medium">
-                  {nugget.citation_no || nugget.dl_citation_no}
+                  {nugget.dl_citation_no || nugget.citation_no}
                 </span>
                 {nugget.page_number && (
                   <span className="ml-2">at page {nugget.page_number}</span>

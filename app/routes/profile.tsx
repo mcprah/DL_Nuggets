@@ -10,13 +10,13 @@ import { LoaderFunction, MetaFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "User Profile | Dennis Law" },
+    { title: "User Profile | Dennislaw" },
     {
       name: "description",
       content:
         "View and manage your profile information and bookmarked nuggets",
     },
-    { name: "og:title", content: "User Profile | Dennis Law" },
+    { name: "og:title", content: "User Profile | Dennislaw" },
     {
       name: "og:description",
       content: "Manage your personal profile and bookmarked legal nuggets",

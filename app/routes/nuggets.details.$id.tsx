@@ -38,14 +38,14 @@ interface LoaderData {
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) {
     return [
-      { title: "Nugget Details | Dennis Law" },
+      { title: "Nugget Details | Dennislaw" },
       { name: "description", content: "View nugget details" },
     ];
   }
 
   const { nugget } = data;
   return [
-    { title: `${nugget?.headnote || "Nugget Details"} | Dennis Law` },
+    { title: `${nugget?.headnote || "Nugget Details"} | Dennislaw` },
     {
       name: "description",
       content: `${
@@ -54,7 +54,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     },
     {
       name: "og:title",
-      content: `${nugget?.headnote || "Nugget Details"} | Dennis Law`,
+      content: `${nugget?.headnote || "Nugget Details"} | Dennislaw`,
     },
     {
       name: "og:description",

@@ -32,12 +32,12 @@ interface LoaderData {
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Courts | Dennis Law" },
+    { title: "Courts | Dennislaw" },
     {
       name: "description",
       content: "Browse nuggets by different courts and jurisdictions",
     },
-    { name: "og:title", content: "Courts | Dennis Law" },
+    { name: "og:title", content: "Courts | Dennislaw" },
     {
       name: "og:description",
       content: "Access nuggets by different courts and judicial bodies",

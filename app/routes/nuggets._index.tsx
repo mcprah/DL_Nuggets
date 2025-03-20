@@ -32,12 +32,12 @@ interface LoaderData {
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Areas of Law | Dennis Law" },
+    { title: "Areas of Law | Dennislaw" },
     {
       name: "description",
       content: "Browse nuggets by different areas of law",
     },
-    { name: "og:title", content: "Areas of Law | Dennis Law" },
+    { name: "og:title", content: "Areas of Law | Dennislaw" },
     {
       name: "og:description",
       content: "Explore legal principles categorized by different areas of law",

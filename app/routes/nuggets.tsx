@@ -114,8 +114,8 @@ const Nuggets = () => {
         {["/nuggets", "/nuggets/courts", "/nuggets/judges"].includes(
           pathname
         ) && (
-          <div>
-            <div className="flex gap-4 p-2 rounded-xl shadow-sm max-w-max bg-white">
+          <div className="w-full flex justify-center">
+            <div className="flex gap-2 p-2 rounded-xl shadow-sm max-w-max bg-white mx-auto">
               <Button
                 size="sm"
                 onPress={() => navigate("/nuggets")}

@@ -24,21 +24,21 @@ interface LoaderData {
 export const meta: MetaFunction = ({ data, params }) => {
   if (!data) {
     return [
-      { title: "Judge Nuggets | Dennis Law" },
+      { title: "Judge Nuggets | Dennislaw" },
       { name: "description", content: "View nuggets by judge" },
     ];
   }
 
   const { details } = data as LoaderData;
   return [
-    { title: `${details?.fullname || "Judge"} | Dennis Law` },
+    { title: `${details?.fullname || "Judge"} | Dennislaw` },
     {
       name: "description",
       content: `Legal nuggets by ${details?.fullname || "judge"}`,
     },
     {
       name: "og:title",
-      content: `${details?.fullname || "Judge"} | Dennis Law`,
+      content: `${details?.fullname || "Judge"} | Dennislaw`,
     },
     {
       name: "og:description",

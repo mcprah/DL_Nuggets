@@ -25,7 +25,7 @@ interface LoaderData {
 export const meta: MetaFunction = ({ data, params }) => {
   if (!data) {
     return [
-      { title: "Court Nuggets | Dennis Law" },
+      { title: "Court Nuggets | Dennislaw" },
       { name: "description", content: "View nuggets by court" },
     ];
   }
@@ -33,12 +33,12 @@ export const meta: MetaFunction = ({ data, params }) => {
   const { details, court } = data as LoaderData;
   const courtData = details || court;
   return [
-    { title: `${courtData?.name || "Court"} | Dennis Law` },
+    { title: `${courtData?.name || "Court"} | Dennislaw` },
     {
       name: "description",
       content: `Legal nuggets from ${courtData?.name || "court"}`,
     },
-    { name: "og:title", content: `${courtData?.name || "Court"} | Dennis Law` },
+    { name: "og:title", content: `${courtData?.name || "Court"} | Dennislaw` },
     {
       name: "og:description",
       content: `Browse legal nuggets from ${courtData?.name || "court"}`,

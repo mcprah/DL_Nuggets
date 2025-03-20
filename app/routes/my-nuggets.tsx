@@ -137,9 +137,9 @@ interface NuggetFormData {
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "My Nuggets | Dennis Law" },
+    { title: "My Nuggets | Dennislaw" },
     { name: "description", content: "Manage your personal legal nuggets" },
-    { name: "og:title", content: "My Nuggets | Dennis Law" },
+    { name: "og:title", content: "My Nuggets | Dennislaw" },
     {
       name: "og:description",
       content:

@@ -25,14 +25,14 @@ interface LoaderData {
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) {
     return [
-      { title: "Area of Law | Dennis Law" },
+      { title: "Area of Law | Dennislaw" },
       { name: "description", content: "View nuggets by area of law" },
     ];
   }
 
   const { details } = data;
   return [
-    { title: `${details?.display_name || "Area of Law"} | Dennis Law` },
+    { title: `${details?.display_name || "Area of Law"} | Dennislaw` },
     {
       name: "description",
       content: `Legal nuggets related to ${
@@ -68,8 +68,8 @@ const AreaOfLawDetails = () => {
     <div className="flex transition-all duration-300">
       {/* Main Content Area */}
       <div
-        className={`flex-1 p-2 overflow-x-hidden transition-all duration-300 overflow-y-hidden ${
-          isDrawerOpen ? "pr-[400px]" : ""
+        className={`p-2 overflow-x-hidden transition-all duration-300 overflow-y-hidden ${
+          isDrawerOpen ? "w-full sm:w-1/3 md:w-3/6 lg:w-2xl" : "flex-1"
         }`}
       >
         {/* Back Button and Title */}
@@ -86,13 +86,17 @@ const AreaOfLawDetails = () => {
         </div>
 
         {/* Grid Layout for Sub-Nuggets */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 bg-white rounded-xl shadow-sm border border-black/10 p-4">
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-1 gap-4 mt-6 bg-white rounded-xl shadow-sm border border-black/10 p-4 ${
+            isDrawerOpen ? "lg:grid-cols-2" : "lg:grid-cols-3"
+          }`}
+        >
           {nuggets.length > 0 ? (
             nuggets.map((nugget: Nugget) => (
               <NuggetCard
                 key={nugget.id}
                 nugget={nugget}
-                isSelected={selectedSubNugget?.id === nugget.id}
+                isSelected={selectedSubNugget?.id === nugget.id && isDrawerOpen}
                 onClick={openDrawer}
               />
             ))
@@ -103,7 +107,7 @@ const AreaOfLawDetails = () => {
 
         <div className="flex justify-center mt-6">
           <Pagination
-            color="secondary"
+            color="primary"
             page={currentPage}
             total={Math.ceil(totalPages / perPage)}
             showControls

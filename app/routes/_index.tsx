@@ -332,7 +332,7 @@ const Login = () => {
           </form>
 
           {/* Social login options */}
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <p className="text-center text-gray-500 my-4 font-nunito relative before:content-[''] before:absolute before:left-0 before:top-1/2 before:h-px before:w-1/3 before:bg-gray-300 after:content-[''] after:absolute after:right-0 after:top-1/2 after:h-px after:w-1/3 after:bg-gray-300">
               Or Continue With
             </p>
@@ -347,7 +347,7 @@ const Login = () => {
                 <FaFacebook className="text-white" />
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Right Side */}
