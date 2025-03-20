@@ -117,7 +117,7 @@ const Nuggets = () => {
           <div className="w-full flex justify-center">
             <div className="flex gap-2 p-2 rounded-xl shadow-sm max-w-max bg-white mx-auto">
               <Button
-                size="sm"
+                // size="sm"
                 onPress={() => navigate("/nuggets")}
                 className={`transition-all duration-300 px-6 py-2 rounded-lg 
                             ${
@@ -130,7 +130,7 @@ const Nuggets = () => {
                 Area of Law
               </Button>
               <Button
-                size="sm"
+                // size="sm"
                 onPress={() => navigate("/nuggets/courts")}
                 className={`transition-all duration-300 px-6 py-2 rounded-lg 
                             ${
@@ -143,7 +143,7 @@ const Nuggets = () => {
                 Courts
               </Button>
               <Button
-                size="sm"
+                // size="sm"
                 onPress={() => navigate("/nuggets/judges")}
                 className={`transition-all duration-300 px-6 py-2 rounded-lg 
                             ${
