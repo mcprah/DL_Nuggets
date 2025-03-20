@@ -603,13 +603,13 @@ const Search = () => {
             <Input
               type="text"
               size="lg"
-              placeholder="Search for cases, principles, keywords..."
+              placeholder="Search for principles, area of law, keywords..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) =>
                 e.key === "Enter" && handleSearch(searchQuery, 1)
               }
-              startContent={<MdSearch className="text-gray-400" />}
+              startContent={<MdSearch size={18} className="text-gray-400" />}
               endContent={
                 searchQuery ? (
                   <MdClear
@@ -620,6 +620,7 @@ const Search = () => {
               }
               classNames={{
                 input: "text-lg",
+                inputWrapper: "shadow-md bg-slate-0 border border-slate-2",
               }}
               className="flex-1"
             />
@@ -729,7 +730,7 @@ const Search = () => {
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-3">
               <MdTrendingUp className="text-primary" />
-              <h2 className="text-lg font-semibold">Trending Topics</h2>
+              <h2 className="text-lg font-semibold">Trending</h2>
             </div>
             <div className="flex flex-wrap gap-2">
               {trendingKeywords.map((keyword: string, index: number) => (
