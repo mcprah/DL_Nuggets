@@ -69,7 +69,7 @@ const AreaOfLaw = () => {
           <Link
             key={area.id}
             to={`/nuggets/${area.id}`}
-            className="bg-white border border-black/10 flex justify-between p-3 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition-all duration-300 h-24"
+            className="bg-white border border-black/10 flex justify-between p-3 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition-all duration-300"
           >
             <p className="text-black">{area.value}</p>
             <MdArrowRight className="text-xl text-gray-700" />
