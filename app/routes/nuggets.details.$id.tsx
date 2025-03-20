@@ -5,6 +5,7 @@ import { LoaderFunction, MetaFunction } from "@remix-run/node";
 import axios from "axios";
 import NuggetDrawer, { Nugget } from "~/components/NuggetDrawer";
 import { Button } from "@nextui-org/react";
+import { recordNuggetView } from "~/utils/api";
 
 // Define the Nugget interface to fix the linter error
 interface Nugget {
@@ -74,28 +75,9 @@ const NuggetDetails = () => {
 
   // Record view when component mounts
   useEffect(() => {
-    const recordView = async () => {
-      try {
-        // Get token from localStorage
-        const token = localStorage.getItem("access_token");
-        if (!token || !nugget?.id) return;
-
-        // Record the view
-        await axios.post(
-          `${baseUrl}/record-nugget-view`,
-          { nugget_id: nugget.id },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      } catch (error) {
-        console.error("Error recording view:", error);
-      }
-    };
-
-    recordView();
+    if (nugget?.id) {
+      recordNuggetView(nugget.id, baseUrl);
+    }
   }, [nugget?.id, baseUrl]);
 
   const openDrawer = () => {
@@ -172,7 +154,7 @@ const NuggetDetails = () => {
               <div>
                 <span className="font-semibold text-gray-700">
                   Area of Law:
-                </span>{" "}
+                </span>
                 <Link
                   to={`/nuggets/areas/${nugget?.area_of_law?.split(",")[0]}`}
                   className="text-secondary hover:underline"
@@ -186,7 +168,7 @@ const NuggetDetails = () => {
           {/* Principle */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">Principle</h3>
-            <div className="bg-gray-50 p-4 rounded border border-gray-200">
+            <div className="bg-gray-50 p-4 rounded-lg  shadow-lg">
               <p className="whitespace-pre-wrap">{nugget?.principle}</p>
             </div>
           </div>

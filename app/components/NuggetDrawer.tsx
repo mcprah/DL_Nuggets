@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { MdBookmarkAdd, MdBookmarkRemove } from "react-icons/md";
 import axios from "axios";
+import { recordNuggetView } from "~/utils/api";
 
 interface Keyword {
   keyword: {
@@ -69,6 +70,11 @@ const NuggetDrawer = ({
 
   useEffect(() => {
     if (nugget) {
+      const recordViewNugget = (nuggetId: number) => {
+        recordNuggetView(nuggetId, baseUrl!);
+      };
+
+      recordViewNugget(nugget.id);
       setIsBookmarked(!!nugget.is_bookmarked);
     }
   }, [nugget]);
