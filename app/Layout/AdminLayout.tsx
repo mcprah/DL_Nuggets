@@ -172,7 +172,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 overflow-hidden">
+    <div className="min-h-screen bg-slate-50">
       <div className="flex">
         {/* Fixed Sidebar */}
         <aside
@@ -244,7 +244,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Main Content */}
         <main
-          className={`flex-1 transition-all duration-300 ${
+          className={`relative flex-1 transition-all duration-300 ${
             isMobile ? "ml-0" : isCollapsed ? "ml-[70px]" : "ml-64"
           }`}
         >
@@ -255,7 +255,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 <Button
                   isIconOnly
                   variant="light"
-                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  onPress={() => setIsCollapsed(!isCollapsed)}
                   className="mr-4"
                 >
                   <IoMenuOutline className="text-xl" />
@@ -263,7 +263,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               )}
               <h2 className="text-xl font-semibold text-gray-800">
                 {navItems.find((item) => item.path === location.pathname)
-                  ?.label || "Dashboard"}
+                  ?.label || ""}
               </h2>
             </div>
 
@@ -271,7 +271,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <Button
                 isIconOnly
                 variant="light"
-                onClick={handleSearchClick}
+                onPress={handleSearchClick}
                 className="relative"
               >
                 <MdSearch className="text-2xl text-gray-600" />
@@ -297,21 +297,22 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     key="profile"
                     startContent={<MdVerifiedUser className="text-primary" />}
                     description="Manage your account"
+                    onPress={()=>navigate("/profile")}
                   >
                     My Profile
                   </DropdownItem>
-                  <DropdownItem
+                  {/* <DropdownItem
                     key="settings"
                     startContent={<MdSettings className="text-gray-500" />}
                   >
                     Settings
-                  </DropdownItem>
+                  </DropdownItem> */}
                   <DropdownItem
                     key="logout"
                     className="text-danger"
                     color="danger"
                     startContent={<MdLogout className="text-danger" />}
-                    onClick={handleLogout}
+                    onPress={handleLogout}
                   >
                     Logout
                   </DropdownItem>
@@ -400,13 +401,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             )}
             <div className="flex gap-2 mt-4 w-full">
               <Button
-                onClick={handleSearch}
+                onPress={handleSearch}
                 className="flex-1 bg-primary text-white"
               >
                 Search
               </Button>
               <Button
-                onClick={() => setSearchQuery("")}
+                onPress={() => setSearchQuery("")}
                 className="flex-1 bg-gray-200"
               >
                 Clear

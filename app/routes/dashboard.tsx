@@ -86,7 +86,7 @@ const Dashboard = () => {
   return (
     <AdminLayout>
       <div className="w-full">
-        {/* Welcome Section */}
+        {/* Welcome Section
         <section className="mb-8">
           <div className="bg-gradient-to-r from-primary to-blue-700 rounded-xl p-6 text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-pattern opacity-10"></div>
@@ -114,15 +114,14 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Decorative elements */}
             <div className="absolute right-4 bottom-4 md:right-10 md:bottom-4 w-24 h-24 md:w-32 md:h-32 bg-white/10 rounded-full blur-xl"></div>
             <div className="absolute right-20 top-10 w-16 h-16 bg-blue-400/20 rounded-full blur-lg"></div>
           </div>
-        </section>
+        </section> */}
 
         {/* Statistics Row */}
-        <section className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
+        <section className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-blue-100 mr-4">
                 <MdLibraryBooks className="text-blue-600 text-xl" />
@@ -145,7 +144,7 @@ const Dashboard = () => {
               className="mt-4"
               isIndeterminate={isLoading}
             />
-          </Card>
+          </Card> */}
 
           <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
             <div className="flex items-center">

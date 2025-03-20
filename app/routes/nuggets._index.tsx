@@ -55,7 +55,7 @@ const AreaOfLaw = () => {
 
   return (
     <div className="">
-      <div className="lg:grid lg:grid-cols-4 gap-4 bg-white p-4 shadow-sm rounded-xl border border-black/5">
+      <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 bg-white p-4 shadow-sm rounded-xl border border-black/5">
         {areaOfLaw.data.map((area) => (
           <Link
             key={area.id}
