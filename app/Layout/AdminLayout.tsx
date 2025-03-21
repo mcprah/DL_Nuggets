@@ -61,7 +61,7 @@ const navItems: NavItem[] = [
     icon: <MdHome className="text-xl" />,
     label: "Explore",
     path: "/dashboard",
-    content: "Dashboard"
+    content: "Explore"
   },
   {
     icon: <MdBook className="text-xl" />,
