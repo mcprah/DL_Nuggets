@@ -169,16 +169,17 @@ const Login = () => {
               onClick={() => setIsSignUp(false)}
             >
               Sign In
-            </button>
-            <Link className={`flex-1 py-2 rounded-lg text-center font-semibold font-montserrat transition-all duration-300 ${
-                isSignUp
-                  ? "bg-primary text-white"
-                  : "text-gray-500 hover:bg-gray-100"
-              }`} to="https://www.dennislawgh.com/register"> <button
+            </button >
+            <button
+              className={`font-montserrat flex-1 py-2 rounded-lg font-semibold transition-all duration-300 ${!isSignUp
+                ? " text-gray-500 hover:bg-gray-100"
+                : "bg-primary text-white"
+                }`}
+              onClick={() => setIsSignUp(true)}
 
             >
               Sign Up
-              </button></Link>
+            </button>
 
           </div>
 

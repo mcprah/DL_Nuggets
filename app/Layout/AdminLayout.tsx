@@ -22,6 +22,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Avatar,
+  Tooltip,
 } from "@nextui-org/react";
 import { IoMenuOutline } from "react-icons/io5";
 import {
@@ -44,6 +45,7 @@ interface NavItem {
   icon: React.ReactNode;
   label: string;
   path: string;
+  content: string
 }
 
 // Define SearchUser interface to fix linter errors
@@ -59,21 +61,28 @@ const navItems: NavItem[] = [
     icon: <MdHome className="text-xl" />,
     label: "Explore",
     path: "/dashboard",
+    content: "Dashboard"
   },
   {
     icon: <MdBook className="text-xl" />,
     label: "Nuggets",
     path: "/nuggets",
+    content: "Nuggets"
+
   },
   {
     icon: <MdBookmarks className="text-xl" />,
     label: "My Nuggets",
     path: "/my-nuggets",
+    content: "My Nuggets"
+
   },
   {
     icon: <MdVerifiedUser className="text-xl" />,
     label: "My Profile",
     path: "/profile",
+    content: "Profile"
+
   },
 ];
 
@@ -203,7 +212,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             <nav className="flex-1 overflow-y-auto py-6">
               <div className="px-3 space-y-1">
                 {navItems.map((item) => (
-                  <Link
+                  <Tooltip content={item.content}>
+                    <Link
                     key={item.path}
                     to={item.path}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200
@@ -218,6 +228,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     </div>
                     {!isCollapsed && <span>{item.label}</span>}
                   </Link>
+                  </Tooltip>
                 ))}
               </div>
             </nav>
