@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLoaderData } from "@remix-run/react";
 import { MdArrowBack } from "react-icons/md";
 import { Pagination } from "@nextui-org/react";
@@ -6,6 +6,7 @@ import { LoaderFunction, MetaFunction } from "@remix-run/node";
 import axios from "axios";
 import NuggetDrawer, { Nugget } from "~/components/NuggetDrawer";
 import NuggetCard from "~/components/NuggetCard";
+import { recordResourceAccess } from "~/utils/api";
 
 interface EntityDetails {
   id: number;
@@ -147,6 +148,29 @@ const EntityDetails = () => {
   const displayName = getDisplayName(details, entityType);
   const parentType = getParentType(entityType);
   const backPath = getBackPath(entityType);
+
+  useEffect(() => {
+    // Track resource access when component mounts
+    if (entity && id) {
+      let resourceType: "area_of_law" | "court" | "judge";
+
+      switch (entity) {
+        case "area-of-law":
+          resourceType = "area_of_law";
+          break;
+        case "court":
+          resourceType = "court";
+          break;
+        case "judge":
+          resourceType = "judge";
+          break;
+        default:
+          return; // If not a trackable entity, do nothing
+      }
+
+      recordResourceAccess(baseUrl, resourceType, id);
+    }
+  }, [entity, id, baseUrl]);
 
   // Open drawer with selected sub-nugget details
   const openDrawer = (subNugget: Nugget) => {

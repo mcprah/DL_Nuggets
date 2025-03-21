@@ -5,24 +5,33 @@ import { LoaderFunction, MetaFunction } from "@remix-run/node";
 import axios from "axios";
 import NuggetDrawer, { Nugget } from "~/components/NuggetDrawer";
 import { Button } from "@nextui-org/react";
-import { recordNuggetView } from "~/utils/api";
+import { recordNuggetView, recordResourceAccess } from "~/utils/api";
+import { recordResourceAccess as oldRecordResourceAccess } from "../utils/tracking";
 
 // Define the Nugget interface to fix the linter error
 interface Nugget {
   id: number;
-  headnote: string;
-  principle: string;
-  judges: string;
-  judge_id: number;
-  courts: string;
-  year: string;
-  case_title: string;
-  case_citation: string;
-  keywords: string;
-  area_of_law: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
+  title?: string;
+  principle?: string;
+  headnote?: string;
+  quote?: string;
+  dl_citation_no?: string;
+  citation_no?: string;
+  year?: string;
+  judge_title?: string;
+  judge?: any;
+  judges?: string;
+  status?: string;
+  courts?: string;
+  court_id?: number | string;
+  judge_id?: number | string;
+  keywords?: any;
+  area_of_laws?: any;
+  slug?: string;
+  page_number?: string;
+  other_citations?: string;
+  file_url?: string;
+  is_bookmarked?: boolean;
 }
 
 interface AreaOfLawDetail {
@@ -70,6 +79,7 @@ const NuggetDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const { nugget, baseUrl } = useLoaderData<LoaderData>();
 
@@ -93,6 +103,20 @@ const NuggetDetails = () => {
   const handleBookmarkChange = () => {
     // Reload data if needed after bookmark change
     // This could be implemented to update the UI
+  };
+
+  // Handle navigation to judge page with tracking
+  const handleJudgeClick = (judgeId: number | string) => {
+    if (judgeId) {
+      recordResourceAccess(baseUrl, "judge", judgeId);
+    }
+  };
+
+  // Handle navigation to court page with tracking
+  const handleCourtClick = (courtId: number | string) => {
+    if (courtId) {
+      recordResourceAccess(baseUrl, "court", courtId);
+    }
   };
 
   return (
@@ -205,7 +229,7 @@ const NuggetDetails = () => {
           )}
 
           {/* Additional Actions */}
-          {/* <div className="mt-8 flex flex-wrap gap-4">
+          <div className="mt-8 flex flex-wrap gap-4">
             <button
               className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
               onClick={() => window.print()}
@@ -221,6 +245,7 @@ const NuggetDetails = () => {
               <Link
                 to={`/nuggets/judges/${nugget.judge_id}`}
                 className="px-4 py-2 bg-secondary text-white rounded hover:bg-secondary-dark transition-colors"
+                onClick={() => handleJudgeClick(nugget.judge_id)}
               >
                 More by{" "}
                 {nugget?.judges?.split(",")[0] ||
@@ -232,11 +257,12 @@ const NuggetDetails = () => {
               <Link
                 to={`/nuggets/courts/${nugget?.courts?.split(",")[0]}`}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                onClick={() => handleCourtClick(nugget?.courts?.split(",")[0])}
               >
                 More from {nugget?.courts?.split(",")[0]}
               </Link>
             )}
-          </div> */}
+          </div>
         </div>
 
         {/* Related Nuggets Section (Placeholder) */}

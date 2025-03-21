@@ -138,7 +138,7 @@ const NuggetDrawer = ({
 
   const handleAreaOfLawClick = (areaId: number) => {
     onClose(); // Close the drawer first
-    navigate(`/nuggets/${areaId}`);
+    navigate(`/nuggets/area-of-law/${areaId}`);
   };
 
   return (

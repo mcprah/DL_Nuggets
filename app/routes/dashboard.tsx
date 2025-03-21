@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { MetaFunction, LoaderFunction, json } from "@remix-run/node";
 import axios from "axios";
 import backgroundImage from "~/images/Library-Postcard-004_2.webp";
+import MostAccessed from "~/components/MostAccessed";
 
 export const meta: MetaFunction = () => {
   return [
@@ -276,7 +277,7 @@ const Dashboard = () => {
         </section>
 
         {/* Trending Section */}
-        <section className="mb-8">
+        {/* <section className="mb-8">
           <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
             <div className="flex items-center gap-2 mb-4">
               <MdTrendingUp className="text-primary text-xl" />
@@ -294,6 +295,53 @@ const Dashboard = () => {
                 </Button>
               ))}
             </div>
+          </div>
+        </section> */}
+
+        {/* Most Accessed Resources Section */}
+        <section className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-800">
+              Popular Resources
+            </h2>
+            <Button
+              className="text-primary bg-transparent"
+              onPress={() => navigate("/most-accessed/all")}
+              endContent={<MdArrowRight />}
+            >
+              View All
+            </Button>
+          </div>
+
+          <MostAccessed
+            baseUrl={baseUrl}
+            limit={5}
+            showTitle={false}
+            type="all"
+          />
+
+          <div className="flex justify-center mt-4 gap-3">
+            <Button
+              className="bg-white border border-primary text-primary hover:bg-primary-50"
+              onPress={() => navigate("/most-accessed/area-of-law")}
+              size="sm"
+            >
+              Areas of Law
+            </Button>
+            <Button
+              className="bg-white border border-primary text-primary hover:bg-primary-50"
+              onPress={() => navigate("/most-accessed/court")}
+              size="sm"
+            >
+              Courts
+            </Button>
+            <Button
+              className="bg-white border border-primary text-primary hover:bg-primary-50"
+              onPress={() => navigate("/most-accessed/judge")}
+              size="sm"
+            >
+              Judges
+            </Button>
           </div>
         </section>
 
