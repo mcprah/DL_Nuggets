@@ -88,7 +88,7 @@ export default function MostAccessed({
       case "court":
         return `/nuggets/courts/${item.resource_id}`;
       case "judge":
-        return `/nuggets/judge/${item.resource_id}`;
+        return `/nuggets/judges/${item.resource_id}`;
       default:
         return "#";
     }
