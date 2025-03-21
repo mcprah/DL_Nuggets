@@ -29,11 +29,12 @@ export interface Nugget {
   judge_title?: string;
   page_number?: number;
   area_of_laws?: AreaOfLaw[];
-  keywords?: Keyword[];
+  keywords?: any; // Can be array, string or object
   judge?: {
     id: number;
     fullname: string;
   };
+  judges?: string; // Add judges field which can be a string
   status?: string;
   file_url?: string | null;
   slug?: string;

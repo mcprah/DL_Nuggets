@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLoaderData, Link } from "@remix-run/react";
 import { MdArrowBack } from "react-icons/md";
 import { LoaderFunction, MetaFunction } from "@remix-run/node";
@@ -71,6 +71,32 @@ const NuggetDetails = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const { nugget, baseUrl } = useLoaderData<LoaderData>();
+
+  // Record view when component mounts
+  useEffect(() => {
+    const recordView = async () => {
+      try {
+        // Get token from localStorage
+        const token = localStorage.getItem("access_token");
+        if (!token || !nugget?.id) return;
+
+        // Record the view
+        await axios.post(
+          `${baseUrl}/record-nugget-view`,
+          { nugget_id: nugget.id },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      } catch (error) {
+        console.error("Error recording view:", error);
+      }
+    };
+
+    recordView();
+  }, [nugget?.id, baseUrl]);
 
   const openDrawer = () => {
     setIsDrawerOpen(true);

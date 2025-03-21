@@ -1,7 +1,8 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { MdArrowRight } from "react-icons/md";
 import axios from "axios";
 import { LoaderFunction, MetaFunction } from "@remix-run/node";
+import { Pagination } from "@nextui-org/react";
 
 // Define types for our data
 interface AreaOfLaw {
@@ -28,6 +29,9 @@ interface PaginatedResponse {
 interface LoaderData {
   areaOfLaw: PaginatedResponse;
   baseUrl: string;
+  currentPage: number;
+  totalPages: number;
+  perPage: number;
 }
 
 export const meta: MetaFunction = () => {
@@ -51,7 +55,12 @@ export const meta: MetaFunction = () => {
 };
 
 const AreaOfLaw = () => {
-  const { areaOfLaw } = useLoaderData<LoaderData>();
+  const { areaOfLaw, currentPage, totalPages, perPage } =
+    useLoaderData<LoaderData>();
+
+  const navigate = useNavigate();
+
+  console.log(areaOfLaw);
 
   return (
     <div className="">
@@ -60,12 +69,22 @@ const AreaOfLaw = () => {
           <Link
             key={area.id}
             to={`/nuggets/${area.id}`}
-            className="bg-white border border-black/10 flex justify-between p-3 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition-all duration-300"
+            className="bg-white border border-black/10 flex justify-between p-3 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition-all duration-300 h-24"
           >
             <p className="text-black">{area.value}</p>
             <MdArrowRight className="text-xl text-gray-700" />
           </Link>
         ))}
+      </div>
+
+      <div className="flex justify-center mt-6">
+        <Pagination
+          color="primary"
+          page={currentPage}
+          total={Math.ceil(totalPages / perPage)}
+          showControls
+          onChange={(page) => navigate(`/nuggets?page=${page}`)}
+        />
       </div>
     </div>
   );
@@ -73,13 +92,22 @@ const AreaOfLaw = () => {
 
 export default AreaOfLaw;
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
+  const url = new URL(request.url);
+  const searchParams = new URLSearchParams(url.search);
+  const page = searchParams.get("page") || "1";
+
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
   try {
-    const response = await axios.get(`${baseUrl}/area-of-law`);
+    const response = await axios.get(
+      `${baseUrl}/area-of-law?limit=16&page=${page}&`
+    );
     return {
       areaOfLaw: response.data,
       baseUrl,
+      currentPage: parseInt(response.data.meta.current_page),
+      totalPages: parseInt(response.data?.meta?.total),
+      perPage: parseInt(response.data?.meta?.per_page),
     };
   } catch (error) {
     throw new Error("Failed to fetch areas of law");
