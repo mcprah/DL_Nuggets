@@ -9,6 +9,7 @@ import {
   MdAccountBalance,
   MdPerson,
 } from "react-icons/md";
+import { recordResourceAccess } from "~/utils/api";
 
 interface ResourceAccessItem {
   id: number;
@@ -85,7 +86,7 @@ export default function MostAccessed({
       case "area_of_law":
         return `/nuggets/area-of-law/${item.resource_id}`;
       case "court":
-        return `/nuggets/court/${item.resource_id}`;
+        return `/nuggets/courts/${item.resource_id}`;
       case "judge":
         return `/nuggets/judge/${item.resource_id}`;
       default:
@@ -126,6 +127,11 @@ export default function MostAccessed({
   // Filter out resources that don't have valid details (might have been deleted)
   const validResources = resources.filter((item) => item.details);
 
+  // Handle resource click and track the access
+  const handleResourceClick = (item: ResourceAccessItem) => {
+    recordResourceAccess(baseUrl, item.resource_type, item.resource_id);
+  };
+
   return (
     <Card className="bg-white shadow-sm">
       {showTitle && (
@@ -153,6 +159,7 @@ export default function MostAccessed({
                 <Link
                   to={getResourceLink(item)}
                   className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  onClick={() => handleResourceClick(item)}
                 >
                   <div className="flex items-center gap-2">
                     {getResourceIcon(item.resource_type)}

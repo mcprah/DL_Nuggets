@@ -277,7 +277,7 @@ const Dashboard = () => {
         </section>
 
         {/* Trending Section */}
-        <section className="mb-8">
+        {/* <section className="mb-8">
           <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
             <div className="flex items-center gap-2 mb-4">
               <MdTrendingUp className="text-primary text-xl" />
@@ -296,7 +296,7 @@ const Dashboard = () => {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Most Accessed Resources Section */}
         <section className="mb-8">
