@@ -1,4 +1,4 @@
-import { json, LoaderFunction } from "@remix-run/node";
+import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import {
@@ -22,7 +22,12 @@ interface APIError {
   message?: string;
 }
 
+interface LoaderData {
+  baseUrl: string;
+}
+
 const ResetPassword = () => {
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,38 +38,22 @@ const ResetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [tokenValid, setTokenValid] = useState(true);
 
-  const { baseUrl } = useLoaderData<typeof loader>();
+  const { baseUrl } = useLoaderData<LoaderData>();
   const navigate = useNavigate();
   const { token } = useParams();
 
   useEffect(() => {
-    // Validate token by attempting to confirm it
-    const validateToken = async () => {
-      try {
-        // You might need to adjust this API call based on your backend implementation
-        await axios.post(
-          `${baseUrl}/confirm-reset-pass-code`,
-          { token },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      } catch (err) {
-        setTokenValid(false);
-        setError(
-          "This reset link is invalid or has expired. Please request a new one."
-        );
-      }
-    };
-
-    if (token) {
-      validateToken();
-    }
-  }, [token, baseUrl]);
+    // We'll keep tokenValid true initially and let the user try with their email
+    // This allows for a better UX since the backend requires both token and email
+    setTokenValid(true);
+  }, [token]);
 
   const handleSubmit = async () => {
+    if (!email) {
+      setError("Email address is required.");
+      return;
+    }
+
     if (!code) {
       setError("Verification code is required.");
       return;
@@ -89,9 +78,13 @@ const ResetPassword = () => {
     setError(null);
 
     try {
-      const response = await axios.post(
-        `${baseUrl}/update-app-password`,
-        { token, code, password },
+      // First, verify the reset token is valid
+      const verifyResponse = await axios.post(
+        `${baseUrl}/confirm-reset-pass-code`,
+        {
+          token: code,
+          email,
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -99,20 +92,53 @@ const ResetPassword = () => {
         }
       );
 
-      setSuccessMessage("Your password has been reset successfully.");
+      // If token verification is successful, update the password
+      if (verifyResponse.data && !verifyResponse.data.error) {
+        const updateResponse = await axios.post(
+          `${baseUrl}/update-app-password`,
+          {
+            token: code,
+            email,
+            password,
+            password_confirmation: confirmPassword,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      // Redirect to login page after a delay
-      setTimeout(() => {
-        navigate("/");
-      }, 3000);
+        if (updateResponse.data && !updateResponse.data.error) {
+          setSuccessMessage(
+            updateResponse.data.message ||
+              "Your password has been reset successfully."
+          );
+
+          // Redirect to login page after a delay
+          setTimeout(() => {
+            navigate("/");
+          }, 3000);
+        } else {
+          setError(
+            updateResponse.data.message ||
+              "Failed to update password. Please try again."
+          );
+        }
+      } else {
+        setError(
+          verifyResponse.data.message ||
+            "Invalid verification code. Please try again."
+        );
+      }
     } catch (err) {
       const apiError = err as APIError;
       console.error("Password reset error:", apiError);
 
       const errorMessage =
+        apiError.response?.data?.message ||
         apiError.response?.data?.msg ||
         apiError.response?.data?.error ||
-        apiError.response?.data?.message ||
         apiError.message ||
         "An error occurred. Please try again.";
 
@@ -164,7 +190,7 @@ const ResetPassword = () => {
           </h1>
         </div>
         <p className="text-gray-500 text-center text-sm mb-8">
-          Enter the verification code sent to your email and create a new
+          Enter your email and the verification code sent to you to create a new
           password
         </p>
 
@@ -183,6 +209,20 @@ const ResetPassword = () => {
           }}
           className="space-y-4"
         >
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Verification Code
@@ -288,4 +328,16 @@ export default ResetPassword;
 export const loader: LoaderFunction = async () => {
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
   return json({ baseUrl });
+};
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Create New Password | Lex Nuggets" },
+    {
+      name: "description",
+      content: "Create a new password for your Lex Nuggets account.",
+    },
+    { name: "viewport", content: "width=device-width,initial-scale=1" },
+    { name: "robots", content: "noindex" }, // Prevent search engines from indexing this page
+  ];
 };

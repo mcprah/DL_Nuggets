@@ -56,18 +56,28 @@ const ForgotPassword = () => {
         }
       );
 
-      setSuccessMessage(
-        "Password reset instructions have been sent to your email."
-      );
-      setEmail("");
+      // Check if the response indicates success
+      if (response.data && !response.data.error) {
+        setSuccessMessage(
+          response.data.message ||
+            "Password reset instructions have been sent to your email."
+        );
+        setEmail("");
+      } else {
+        // Handle API error response
+        setError(
+          response.data.message ||
+            "Failed to send reset instructions. Please try again."
+        );
+      }
     } catch (err) {
       const apiError = err as APIError;
       console.error("Password reset error:", apiError);
 
       const errorMessage =
+        apiError.response?.data?.message ||
         apiError.response?.data?.msg ||
         apiError.response?.data?.error ||
-        apiError.response?.data?.message ||
         apiError.message ||
         "An error occurred. Please try again.";
 
