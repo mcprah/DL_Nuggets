@@ -77,6 +77,8 @@ const NuggetDetails = () => {
   useEffect(() => {
     if (nugget?.id) {
       recordNuggetView(nugget.id, baseUrl);
+      console.log(nugget);
+      
     }
   }, [nugget?.id, baseUrl]);
 
@@ -124,7 +126,7 @@ const NuggetDetails = () => {
 
             {/* Meta Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-              <div>
+              <div onClick={()=>{navigate(`/cases/${nugget?.dl_citation_no}`)}}>
                 <span className="font-semibold text-gray-700">Case:</span>{" "}
                 <span>{nugget?.case_title || nugget?.title}</span>
               </div>
