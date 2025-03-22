@@ -1,12 +1,12 @@
 import axios from "axios";
-import { CaseDigestResponse } from "~/types/CaseDigest";
+import { CaseDigest, CaseDigestResponse } from "~/types/CaseDigest";
 
 
 export async function generateCaseDigest(
+    baseUrl: string,
+    caseData?: Record<string, any>,
     token?: string,
-    caseData?: Record<string, any>
 ) {
-    const baseUrl = process.env.NEXT_PUBLIC_DL_AI_API_URL;
 
     try {
         const headers: Record<string, string> = {};
@@ -33,10 +33,10 @@ export async function generateCaseDigest(
 
 
 export async function getCaseDigestByDlCitationFromDB(
+    baseUrl: string,
     dlCitationNo: string,
     token?: string
 ) {
-    const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
 
     try {
         const headers: Record<string, string> = {};
@@ -52,26 +52,25 @@ export async function getCaseDigestByDlCitationFromDB(
             { headers }
         );
 
-        // The API returns { success: boolean, data: CaseDigestResponse } format
+        // The API returns { success: boolean, data: CaseDigest } format
         if (response.data.success) {
             return response.data.data;
         } else {
-            return response.data
+            return null;
         }
     } catch (error) {
         console.error(`Error fetching case digest for DL citation ${dlCitationNo}:`, error);
-        throw error;
+        return null;
     }
 }
 
 
 export async function getCaseDigestFromAI(
+    baseUrl: string,
     vector_store_id: string,
     dl_citation_no: string,
     token?: string
 ) {
-    const baseUrl = process.env.NEXT_PUBLIC_DL_AI_API_URL;
-
     try {
         const headers: Record<string, string> = {};
         if (token) {
@@ -94,7 +93,7 @@ export async function getCaseDigestFromAI(
         // Handle the response based on your API structure
         // If the API returns { success: boolean, data: ... } format:
         if (response.data.success) {
-            return response.data.data;
+            return response.data.data as CaseDigest;
         }
 
         // If the API returns the data directly:

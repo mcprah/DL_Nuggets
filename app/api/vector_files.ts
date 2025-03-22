@@ -3,12 +3,12 @@ import { CaseDigestResponse } from "~/types/CaseDigest";
 
 
 export async function storeVectorFileIDs(
+    baseUrl: string,
     vector_store_id?: string,
     vector_file_id?: string,
     dl_citation_no?: string,
     token?: string,
 ) {
-    const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
 
     try {
         const headers: Record<string, string> = {};
@@ -22,11 +22,14 @@ export async function storeVectorFileIDs(
             "vector_store_id": dl_citation_no
         };
 
+        console.log("store payload", payload);
         const response = await axios.post(
             `${baseUrl}/case-digests/vectorize`,
             payload,
             { headers }
         );
+        console.log("response from storeVectorFileIDs", response.data);
+        
 
         return response.data;
     } catch (error) {

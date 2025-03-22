@@ -25,7 +25,12 @@ import {
 } from "react-icons/md";
 import { Link } from "@remix-run/react";
 import { CaseDigest, CaseDigestResponse } from "~/types/CaseDigest";
-import { generateCaseDigest } from "~/api/case-digest";
+import {
+  generateCaseDigest,
+  getCaseDigestByDlCitationFromDB,
+  getCaseDigestFromAI,
+} from "~/api/case-digest";
+import { storeVectorFileIDs } from "~/api/vector_files";
 
 interface CaseData {
   id: number;
@@ -51,6 +56,8 @@ interface CaseData {
 interface LoaderData {
   caseData: CaseData;
   baseUrl: string;
+  baseAIUrl: string;
+  caseDigestFromDB: any;
 }
 
 export const meta: MetaFunction = ({ data }) => {
@@ -67,14 +74,22 @@ export const meta: MetaFunction = ({ data }) => {
 export const loader: LoaderFunction = async ({ params }) => {
   const { id } = params;
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
+  const baseAIUrl = process.env.NEXT_PUBLIC_DL_AI_API_URL;
 
   try {
     // Make initial request for case details
     const caseResponse = await axios.get(`${baseUrl}/case/${id}/fetch`);
+    const dl_citation_no = caseResponse.data.data?.dl_citation_no;
+    const caseDigestFromDB = await getCaseDigestByDlCitationFromDB(
+      baseUrl!,
+      dl_citation_no
+    );
 
     return json({
       caseData: caseResponse.data.data,
       baseUrl,
+      baseAIUrl,
+      caseDigestFromDB,
     });
   } catch (error) {
     console.error("Error fetching case:", error);
@@ -83,7 +98,8 @@ export const loader: LoaderFunction = async ({ params }) => {
 };
 
 export default function CasePreview() {
-  const { caseData, baseUrl } = useLoaderData<LoaderData>();
+  const { caseData, baseUrl, caseDigestFromDB, baseAIUrl } =
+    useLoaderData<LoaderData>();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,20 +121,42 @@ export default function CasePreview() {
         setLoading(true);
         setLoadingDigest(true);
         const response = await axios
-          .get(`${baseUrl}/case/${caseData.id}/fetch`, {
+          .get(`${baseUrl}/case/${caseData.dl_citation_no}/fetch`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           })
           .then((caseResData) => {
             const data = caseResData.data.data;
-            console.log("case_data", data);
 
             setCaseDetails(data);
-            generateCaseDigest(token, data).then((digestResponse) => {
-              setCaseDigest(digestResponse.data);
-              setLoadingDigest(false);
-            });
+
+            if (caseDigestFromDB == null) {
+              generateCaseDigest(baseAIUrl, data, token).then(
+                async (digestResponse) => {
+                  console.log("digestResponse", digestResponse.data);
+                  const digestInfo = digestResponse.data;
+                  setCaseDigest(digestInfo);
+                  await storeVectorFileIDs(
+                    baseUrl,
+                    digestInfo?.vector_store_id,
+                    digestInfo?.file_id,
+                    digestInfo?.dl_citation_no,
+                    token
+                  );
+                  setLoadingDigest(false);
+                }
+              );
+            } else {
+              getCaseDigestFromAI(
+                baseAIUrl,
+                caseDigest?.vector_store_id!,
+                caseDigest?.dl_citation_no!,
+                token
+              ).then((digestResponse) => {
+                setCaseDigest(digestResponse as CaseDigest);
+              });
+            }
           });
 
         // Continue without digest if it fails
@@ -132,7 +170,7 @@ export default function CasePreview() {
     };
 
     fetchWithAuth();
-  }, [baseUrl, caseData.id]);
+  }, [caseData.dl_citation_no]);
 
   // Format the decision text for better readability
   const formatDecision = (text: string) => {
