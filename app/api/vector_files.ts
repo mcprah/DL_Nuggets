@@ -17,9 +17,9 @@ export async function storeVectorFileIDs(
         }
 
         const payload = {
-            "dl_citation_no": vector_store_id,
+            "dl_citation_no": dl_citation_no,
             "vector_file_id": vector_file_id,
-            "vector_store_id": dl_citation_no
+            "vector_store_id": vector_store_id
         };
 
         console.log("store payload", payload);

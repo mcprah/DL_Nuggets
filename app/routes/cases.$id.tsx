@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
 import axios from "axios";
@@ -110,9 +110,13 @@ export default function CasePreview() {
   const [loadingDigest, setLoadingDigest] = useState(false);
 
   const navigate = useNavigate();
+  const effectHasRunRef = useRef(false);
 
   // Fetch with auth token on client side if needed
   useEffect(() => {
+    // Skip if effect has already run
+    if (effectHasRunRef.current) return;
+
     const fetchWithAuth = async () => {
       const token = localStorage.getItem("access_token");
       if (!token) return; // Skip if no token
@@ -132,6 +136,8 @@ export default function CasePreview() {
             setCaseDetails(data);
 
             if (caseDigestFromDB == null) {
+              console.log("runing einsbkds ");
+
               generateCaseDigest(baseAIUrl, data, token).then(
                 async (digestResponse) => {
                   console.log("digestResponse", digestResponse.data);
@@ -166,6 +172,7 @@ export default function CasePreview() {
       } finally {
         setLoading(false);
         setLoadingDigest(false);
+        effectHasRunRef.current = true;
       }
     };
 
