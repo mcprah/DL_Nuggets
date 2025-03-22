@@ -24,7 +24,7 @@ import {
   MdPrint,
 } from "react-icons/md";
 import { Link } from "@remix-run/react";
-import { CaseDigestResponse } from "~/types/CaseDigest";
+import { CaseDigest, CaseDigestResponse } from "~/types/CaseDigest";
 import { generateCaseDigest } from "~/api/case-digest";
 
 interface CaseData {
@@ -74,7 +74,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 
     return json({
       caseData: caseResponse.data.data,
-      baseUrl
+      baseUrl,
     });
   } catch (error) {
     console.error("Error fetching case:", error);
@@ -90,7 +90,7 @@ export default function CasePreview() {
   const [caseDetails, setCaseDetails] = useState(caseData);
   const [selectedTab, setSelectedTab] = useState("full");
   const [copySuccess, setCopySuccess] = useState(false);
-  const [caseDigest, setCaseDigest] = useState<CaseDigestResponse>();
+  const [caseDigest, setCaseDigest] = useState<CaseDigest>();
   const [loadingDigest, setLoadingDigest] = useState(false);
 
   const navigate = useNavigate();
@@ -116,7 +116,7 @@ export default function CasePreview() {
 
             setCaseDetails(data);
             generateCaseDigest(token, data).then((digestResponse) => {
-              setCaseDigest(digestResponse);
+              setCaseDigest(digestResponse.data);
               setLoadingDigest(false);
             });
           });
@@ -370,7 +370,7 @@ export default function CasePreview() {
                       {/* Summary Section */}
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold mb-2">Summary</h3>
-                        <p className="text-gray-700">{caseDetails.summary}</p>
+                        <p className="text-gray-700">{caseDigest?.summary}</p>
                       </div>
 
                       {/* Accordion for Key Components */}
@@ -378,7 +378,7 @@ export default function CasePreview() {
                         <Accordion>
                           <AccordionItem key="facts" title="Facts">
                             <ul className="list-disc pl-5 space-y-2">
-                              {caseDetails.facts?.map((item, index) => (
+                              {caseDigest?.facts?.map((item, index) => (
                                 <li key={index}>
                                   {item.content || item.value}
                                 </li>
@@ -388,7 +388,7 @@ export default function CasePreview() {
 
                           <AccordionItem key="issues" title="Issues">
                             <ul className="list-disc pl-5 space-y-2">
-                              {caseDetails.issues?.map((item, index) => (
+                              {caseDigest?.issues?.map((item, index) => (
                                 <li key={index}>
                                   {item.content || item.value}
                                 </li>
@@ -398,7 +398,7 @@ export default function CasePreview() {
 
                           {/* New Arguments Section */}
                           <AccordionItem key="arguments" title="Arguments">
-                            {caseDetails.arguments?.map((arg, index) => (
+                            {caseDigest?.arguments?.map((arg, index) => (
                               <div key={index} className="mb-4">
                                 <h4 className="font-medium mb-2">
                                   {arg.party}
@@ -412,7 +412,7 @@ export default function CasePreview() {
 
                           <AccordionItem key="holding" title="Holding">
                             <ul className="list-disc pl-5 space-y-2">
-                              {caseDetails.holding?.map((item, index) => (
+                              {caseDigest?.holding?.map((item, index) => (
                                 <li key={index}>
                                   {item.content || item.value}
                                 </li>
@@ -425,17 +425,17 @@ export default function CasePreview() {
                               Ratio Decidendi
                             </h4>
                             <p className="mb-4">
-                              {caseDetails.ratio_decidendi}
+                              {caseDigest?.ratio_decidendi}
                             </p>
 
-                            {caseDetails.obiter_dicta &&
-                              caseDetails.obiter_dicta.length > 0 && (
+                            {caseDigest?.obiter_dicta &&
+                              caseDigest?.obiter_dicta.length > 0 && (
                                 <>
                                   <h4 className="font-medium mb-2">
                                     Obiter Dicta
                                   </h4>
                                   <ul className="list-disc pl-5 space-y-2">
-                                    {caseDetails.obiter_dicta.map(
+                                    {caseDigest?.obiter_dicta.map(
                                       (item, index) => (
                                         <li key={index}>
                                           {item.content || item.value}
@@ -447,13 +447,13 @@ export default function CasePreview() {
                               )}
 
                             {/* New Opinions Sections */}
-                            {caseDetails.concurring_opinions &&
-                              caseDetails.concurring_opinions.length > 0 && (
+                            {caseDigest?.concurring_opinions &&
+                              caseDigest?.concurring_opinions.length > 0 && (
                                 <>
                                   <h4 className="font-medium mt-4 mb-2">
                                     Concurring Opinions
                                   </h4>
-                                  {caseDetails.concurring_opinions.map(
+                                  {caseDigest?.concurring_opinions.map(
                                     (opinion, index) => (
                                       <div
                                         key={index}
@@ -471,13 +471,13 @@ export default function CasePreview() {
                                 </>
                               )}
 
-                            {caseDetails.dissenting_opinions &&
-                              caseDetails.dissenting_opinions.length > 0 && (
+                            {caseDigest?.dissenting_opinions &&
+                              caseDigest?.dissenting_opinions.length > 0 && (
                                 <>
                                   <h4 className="font-medium mt-4 mb-2">
                                     Dissenting Opinions
                                   </h4>
-                                  {caseDetails.dissenting_opinions.map(
+                                  {caseDigest?.dissenting_opinions.map(
                                     (opinion, index) => (
                                       <div
                                         key={index}
@@ -508,7 +508,7 @@ export default function CasePreview() {
                           Cases Cited
                         </h3>
                         <ul className="list-disc pl-5 space-y-2">
-                          {caseDetails.cases_cited?.map((item, index) => (
+                          {caseDigest?.cases_cited?.map((item, index) => (
                             <li key={index}>{item.content || item.value}</li>
                           ))}
                         </ul>
@@ -520,7 +520,7 @@ export default function CasePreview() {
                           Laws Cited
                         </h3>
                         <ul className="list-disc pl-5 space-y-2">
-                          {caseDetails.laws_cited?.map((item, index) => (
+                          {caseDigest?.laws_cited?.map((item, index) => (
                             <li key={index}>{item.content || item.value}</li>
                           ))}
                         </ul>
@@ -533,14 +533,14 @@ export default function CasePreview() {
                           title="Additional Metadata"
                         >
                           {/* Subject Matter */}
-                          {caseDetails.subject_matter &&
-                            caseDetails.subject_matter.length > 0 && (
+                          {caseDigest?.subject_matter &&
+                            caseDigest?.subject_matter.length > 0 && (
                               <div className="mb-4">
                                 <h4 className="font-medium mb-2">
                                   Subject Matter
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
-                                  {caseDetails.subject_matter.map(
+                                  {caseDigest?.subject_matter.map(
                                     (item, index) => (
                                       <Chip
                                         key={index}
@@ -557,12 +557,12 @@ export default function CasePreview() {
                             )}
 
                           {/* Keywords */}
-                          {caseDetails.keywords &&
-                            caseDetails.keywords.length > 0 && (
+                          {caseDigest?.keywords &&
+                            caseDigest?.keywords.length > 0 && (
                               <div>
                                 <h4 className="font-medium mb-2">Keywords</h4>
                                 <div className="flex flex-wrap gap-2">
-                                  {caseDetails.keywords.map((item, index) => (
+                                  {caseDigest?.keywords.map((item, index) => (
                                     <Chip
                                       key={index}
                                       size="sm"
