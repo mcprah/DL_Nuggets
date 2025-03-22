@@ -12,6 +12,8 @@ import {
   Tab,
   Button,
   Tooltip,
+  Accordion,
+  AccordionItem,
 } from "@nextui-org/react";
 import {
   MdContentCopy,
@@ -22,6 +24,8 @@ import {
   MdPrint,
 } from "react-icons/md";
 import { Link } from "@remix-run/react";
+import { CaseDigestResponse } from "~/types/CaseDigest";
+import { generateCaseDigest } from "~/api/case-digest";
 
 interface CaseData {
   id: number;
@@ -65,11 +69,12 @@ export const loader: LoaderFunction = async ({ params }) => {
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
 
   try {
-    // Make initial request without the token
-    const response = await axios.get(`${baseUrl}/case/${id}/fetch`);
+    // Make initial request for case details
+    const caseResponse = await axios.get(`${baseUrl}/case/${id}/fetch`);
+
     return json({
-      caseData: response.data.data,
-      baseUrl,
+      caseData: caseResponse.data.data,
+      baseUrl
     });
   } catch (error) {
     console.error("Error fetching case:", error);
@@ -85,6 +90,8 @@ export default function CasePreview() {
   const [caseDetails, setCaseDetails] = useState(caseData);
   const [selectedTab, setSelectedTab] = useState("full");
   const [copySuccess, setCopySuccess] = useState(false);
+  const [caseDigest, setCaseDigest] = useState<CaseDigestResponse>();
+  const [loadingDigest, setLoadingDigest] = useState(false);
 
   const navigate = useNavigate();
 
@@ -96,17 +103,31 @@ export default function CasePreview() {
 
       try {
         setLoading(true);
-        const response = await axios.get(`${baseUrl}/case/${caseData.id}/fetch`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setCaseDetails(response.data.data);
+        setLoadingDigest(true);
+        const response = await axios
+          .get(`${baseUrl}/case/${caseData.id}/fetch`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+          .then((caseResData) => {
+            const data = caseResData.data.data;
+            console.log("case_data", data);
+
+            setCaseDetails(data);
+            generateCaseDigest(token, data).then((digestResponse) => {
+              setCaseDigest(digestResponse);
+              setLoadingDigest(false);
+            });
+          });
+
+        // Continue without digest if it fails
       } catch (err) {
         console.error("Error fetching with auth:", err);
         // Keep using the data we already have
       } finally {
         setLoading(false);
+        setLoadingDigest(false);
       }
     };
 
@@ -218,7 +239,10 @@ export default function CasePreview() {
         ) : (
           <>
             {/* Case Info Card */}
-            <Card className="mb-6 shadow-sm border border-gray-100">
+            <Card
+              shadow="none"
+              className="mb-6 border border-gray-100 bg-transparent"
+            >
               <div className="p-6">
                 {/* Title and Actions */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
@@ -277,7 +301,9 @@ export default function CasePreview() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="text-sm text-gray-500">Citation:</p>
-                    <p className="font-semibold">{caseDetails.dl_citation_no}</p>
+                    <p className="font-semibold">
+                      {caseDetails.dl_citation_no}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Date:</p>
@@ -285,7 +311,9 @@ export default function CasePreview() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Type:</p>
-                    <p className="font-semibold capitalize">{caseDetails.type}</p>
+                    <p className="font-semibold capitalize">
+                      {caseDetails.type}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Region:</p>
@@ -322,27 +350,233 @@ export default function CasePreview() {
 
                 {/* Case Content Tabs */}
                 <Tabs
+                  size="lg"
+                  color="default"
                   selectedKey={selectedTab}
                   onSelectionChange={(key) => setSelectedTab(key as string)}
                   className="print:hidden"
+                  classNames={{
+                    tabList: "bg-slate-200 shadow-lg",
+                    tab: "text-red-800",
+                  }}
                 >
-                  <Tab key="full" title="Full Text">
+                  <Tab key="full" title="Full Case">
                     <div className="py-4 prose prose-slate max-w-none">
                       {formatDecision(caseDetails.decision)}
                     </div>
                   </Tab>
-                  <Tab key="sections" title="Sections">
+                  <Tab key="digest" title="Case Digest">
                     <div className="py-4">
-                      {extractSections().map((section, index) => (
-                        <div key={index} className="mb-6">
-                          <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                            {section.title}
-                          </h3>
-                          <div className="prose prose-slate max-w-none">
-                            {formatDecision(section.content)}
-                          </div>
-                        </div>
-                      ))}
+                      {/* Summary Section */}
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-2">Summary</h3>
+                        <p className="text-gray-700">{caseDetails.summary}</p>
+                      </div>
+
+                      {/* Accordion for Key Components */}
+                      <div className="space-y-4">
+                        <Accordion>
+                          <AccordionItem key="facts" title="Facts">
+                            <ul className="list-disc pl-5 space-y-2">
+                              {caseDetails.facts?.map((item, index) => (
+                                <li key={index}>
+                                  {item.content || item.value}
+                                </li>
+                              ))}
+                            </ul>
+                          </AccordionItem>
+
+                          <AccordionItem key="issues" title="Issues">
+                            <ul className="list-disc pl-5 space-y-2">
+                              {caseDetails.issues?.map((item, index) => (
+                                <li key={index}>
+                                  {item.content || item.value}
+                                </li>
+                              ))}
+                            </ul>
+                          </AccordionItem>
+
+                          {/* New Arguments Section */}
+                          <AccordionItem key="arguments" title="Arguments">
+                            {caseDetails.arguments?.map((arg, index) => (
+                              <div key={index} className="mb-4">
+                                <h4 className="font-medium mb-2">
+                                  {arg.party}
+                                </h4>
+                                <p className="pl-4 border-l-2 border-gray-300">
+                                  {arg.argument}
+                                </p>
+                              </div>
+                            ))}
+                          </AccordionItem>
+
+                          <AccordionItem key="holding" title="Holding">
+                            <ul className="list-disc pl-5 space-y-2">
+                              {caseDetails.holding?.map((item, index) => (
+                                <li key={index}>
+                                  {item.content || item.value}
+                                </li>
+                              ))}
+                            </ul>
+                          </AccordionItem>
+
+                          <AccordionItem key="reasoning" title="Reasoning">
+                            <h4 className="font-medium mb-2">
+                              Ratio Decidendi
+                            </h4>
+                            <p className="mb-4">
+                              {caseDetails.ratio_decidendi}
+                            </p>
+
+                            {caseDetails.obiter_dicta &&
+                              caseDetails.obiter_dicta.length > 0 && (
+                                <>
+                                  <h4 className="font-medium mb-2">
+                                    Obiter Dicta
+                                  </h4>
+                                  <ul className="list-disc pl-5 space-y-2">
+                                    {caseDetails.obiter_dicta.map(
+                                      (item, index) => (
+                                        <li key={index}>
+                                          {item.content || item.value}
+                                        </li>
+                                      )
+                                    )}
+                                  </ul>
+                                </>
+                              )}
+
+                            {/* New Opinions Sections */}
+                            {caseDetails.concurring_opinions &&
+                              caseDetails.concurring_opinions.length > 0 && (
+                                <>
+                                  <h4 className="font-medium mt-4 mb-2">
+                                    Concurring Opinions
+                                  </h4>
+                                  {caseDetails.concurring_opinions.map(
+                                    (opinion, index) => (
+                                      <div
+                                        key={index}
+                                        className="mb-3 p-3 bg-gray-50 rounded"
+                                      >
+                                        <p className="italic mb-1">
+                                          {opinion.judge || "Judge"}:
+                                        </p>
+                                        <p>
+                                          {opinion.content || opinion.opinion}
+                                        </p>
+                                      </div>
+                                    )
+                                  )}
+                                </>
+                              )}
+
+                            {caseDetails.dissenting_opinions &&
+                              caseDetails.dissenting_opinions.length > 0 && (
+                                <>
+                                  <h4 className="font-medium mt-4 mb-2">
+                                    Dissenting Opinions
+                                  </h4>
+                                  {caseDetails.dissenting_opinions.map(
+                                    (opinion, index) => (
+                                      <div
+                                        key={index}
+                                        className="mb-3 p-3 bg-gray-50 rounded"
+                                      >
+                                        <p className="italic mb-1">
+                                          {opinion.judge || "Judge"}:
+                                        </p>
+                                        <p>
+                                          {opinion.content || opinion.opinion}
+                                        </p>
+                                      </div>
+                                    )
+                                  )}
+                                </>
+                              )}
+                          </AccordionItem>
+                        </Accordion>
+                      </div>
+                    </div>
+                  </Tab>
+
+                  <Tab key="references" title="References">
+                    <div className="py-4">
+                      {/* Cases Cited Section */}
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-3">
+                          Cases Cited
+                        </h3>
+                        <ul className="list-disc pl-5 space-y-2">
+                          {caseDetails.cases_cited?.map((item, index) => (
+                            <li key={index}>{item.content || item.value}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Laws Cited Section */}
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-3">
+                          Laws Cited
+                        </h3>
+                        <ul className="list-disc pl-5 space-y-2">
+                          {caseDetails.laws_cited?.map((item, index) => (
+                            <li key={index}>{item.content || item.value}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* New Metadata Section */}
+                      <Accordion>
+                        <AccordionItem
+                          key="metadata"
+                          title="Additional Metadata"
+                        >
+                          {/* Subject Matter */}
+                          {caseDetails.subject_matter &&
+                            caseDetails.subject_matter.length > 0 && (
+                              <div className="mb-4">
+                                <h4 className="font-medium mb-2">
+                                  Subject Matter
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {caseDetails.subject_matter.map(
+                                    (item, index) => (
+                                      <Chip
+                                        key={index}
+                                        size="sm"
+                                        variant="flat"
+                                        color="secondary"
+                                      >
+                                        {item.content || item.value}
+                                      </Chip>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                          {/* Keywords */}
+                          {caseDetails.keywords &&
+                            caseDetails.keywords.length > 0 && (
+                              <div>
+                                <h4 className="font-medium mb-2">Keywords</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {caseDetails.keywords.map((item, index) => (
+                                    <Chip
+                                      key={index}
+                                      size="sm"
+                                      variant="flat"
+                                      color="default"
+                                    >
+                                      {item.content || item.value}
+                                    </Chip>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                        </AccordionItem>
+                      </Accordion>
                     </div>
                   </Tab>
                 </Tabs>
