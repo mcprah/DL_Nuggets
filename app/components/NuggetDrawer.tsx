@@ -226,7 +226,7 @@ const NuggetDrawer = ({
                   to={`/nuggets/judges/${nugget.judge.id}`}
                   className="font-semibold hover:underline"
                 >
-                  - {nugget.judge.fullname} {nugget.judge_title}
+                  <span className="font-normal">by</span> {nugget.judge.fullname} {nugget.judge_title}
                 </Link>
               </div>
             )}
