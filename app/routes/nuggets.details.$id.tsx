@@ -125,7 +125,13 @@ const NuggetDetails = () => {
 
   const handleCopyPrinciple = () => {
     if (nugget?.principle) {
-      navigator.clipboard.writeText(nugget.principle);
+      const text = nugget.principle;
+      const citation = nugget?.dl_citation_no  || '';
+      const pageLink = window.location.href;
+      
+      const formattedText = `${text}\n\nSource: Dennislaw - ${citation}\nLink: ${pageLink}`;
+      
+      navigator.clipboard.writeText(formattedText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -323,7 +329,7 @@ const NuggetDetails = () => {
                     isIconOnly
                     variant="light"
                     size="sm"
-                    onClick={handleCopyPrinciple}
+                    onPress={handleCopyPrinciple}
                     className="text-gray-500"
                   >
                     <MdContentCopy className="text-lg" />
