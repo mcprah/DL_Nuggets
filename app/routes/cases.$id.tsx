@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLoaderData, useParams } from "@remix-run/react";
+import { useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
 import axios from "axios";
 import AdminLayout from "~/Layout/AdminLayout";
@@ -84,6 +84,8 @@ export default function CasePreview() {
   const [selectedTab, setSelectedTab] = useState("full");
   const [copySuccess, setCopySuccess] = useState(false);
 
+  const navigate = useNavigate();
+
   // Format the decision text for better readability
   const formatDecision = (text: string) => {
     // Replace new lines with proper HTML line breaks
@@ -166,10 +168,13 @@ export default function CasePreview() {
       <div className="max-w-5xl mx-auto pb-20">
         {/* Header with back button */}
         <div className="flex items-center mb-4">
-          <Link to="/nuggets" className="text-gray-600 hover:text-gray-900">
-            <MdArrowBack className="text-2xl" />
-          </Link>
-          <h1 className="text-xl ml-2 font-semibold">Case Details</h1>
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-primary transition-all px-3 py-1.5 rounded-lg hover:bg-gray-100"
+          >
+            <MdArrowBack className="text-xl" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
         </div>
 
         {loading ? (

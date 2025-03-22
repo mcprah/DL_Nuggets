@@ -430,11 +430,9 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
   try {
     const response = await axios.get(`${baseUrl}/nugget/${id}`);
-    console.log("Nugget details:", response?.data?.data);
 
     // Map API response to match the Nugget interface if needed
     const nuggetData = response.data?.data || {};
-    console.log(response);
 
     // Handle potential differences in API response format
     const nugget: Nugget = {
