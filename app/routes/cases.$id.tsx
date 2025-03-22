@@ -213,7 +213,7 @@ export default function CasePreview() {
 
   return (
     <AdminLayout>
-      <div className="max-w-5xl mx-auto pb-20">
+      <div className="max-w-6xl mx-auto pb-20">
         {/* Header with back button */}
         <div className="flex items-center mb-4">
           <button
@@ -356,8 +356,7 @@ export default function CasePreview() {
                   onSelectionChange={(key) => setSelectedTab(key as string)}
                   className="print:hidden"
                   classNames={{
-                    tabList: "bg-slate-200 shadow-lg",
-                    tab: "text-red-800",
+                    tabList: "shadow-sm bg-gray-200/50",
                   }}
                 >
                   <Tab key="full" title="Full Case">
