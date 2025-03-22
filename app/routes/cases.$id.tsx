@@ -65,6 +65,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
 
   try {
+    // Make initial request without the token
     const response = await axios.get(`${baseUrl}/case/${id}/fetch`);
     return json({
       caseData: response.data.data,
@@ -77,14 +78,40 @@ export const loader: LoaderFunction = async ({ params }) => {
 };
 
 export default function CasePreview() {
-  const { caseData } = useLoaderData<LoaderData>();
+  const { caseData, baseUrl } = useLoaderData<LoaderData>();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [caseDetails, setCaseDetails] = useState(caseData);
   const [selectedTab, setSelectedTab] = useState("full");
   const [copySuccess, setCopySuccess] = useState(false);
 
   const navigate = useNavigate();
+
+  // Fetch with auth token on client side if needed
+  useEffect(() => {
+    const fetchWithAuth = async () => {
+      const token = localStorage.getItem("access_token");
+      if (!token) return; // Skip if no token
+
+      try {
+        setLoading(true);
+        const response = await axios.get(`${baseUrl}/case/${caseData.id}/fetch`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setCaseDetails(response.data.data);
+      } catch (err) {
+        console.error("Error fetching with auth:", err);
+        // Keep using the data we already have
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWithAuth();
+  }, [baseUrl, caseData.id]);
 
   // Format the decision text for better readability
   const formatDecision = (text: string) => {
@@ -99,7 +126,7 @@ export default function CasePreview() {
   // Extract case sections (Introduction, Issues, etc.)
   const extractSections = () => {
     const sections: { title: string; content: string }[] = [];
-    const lines = caseData.decision.split("\r\n");
+    const lines = caseDetails.decision.split("\r\n");
 
     let currentSection = "";
     let currentContent: string[] = [];
@@ -136,7 +163,7 @@ export default function CasePreview() {
   };
 
   const handleCopyText = () => {
-    navigator.clipboard.writeText(caseData.decision);
+    navigator.clipboard.writeText(caseDetails.decision);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
@@ -149,8 +176,8 @@ export default function CasePreview() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: caseData.title,
-        text: `Check out this case: ${caseData.title} - ${caseData.dl_citation_no}`,
+        title: caseDetails.title,
+        text: `Check out this case: ${caseDetails.title} - ${caseDetails.dl_citation_no}`,
         url: window.location.href,
       });
     } else {
@@ -179,7 +206,7 @@ export default function CasePreview() {
 
         {loading ? (
           <div className="flex justify-center items-center h-96">
-            <Spinner size="lg" label="Loading case..." />
+            <Spinner size="md" label="Loading case..." />
           </div>
         ) : error ? (
           <Card className="p-6 text-center">
@@ -196,7 +223,7 @@ export default function CasePreview() {
                 {/* Title and Actions */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
                   <h1 className="text-xl md:text-2xl font-bold text-gray-800">
-                    {caseData.title}
+                    {caseDetails.title}
                   </h1>
                   <div className="flex gap-2 flex-wrap justify-end print:hidden">
                     <Tooltip content={copySuccess ? "Copied!" : "Copy text"}>
@@ -250,20 +277,20 @@ export default function CasePreview() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="text-sm text-gray-500">Citation:</p>
-                    <p className="font-semibold">{caseData.dl_citation_no}</p>
+                    <p className="font-semibold">{caseDetails.dl_citation_no}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Date:</p>
-                    <p className="font-semibold">{caseData.date}</p>
+                    <p className="font-semibold">{caseDetails.date}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Type:</p>
-                    <p className="font-semibold capitalize">{caseData.type}</p>
+                    <p className="font-semibold capitalize">{caseDetails.type}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Region:</p>
                     <p className="font-semibold">
-                      {caseData.region?.name || "Not specified"}
+                      {caseDetails.region?.name || "Not specified"}
                     </p>
                   </div>
                 </div>
@@ -272,14 +299,14 @@ export default function CasePreview() {
                 <div className="mb-4">
                   <p className="text-sm text-gray-500">Judges:</p>
                   <p className="font-semibold">
-                    {caseData.judges || "Not specified"}
+                    {caseDetails.judges || "Not specified"}
                   </p>
                 </div>
 
                 {/* Categorizations */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {caseData.area_of_law &&
-                    caseData.area_of_law.split(",").map((area, index) => (
+                  {caseDetails.area_of_law &&
+                    caseDetails.area_of_law.split(",").map((area, index) => (
                       <Chip
                         key={index}
                         size="sm"
@@ -301,7 +328,7 @@ export default function CasePreview() {
                 >
                   <Tab key="full" title="Full Text">
                     <div className="py-4 prose prose-slate max-w-none">
-                      {formatDecision(caseData.decision)}
+                      {formatDecision(caseDetails.decision)}
                     </div>
                   </Tab>
                   <Tab key="sections" title="Sections">
@@ -324,7 +351,7 @@ export default function CasePreview() {
                 <div className="hidden print:block">
                   <h2 className="text-xl font-bold mb-4">Full Text</h2>
                   <div className="prose prose-slate max-w-none">
-                    {formatDecision(caseData.decision)}
+                    {formatDecision(caseDetails.decision)}
                   </div>
                 </div>
               </div>
