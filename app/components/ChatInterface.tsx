@@ -1,0 +1,232 @@
+import { useState, useRef, useEffect } from "react";
+import { Button, Input, Textarea, Spinner, Card, CardBody, Avatar, Divider } from "@nextui-org/react";
+import { MdSend, MdInsertDriveFile } from "react-icons/md";
+import axios from "axios";
+
+interface Message {
+  id: string;
+  content: string;
+  role: "user" | "assistant";
+  timestamp: Date;
+}
+
+interface ChatInterfaceProps {
+  caseTitle: string;
+  caseCitation: string;
+  baseAIUrl: string;
+  vectorStoreId?: string;
+  fileId?: string;
+}
+
+export default function ChatInterface({
+  caseTitle,
+  caseCitation,
+  baseAIUrl,
+  vectorStoreId,
+  fileId
+}: ChatInterfaceProps) {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome",
+      content: `Hello! I'm your AI assistant. Ask me anything about the case "${caseTitle}" (${caseCitation}).`,
+      role: "assistant",
+      timestamp: new Date()
+    }
+  ]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to bottom of chat when messages update
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+  
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim()) return;
+    
+    // Create user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: inputMessage,
+      role: "user",
+      timestamp: new Date()
+    };
+    
+    // Add user message to chat
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage("");
+    setIsLoading(true);
+    
+    try {
+      // Get token for authorization
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        throw new Error("Not authenticated");
+      }
+      
+      // Prepare the conversation history
+      const conversationHistory = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      
+      // Add the new user message
+      conversationHistory.push({
+        role: "user",
+        content: userMessage.content
+      });
+      
+      // Call AI API
+      const response = await axios.post(
+        `${baseAIUrl}/chat`,
+        {
+          messages: conversationHistory,
+          vector_store_id: vectorStoreId,
+          file_id: fileId,
+          citation: caseCitation
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      // Add AI response to chat
+      const aiResponse: Message = {
+        id: Date.now().toString(),
+        content: response.data.response || "I'm sorry, I couldn't process that request.",
+        role: "assistant",
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error("Error sending message to AI:", error);
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        content: "I'm sorry, I encountered an error processing your request. Please try again.",
+        role: "assistant",
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+  
+  return (
+    <div className="flex flex-col h-full bg-gray-50">
+      {/* System message - brief instructions */}
+      <div className="px-4 py-3 bg-white border-b border-gray-200">
+        <p className="text-sm text-gray-600">
+          I'm an AI assistant that can help you understand case {caseCitation}. Ask me any questions about the facts, legal reasoning, or implications.
+        </p>
+      </div>
+      
+      {/* Messages container */}
+      <div className="flex-grow overflow-y-auto p-4 space-y-6">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`flex ${
+              message.role === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            <div
+              className={`max-w-[85%] rounded-2xl p-4 ${
+                message.role === "user"
+                  ? "bg-primary text-white"
+                  : "bg-white text-gray-800 border border-gray-200 shadow-sm"
+              }`}
+            >
+              {message.role === "assistant" && (
+                <div className="flex items-center mb-2">
+                  <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center mr-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20 11a8 8 0 1 0-16 0v.5c0 1.4.7 2.7 1.8 3.5h.2c1.1 0 2-.9 2-2V10a4 4 0 1 1 8 0v3c0 1.1.9 2 2 2h.2a4.5 4.5 0 0 0 1.8-3.5V11z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="font-medium text-sm text-gray-800">Assistant</span>
+                </div>
+              )}
+              <div className="prose prose-sm max-w-none">
+                <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="max-w-[85%] rounded-2xl p-4 bg-white text-gray-800 border border-gray-200 shadow-sm">
+              <div className="flex items-center mb-2">
+                <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center mr-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 11a8 8 0 1 0-16 0v.5c0 1.4.7 2.7 1.8 3.5h.2c1.1 0 2-.9 2-2V10a4 4 0 1 1 8 0v3c0 1.1.9 2 2 2h.2a4.5 4.5 0 0 0 1.8-3.5V11z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span className="font-medium text-sm text-gray-800">Assistant</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse"></div>
+                <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse delay-75"></div>
+                <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse delay-150"></div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      
+      {/* Input area - OpenAI style */}
+      <div className="p-4 bg-white border-t border-gray-200">
+        <div className="flex relative">
+          <Textarea
+            placeholder="Ask a question about this case..."
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyDown={handleKeyPress}
+            minRows={1}
+            maxRows={5}
+            classNames={{
+              base: "w-full pr-12",
+              input: "resize-none py-3 px-4 rounded-xl border-gray-300 focus:border-primary",
+            }}
+            disabled={isLoading}
+          />
+          <Button
+            isIconOnly
+            color="primary"
+            className="absolute right-2 bottom-2 min-w-0 w-8 h-8 p-0"
+            aria-label="Send"
+            onClick={handleSendMessage}
+            isLoading={isLoading}
+            isDisabled={!inputMessage.trim()}
+            radius="full"
+          >
+            <MdSend size={16} />
+          </Button>
+        </div>
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          AI responses are generated based on the case content. They should not be considered legal advice.
+        </p>
+      </div>
+    </div>
+  );
+} 
