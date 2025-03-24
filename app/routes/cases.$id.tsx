@@ -409,8 +409,46 @@ export default function CasePreview() {
                       {formatDecision(caseDetails.decision)}
                     </div>
                   </Tab>
-                  <Tab key="digest" title="Case Digest">
+                  <Tab
+                    key="digest"
+                    title={
+                      <div className="flex items-center gap-1">
+                        Case Digest{" "}
+                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
+                          AI
+                        </span>
+                      </div>
+                    }
+                  >
                     <div className="py-4">
+                      {/* AI Generated Notice */}
+                      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 flex items-center gap-3 rounded-md">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6 text-blue-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                          />
+                        </svg>
+                        <div>
+                          <p className="font-medium text-blue-700">
+                            AI-Generated Content
+                          </p>
+                          <p className="text-sm text-blue-600">
+                            This case digest was automatically generated using
+                            AI and may not be comprehensive or entirely
+                            accurate.
+                          </p>
+                        </div>
+                      </div>
+
                       {/* Summary Section */}
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold mb-2">Summary</h3>
@@ -419,7 +457,15 @@ export default function CasePreview() {
 
                       {/* Accordion for Key Components */}
                       <div className="space-y-4">
-                        <Accordion>
+                        <Accordion
+                          defaultExpandedKeys={[
+                            "facts",
+                            "issues",
+                            "arguments",
+                            "holding",
+                            "reasoning",
+                          ]}
+                        >
                           <AccordionItem key="facts" title="Facts">
                             <ul className="list-disc pl-5 space-y-2">
                               {caseDigest?.facts?.map((item, index) => (
@@ -544,7 +590,17 @@ export default function CasePreview() {
                     </div>
                   </Tab>
 
-                  <Tab key="references" title="References">
+                  <Tab
+                    key="references"
+                    title={
+                      <div className="flex items-center gap-1">
+                        References{" "}
+                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
+                          AI
+                        </span>
+                      </div>
+                    }
+                  >
                     <div className="py-4">
                       {/* Cases Cited Section */}
                       <div className="mb-6">
@@ -571,7 +627,7 @@ export default function CasePreview() {
                       </div>
 
                       {/* New Metadata Section */}
-                      <Accordion>
+                      <Accordion defaultExpandedKeys={["metadata"]}>
                         <AccordionItem
                           key="metadata"
                           title="Additional Metadata"
