@@ -15,6 +15,8 @@ export interface OpinionEntry {
   judge?: string;
   content?: string;
   opinion?: string;
+  argument?: string;
+  party?: string;
 }
 
 export interface CaseDigest {

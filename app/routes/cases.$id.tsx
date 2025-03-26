@@ -149,8 +149,7 @@ export default function CasePreview() {
       if (apiCallMadeRef.current) {
         return;
       }
-      
-      
+
       const token = localStorage.getItem("access_token");
       if (!token) {
         setLoading(false);
@@ -162,18 +161,20 @@ export default function CasePreview() {
         apiCallMadeRef.current = true; // Set flag BEFORE making the API call
         setLoading(true);
         setLoadingDigest(true);
-        
-        const response = await axios.get(`${baseUrl}/case/${caseData.dl_citation_no}/fetch`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+
+        const response = await axios.get(
+          `${baseUrl}/case/${caseData.dl_citation_no}/fetch`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const data = response.data.data;
         setCaseDetails(data);
 
         if (caseDigestFromDB == null) {
-          
           generateCaseDigest(baseAIUrl, data, token).then(
             async (digestResponse) => {
               console.log("digestResponse", digestResponse.data);
@@ -208,7 +209,6 @@ export default function CasePreview() {
     };
 
     fetchWithAuth();
-
   }, [caseData.dl_citation_no]);
 
   // Format the decision text for better readability
@@ -316,8 +316,9 @@ export default function CasePreview() {
               {/* Main Case Content */}
               <div
                 ref={mainContentRef}
-                className={`${isChatOpen ? "lg:w-3/5 lg:border-r border-gray-200" : "w-full"
-                  } transition-all duration-300 ease-in-out overflow-y-auto px-4`}
+                className={`${
+                  isChatOpen ? "lg:w-3/5 lg:border-r border-gray-200" : "w-full"
+                } transition-all duration-300 ease-in-out overflow-y-auto px-4`}
               >
                 {/* Back button row */}
                 <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-2 px-4">
@@ -627,7 +628,7 @@ export default function CasePreview() {
                                     {/* New Opinions Sections */}
                                     {caseDigest?.concurring_opinions &&
                                       caseDigest?.concurring_opinions.length >
-                                      0 && (
+                                        0 && (
                                         <>
                                           <h4 className="font-medium mt-4 mb-2">
                                             Concurring Opinions
@@ -639,10 +640,14 @@ export default function CasePreview() {
                                                 className="mb-3 p-3 bg-gray-50 rounded"
                                               >
                                                 <p className="italic mb-1">
-                                                  {opinion.judge || "Judge"}:
+                                                  {opinion.party ||
+                                                    opinion.judge ||
+                                                    "Judge"}
+                                                  :
                                                 </p>
                                                 <p>
-                                                  {opinion.content ||
+                                                  {opinion.argument ||
+                                                    opinion.content ||
                                                     opinion.opinion}
                                                 </p>
                                               </div>
@@ -653,7 +658,7 @@ export default function CasePreview() {
 
                                     {caseDigest?.dissenting_opinions &&
                                       caseDigest?.dissenting_opinions.length >
-                                      0 && (
+                                        0 && (
                                         <>
                                           <h4 className="font-medium mt-4 mb-2">
                                             Dissenting Opinions
@@ -665,10 +670,14 @@ export default function CasePreview() {
                                                 className="mb-3 p-3 bg-gray-50 rounded"
                                               >
                                                 <p className="italic mb-1">
-                                                  {opinion.judge || "Judge"}:
+                                                  {opinion.party ||
+                                                    opinion.judge ||
+                                                    "Judge"}
+                                                  :
                                                 </p>
                                                 <p>
-                                                  {opinion.content ||
+                                                  {opinion.argument ||
+                                                    opinion.content ||
                                                     opinion.opinion}
                                                 </p>
                                               </div>
@@ -796,8 +805,9 @@ export default function CasePreview() {
 
               {/* Chat Canvas - ChatGPT Style */}
               <div
-                className={`${isChatOpen ? "lg:w-2/5 lg:block" : "lg:hidden"
-                  } fixed lg:static inset-0 bg-white z-30 transition-all duration-300 h-screen lg:h-[calc(100vh-120px)] overflow-hidden`}
+                className={`${
+                  isChatOpen ? "lg:w-2/5 lg:block" : "lg:hidden"
+                } fixed lg:static inset-0 bg-white z-30 transition-all duration-300 h-screen lg:h-[calc(100vh-120px)] overflow-hidden`}
                 style={{
                   boxShadow: isChatOpen ? "0 0 15px rgba(0,0,0,0.1)" : "none",
                 }}
