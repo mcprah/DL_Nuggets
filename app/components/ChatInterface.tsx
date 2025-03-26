@@ -12,7 +12,7 @@ interface Message {
 
 interface ChatInterfaceProps {
   caseTitle: string;
-  caseCitation: string;
+  dlCitationNo: string;
   baseAIUrl: string;
   vectorStoreId?: string;
   fileId?: string;
@@ -20,18 +20,18 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({
   caseTitle,
-  caseCitation,
+  dlCitationNo,
   baseAIUrl,
   vectorStoreId,
   fileId
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      content: `Hello! I'm your AI assistant. Ask me anything about the case "${caseTitle}" (${caseCitation}).`,
-      role: "assistant",
-      timestamp: new Date()
-    }
+    // {
+    //   id: "welcome",
+    //   content: `Hello! I'm your AI assistant. Ask me anything about "${caseTitle}" (${dlCitationNo}).`,
+    //   role: "assistant",
+    //   timestamp: new Date()
+    // }
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -83,12 +83,12 @@ export default function ChatInterface({
       
       // Call AI API
       const response = await axios.post(
-        `${baseAIUrl}/chat`,
+        `${baseAIUrl}/case-chat`,
         {
           messages: conversationHistory,
           vector_store_id: vectorStoreId,
           file_id: fileId,
-          citation: caseCitation
+          dl_citation_no: dlCitationNo
         },
         {
           headers: {
@@ -135,7 +135,7 @@ export default function ChatInterface({
       {/* System message - brief instructions */}
       <div className="px-4 py-3 bg-white border-b border-gray-200">
         <p className="text-sm text-gray-600">
-          I'm an AI assistant that can help you understand case {caseCitation}. Ask me any questions about the facts, legal reasoning, or implications.
+          I'm an AI assistant that can help you understand case <strong>{caseTitle}</strong>. Ask me any questions about the facts, legal reasoning, or implications.
         </p>
       </div>
       
@@ -155,7 +155,7 @@ export default function ChatInterface({
                   : "bg-white text-gray-800 border border-gray-200 shadow-sm"
               }`}
             >
-              {message.role === "assistant" && (
+              {/* {message.role === "assistant" && (
                 <div className="flex items-center mb-2">
                   <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center mr-2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -164,7 +164,7 @@ export default function ChatInterface({
                   </div>
                   <span className="font-medium text-sm text-gray-800">Assistant</span>
                 </div>
-              )}
+              )} */}
               <div className="prose prose-sm max-w-none">
                 <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
               </div>
@@ -175,14 +175,14 @@ export default function ChatInterface({
         {isLoading && (
           <div className="flex justify-start">
             <div className="max-w-[85%] rounded-2xl p-4 bg-white text-gray-800 border border-gray-200 shadow-sm">
-              <div className="flex items-center mb-2">
+              {/* <div className="flex items-center mb-2">
                 <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center mr-2">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 11a8 8 0 1 0-16 0v.5c0 1.4.7 2.7 1.8 3.5h.2c1.1 0 2-.9 2-2V10a4 4 0 1 1 8 0v3c0 1.1.9 2 2 2h.2a4.5 4.5 0 0 0 1.8-3.5V11z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
                 <span className="font-medium text-sm text-gray-800">Assistant</span>
-              </div>
+              </div> */}
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse"></div>
                 <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse delay-75"></div>

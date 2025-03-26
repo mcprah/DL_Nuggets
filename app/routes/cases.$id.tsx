@@ -25,6 +25,7 @@ import {
   MdChat,
   MdChevronLeft,
   MdChevronRight,
+  MdClose,
 } from "react-icons/md";
 import { Link } from "@remix-run/react";
 import { CaseDigest, CaseDigestResponse } from "~/types/CaseDigest";
@@ -148,7 +149,10 @@ export default function CasePreview() {
 
     const fetchWithAuth = async () => {
       const token = localStorage.getItem("access_token");
-      if (!token) return; // Skip if no token
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
@@ -158,46 +162,40 @@ export default function CasePreview() {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          })
-          .then((caseResData) => {
-            const data = caseResData.data.data;
-
-            setCaseDetails(data);
-
-            if (caseDigestFromDB == null) {
-              console.log("runing einsbkds ");
-
-              generateCaseDigest(baseAIUrl, data, token).then(
-                async (digestResponse) => {
-                  console.log("digestResponse", digestResponse.data);
-                  const digestInfo = digestResponse.data;
-                  setCaseDigest(digestInfo);
-                  await storeVectorFileIDs(
-                    baseUrl,
-                    digestInfo?.vector_store_id,
-                    digestInfo?.file_id,
-                    digestInfo?.dl_citation_no,
-                    token
-                  );
-                  setLoadingDigest(false);
-                }
-              );
-            } else {
-              getCaseDigestFromAI(
-                baseAIUrl,
-                caseDigest?.vector_store_id!,
-                caseDigest?.dl_citation_no!,
-                token
-              ).then((digestResponse) => {
-                setCaseDigest(digestResponse as CaseDigest);
-              });
-            }
           });
 
-        // Continue without digest if it fails
+        const data = response.data.data;
+        setCaseDetails(data);
+
+        if (caseDigestFromDB == null) {
+          console.log("runing einsbkds ");
+          // generateCaseDigest(baseAIUrl, data, token).then(
+          //   async (digestResponse) => {
+          //     console.log("digestResponse", digestResponse.data);
+          //     const digestInfo = digestResponse.data;
+          //     setCaseDigest(digestInfo);
+          //     await storeVectorFileIDs(
+          //       baseUrl,
+          //       digestInfo?.vector_store_id,
+          //       digestInfo?.file_id,
+          //       digestInfo?.dl_citation_no,
+          //       token
+          //     );
+          //     setLoadingDigest(false);
+          //   }
+          // );
+        } else {
+          getCaseDigestFromAI(
+            baseAIUrl,
+            caseDigest?.vector_store_id!,
+            caseDigest?.dl_citation_no!,
+            token
+          ).then((digestResponse) => {
+            setCaseDigest(digestResponse as CaseDigest);
+          });
+        }
       } catch (err) {
         console.error("Error fetching with auth:", err);
-        // Keep using the data we already have
       } finally {
         setLoading(false);
         setLoadingDigest(false);
@@ -206,7 +204,12 @@ export default function CasePreview() {
     };
 
     fetchWithAuth();
-  }, [caseData.dl_citation_no]);
+
+    // Add cleanup function
+    return () => {
+      effectHasRunRef.current = false;
+    };
+  }, [caseData.dl_citation_no, baseUrl, caseDigestFromDB]);
 
   // Format the decision text for better readability
   const formatDecision = (text: string) => {
@@ -313,9 +316,8 @@ export default function CasePreview() {
               {/* Main Case Content */}
               <div
                 ref={mainContentRef}
-                className={`${
-                  isChatOpen ? "lg:w-3/5 lg:border-r border-gray-200" : "w-full"
-                } transition-all duration-300 ease-in-out overflow-y-auto px-4`}
+                className={`${isChatOpen ? "lg:w-3/5 lg:border-r border-gray-200" : "w-full"
+                  } transition-all duration-300 ease-in-out overflow-y-auto px-4`}
               >
                 {/* Back button row */}
                 <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 py-2 px-4">
@@ -330,7 +332,7 @@ export default function CasePreview() {
                   </Button>
 
                   <div className="flex items-center gap-2">
-                    {!isChatOpen && (
+                    {!loadingDigest && !isChatOpen && (
                       <Tooltip content={"Ask AI"}>
                         <Button
                           isIconOnly
@@ -338,8 +340,7 @@ export default function CasePreview() {
                           variant="flat"
                           startContent={<MdChat size={16} />}
                           onPress={() => setIsChatOpen(true)}
-                        >
-                        </Button>
+                        ></Button>
                       </Tooltip>
                     )}
                     <Tooltip content={copySuccess ? "Copied!" : "Copy Text"}>
@@ -483,180 +484,203 @@ export default function CasePreview() {
                         }
                       >
                         <div className="py-4">
-                          {/* AI Generated Notice */}
-                          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 flex items-center gap-3 rounded-md">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-6 w-6 text-blue-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                              />
-                            </svg>
-                            <div>
-                              <p className="font-medium text-blue-700">
-                                AI-Generated Content
-                              </p>
-                              <p className="text-sm text-blue-600">
-                                This case digest was automatically generated
-                                using AI and may not be comprehensive or
-                                entirely accurate.
+                          {loadingDigest ? (
+                            <div className="h-64 flex flex-col items-center justify-center">
+                              <Spinner size="lg" color="primary" />
+                              <p className="mt-4 text-gray-600">
+                                Generating case digest...
                               </p>
                             </div>
-                          </div>
+                          ) : (
+                            <>
+                              {/* AI Generated Notice */}
+                              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 flex items-center gap-3 rounded-md">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-6 w-6 text-blue-500"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                  />
+                                </svg>
+                                <div>
+                                  <p className="font-medium text-blue-700">
+                                    AI-Generated Content
+                                  </p>
+                                  <p className="text-sm text-blue-600">
+                                    This case digest was automatically generated
+                                    using AI and may not be comprehensive or
+                                    entirely accurate.
+                                  </p>
+                                </div>
+                              </div>
 
-                          {/* Summary Section */}
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-2">
-                              Summary
-                            </h3>
-                            <p className="text-gray-700">
-                              {caseDigest?.summary}
-                            </p>
-                          </div>
-
-                          {/* Accordion for Key Components */}
-                          <div className="space-y-4">
-                            <Accordion
-                              defaultExpandedKeys={[
-                                "facts",
-                                "issues",
-                                "arguments",
-                                "holding",
-                                "reasoning",
-                              ]}
-                            >
-                              <AccordionItem key="facts" title="Facts">
-                                <ul className="list-disc pl-5 space-y-2">
-                                  {caseDigest?.facts?.map((item, index) => (
-                                    <li key={index}>
-                                      {item.content || item.value}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </AccordionItem>
-
-                              <AccordionItem key="issues" title="Issues">
-                                <ul className="list-disc pl-5 space-y-2">
-                                  {caseDigest?.issues?.map((item, index) => (
-                                    <li key={index}>
-                                      {item.content || item.value}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </AccordionItem>
-
-                              {/* New Arguments Section */}
-                              <AccordionItem key="arguments" title="Arguments">
-                                {caseDigest?.arguments?.map((arg, index) => (
-                                  <div key={index} className="mb-4">
-                                    <h4 className="font-medium mb-2">
-                                      {arg.party}
-                                    </h4>
-                                    <p className="pl-4 border-l-2 border-gray-300">
-                                      {arg.argument}
-                                    </p>
-                                  </div>
-                                ))}
-                              </AccordionItem>
-
-                              <AccordionItem key="holding" title="Holding">
-                                <ul className="list-disc pl-5 space-y-2">
-                                  {caseDigest?.holding?.map((item, index) => (
-                                    <li key={index}>
-                                      {item.content || item.value}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </AccordionItem>
-
-                              <AccordionItem key="reasoning" title="Reasoning">
-                                <h4 className="font-medium mb-2">
-                                  Ratio Decidendi
-                                </h4>
-                                <p className="mb-4">
-                                  {caseDigest?.ratio_decidendi}
+                              {/* Summary Section */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-2">
+                                  Summary
+                                </h3>
+                                <p className="text-gray-700">
+                                  {caseDigest?.summary}
                                 </p>
+                              </div>
 
-                                {caseDigest?.obiter_dicta &&
-                                  caseDigest?.obiter_dicta.length > 0 && (
-                                    <>
-                                      <h4 className="font-medium mb-2">
-                                        Obiter Dicta
-                                      </h4>
-                                      <ul className="list-disc pl-5 space-y-2">
-                                        {caseDigest?.obiter_dicta.map(
-                                          (item, index) => (
-                                            <li key={index}>
-                                              {item.content || item.value}
-                                            </li>
-                                          )
-                                        )}
-                                      </ul>
-                                    </>
-                                  )}
+                              {/* Accordion for Key Components */}
+                              <div className="space-y-4">
+                                <Accordion
+                                  defaultExpandedKeys={[
+                                    "facts",
+                                    "issues",
+                                    "arguments",
+                                    "holding",
+                                    "reasoning",
+                                  ]}
+                                >
+                                  <AccordionItem key="facts" title="Facts">
+                                    <ul className="list-disc pl-5 space-y-2">
+                                      {caseDigest?.facts?.map((item, index) => (
+                                        <li key={index}>
+                                          {item.content || item.value}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </AccordionItem>
 
-                                {/* New Opinions Sections */}
-                                {caseDigest?.concurring_opinions &&
-                                  caseDigest?.concurring_opinions.length >
-                                    0 && (
-                                    <>
-                                      <h4 className="font-medium mt-4 mb-2">
-                                        Concurring Opinions
-                                      </h4>
-                                      {caseDigest?.concurring_opinions.map(
-                                        (opinion, index) => (
-                                          <div
-                                            key={index}
-                                            className="mb-3 p-3 bg-gray-50 rounded"
-                                          >
-                                            <p className="italic mb-1">
-                                              {opinion.judge || "Judge"}:
-                                            </p>
-                                            <p>
-                                              {opinion.content ||
-                                                opinion.opinion}
-                                            </p>
-                                          </div>
+                                  <AccordionItem key="issues" title="Issues">
+                                    <ul className="list-disc pl-5 space-y-2">
+                                      {caseDigest?.issues?.map(
+                                        (item, index) => (
+                                          <li key={index}>
+                                            {item.content || item.value}
+                                          </li>
                                         )
                                       )}
-                                    </>
-                                  )}
+                                    </ul>
+                                  </AccordionItem>
 
-                                {caseDigest?.dissenting_opinions &&
-                                  caseDigest?.dissenting_opinions.length >
-                                    0 && (
-                                    <>
-                                      <h4 className="font-medium mt-4 mb-2">
-                                        Dissenting Opinions
-                                      </h4>
-                                      {caseDigest?.dissenting_opinions.map(
-                                        (opinion, index) => (
-                                          <div
-                                            key={index}
-                                            className="mb-3 p-3 bg-gray-50 rounded"
-                                          >
-                                            <p className="italic mb-1">
-                                              {opinion.judge || "Judge"}:
-                                            </p>
-                                            <p>
-                                              {opinion.content ||
-                                                opinion.opinion}
-                                            </p>
-                                          </div>
+                                  {/* New Arguments Section */}
+                                  <AccordionItem
+                                    key="arguments"
+                                    title="Arguments"
+                                  >
+                                    {caseDigest?.arguments?.map(
+                                      (arg, index) => (
+                                        <div key={index} className="mb-4">
+                                          <h4 className="font-medium mb-2">
+                                            {arg.party}
+                                          </h4>
+                                          <p className="pl-4 border-l-2 border-gray-300">
+                                            {arg.argument}
+                                          </p>
+                                        </div>
+                                      )
+                                    )}
+                                  </AccordionItem>
+
+                                  <AccordionItem key="holding" title="Holding">
+                                    <ul className="list-disc pl-5 space-y-2">
+                                      {caseDigest?.holding?.map(
+                                        (item, index) => (
+                                          <li key={index}>
+                                            {item.content || item.value}
+                                          </li>
                                         )
                                       )}
-                                    </>
-                                  )}
-                              </AccordionItem>
-                            </Accordion>
-                          </div>
+                                    </ul>
+                                  </AccordionItem>
+
+                                  <AccordionItem
+                                    key="reasoning"
+                                    title="Reasoning"
+                                  >
+                                    <h4 className="font-medium mb-2">
+                                      Ratio Decidendi
+                                    </h4>
+                                    <p className="mb-4">
+                                      {caseDigest?.ratio_decidendi}
+                                    </p>
+
+                                    {caseDigest?.obiter_dicta &&
+                                      caseDigest?.obiter_dicta.length > 0 && (
+                                        <>
+                                          <h4 className="font-medium mb-2">
+                                            Obiter Dicta
+                                          </h4>
+                                          <ul className="list-disc pl-5 space-y-2">
+                                            {caseDigest?.obiter_dicta.map(
+                                              (item, index) => (
+                                                <li key={index}>
+                                                  {item.content || item.value}
+                                                </li>
+                                              )
+                                            )}
+                                          </ul>
+                                        </>
+                                      )}
+
+                                    {/* New Opinions Sections */}
+                                    {caseDigest?.concurring_opinions &&
+                                      caseDigest?.concurring_opinions.length >
+                                      0 && (
+                                        <>
+                                          <h4 className="font-medium mt-4 mb-2">
+                                            Concurring Opinions
+                                          </h4>
+                                          {caseDigest?.concurring_opinions.map(
+                                            (opinion, index) => (
+                                              <div
+                                                key={index}
+                                                className="mb-3 p-3 bg-gray-50 rounded"
+                                              >
+                                                <p className="italic mb-1">
+                                                  {opinion.judge || "Judge"}:
+                                                </p>
+                                                <p>
+                                                  {opinion.content ||
+                                                    opinion.opinion}
+                                                </p>
+                                              </div>
+                                            )
+                                          )}
+                                        </>
+                                      )}
+
+                                    {caseDigest?.dissenting_opinions &&
+                                      caseDigest?.dissenting_opinions.length >
+                                      0 && (
+                                        <>
+                                          <h4 className="font-medium mt-4 mb-2">
+                                            Dissenting Opinions
+                                          </h4>
+                                          {caseDigest?.dissenting_opinions.map(
+                                            (opinion, index) => (
+                                              <div
+                                                key={index}
+                                                className="mb-3 p-3 bg-gray-50 rounded"
+                                              >
+                                                <p className="italic mb-1">
+                                                  {opinion.judge || "Judge"}:
+                                                </p>
+                                                <p>
+                                                  {opinion.content ||
+                                                    opinion.opinion}
+                                                </p>
+                                              </div>
+                                            )
+                                          )}
+                                        </>
+                                      )}
+                                  </AccordionItem>
+                                </Accordion>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </Tab>
 
@@ -772,9 +796,8 @@ export default function CasePreview() {
 
               {/* Chat Canvas - ChatGPT Style */}
               <div
-                className={`${
-                  isChatOpen ? "lg:w-2/5 lg:block" : "lg:hidden"
-                } fixed lg:static inset-0 bg-white z-30 transition-all duration-300 h-screen lg:h-[calc(100vh-120px)] overflow-hidden`}
+                className={`${isChatOpen ? "lg:w-2/5 lg:block" : "lg:hidden"
+                  } fixed lg:static inset-0 bg-white z-30 transition-all duration-300 h-screen lg:h-[calc(100vh-120px)] overflow-hidden`}
                 style={{
                   boxShadow: isChatOpen ? "0 0 15px rgba(0,0,0,0.1)" : "none",
                 }}
@@ -783,21 +806,21 @@ export default function CasePreview() {
                   <div className="h-full flex flex-col">
                     <div className="p-3 border-b flex justify-between items-center">
                       <h2 className="font-semibold text-primary">
-                        Case Assistant
+                        Dennislaw AI Case Assistant
                       </h2>
                       <Button
                         isIconOnly
                         size="sm"
                         variant="light"
-                        onClick={() => setIsChatOpen(false)}
+                        onPress={() => setIsChatOpen(false)}
                       >
-                        <MdChevronRight />
+                        <MdClose />
                       </Button>
                     </div>
                     <div className="flex-grow overflow-hidden">
                       <ChatInterface
                         caseTitle={caseDetails.title}
-                        caseCitation={caseDetails.dl_citation_no}
+                        dlCitationNo={caseDetails.dl_citation_no}
                         baseAIUrl={baseAIUrl}
                         vectorStoreId={caseDigest?.vector_store_id}
                         fileId={caseDigest?.file_id}
