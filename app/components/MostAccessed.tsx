@@ -114,7 +114,7 @@ export default function MostAccessed({
   const getResourceIcon = (resourceType: string) => {
     switch (resourceType) {
       case "area_of_law":
-        return <MdLocalLibrary className="text-primary text-lg" />;
+        return <MdLocalLibrary className="text-default-400 text-lg" />;
       case "court":
         return <MdAccountBalance className="text-primary text-lg" />;
       case "judge":
@@ -136,7 +136,7 @@ export default function MostAccessed({
     <Card className="bg-white shadow-sm">
       {showTitle && (
         <div className="flex items-center gap-2 p-4 pb-0">
-          <MdAutoGraph className="text-primary text-xl" />
+          <MdAutoGraph className=" text-xl" />
           <h2 className="text-xl font-bold text-gray-800">{getTitle()}</h2>
         </div>
       )}
@@ -144,7 +144,7 @@ export default function MostAccessed({
       <CardBody>
         {loading ? (
           <div className="flex justify-center p-4">
-            <Spinner color="primary" />
+            <Spinner color="default" />
           </div>
         ) : error ? (
           <div className="text-center text-red-500 p-4">{error}</div>
@@ -158,7 +158,7 @@ export default function MostAccessed({
               <div key={`${item.resource_type}-${item.resource_id}`}>
                 <Link
                   to={getResourceLink(item)}
-                  className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex items-center justify-between p-2 hover:bg-gray-200 rounded-md "
                   onClick={() => handleResourceClick(item)}
                 >
                   <div className="flex items-center gap-2">
@@ -169,10 +169,10 @@ export default function MostAccessed({
                         size="sm"
                         color={
                           item.resource_type === "area_of_law"
-                            ? "primary"
+                            ? "default"
                             : item.resource_type === "court"
-                            ? "secondary"
-                            : "success"
+                              ? "default"
+                              : "default"
                         }
                         variant="flat"
                         className="ml-2"

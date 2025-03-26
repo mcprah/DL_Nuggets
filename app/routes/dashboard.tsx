@@ -172,8 +172,8 @@ const Dashboard = () => {
           <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="p-3 rounded-full bg-green-100 mr-4">
-                  <MdSearch className="text-green-600 text-xl" />
+                <div className="p-3 rounded-full bg-gray-200 mr-4">
+                  <MdSearch className=" text-xl" />
                 </div>
                 <div>
                   <p className="text-gray-500 text-sm">Recent Views</p>
@@ -196,7 +196,7 @@ const Dashboard = () => {
               size="sm"
               value={stats.recentViews}
               maxValue={100}
-              color="success"
+              color="default"
               className="mt-2"
               isIndeterminate={isLoading}
             />
@@ -205,7 +205,7 @@ const Dashboard = () => {
                 <Button
                   size="sm"
                   variant={timeFrame === 7 ? "solid" : "flat"}
-                  color="primary"
+                  color="default"
                   onPress={() => changeTimeFrame(7)}
                 >
                   7 Days
@@ -213,7 +213,7 @@ const Dashboard = () => {
                 <Button
                   size="sm"
                   variant={timeFrame === 30 ? "solid" : "flat"}
-                  color="primary"
+                  color="default"
                   onPress={() => changeTimeFrame(30)}
                 >
                   30 Days
@@ -221,7 +221,7 @@ const Dashboard = () => {
                 <Button
                   size="sm"
                   variant={timeFrame === 90 ? "solid" : "flat"}
-                  color="primary"
+                  color="default"
                   onPress={() => changeTimeFrame(90)}
                 >
                   90 Days
@@ -230,7 +230,6 @@ const Dashboard = () => {
 
               <Button
                 variant="light"
-                color="success"
                 size="sm"
                 endContent={<MdArrowRight />}
                 onPress={() => navigate(`/recently-viewed?days=${timeFrame}`)}
@@ -242,8 +241,8 @@ const Dashboard = () => {
 
           <Card className="p-4 shadow-md hover:shadow-lg transition-shadow">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-purple-100 mr-4">
-                <MdBookmark className="text-purple-600 text-xl" />
+              <div className="p-3 rounded-full bg-gray-200 mr-4">
+                <MdBookmark className=" text-xl" />
               </div>
               <div>
                 <p className="text-gray-500 text-sm">Saved Nuggets</p>
@@ -258,14 +257,14 @@ const Dashboard = () => {
               size="sm"
               value={stats.savedNuggets}
               maxValue={20}
-              color="secondary"
+              color="default"
               className="mt-2"
               isIndeterminate={isLoading}
             />
             <div className="mt-2 text-right">
               <Button
                 variant="light"
-                color="secondary"
+                color="default"
                 size="sm"
                 endContent={<MdArrowRight />}
                 onPress={() => navigate("/profile")}
@@ -305,7 +304,7 @@ const Dashboard = () => {
               Popular Resources
             </h2>
             <Button
-              className="text-primary bg-transparent"
+              className=" bg-transparent"
               onPress={() => navigate("/most-accessed/all")}
               endContent={<MdArrowRight />}
             >
@@ -320,23 +319,23 @@ const Dashboard = () => {
             type="all"
           />
 
-          <div className="flex justify-center mt-4 gap-3">
+          <div className="flex  mt-4 gap-3">
             <Button
-              className="bg-white border border-primary text-primary hover:bg-primary-50"
+              className="bg-white border border-default  hover:bg-primary-50"
               onPress={() => navigate("/most-accessed/area-of-law")}
               size="sm"
             >
               Areas of Law
             </Button>
             <Button
-              className="bg-white border border-primary text-primary hover:bg-primary-50"
+              className="bg-white border border-default  hover:bg-primary-50"
               onPress={() => navigate("/most-accessed/court")}
               size="sm"
             >
               Courts
             </Button>
             <Button
-              className="bg-white border border-primary text-primary hover:bg-primary-50"
+              className="bg-white border border-default  hover:bg-primary-50"
               onPress={() => navigate("/most-accessed/judge")}
               size="sm"
             >
@@ -352,7 +351,7 @@ const Dashboard = () => {
               Browse Categories
             </h2>
             <Button
-              className="text-primary bg-transparent"
+              className=" bg-transparent"
               onPress={() => navigate("/nuggets")}
               endContent={<MdArrowRight />}
             >
@@ -362,11 +361,11 @@ const Dashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Card 1 - Area of Law */}
-            <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-              <div className="h-28 bg-gradient-to-r from-pink-400 to-pink-600 relative">
+            <Card className="overflow-hidden border shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+              <div className="h-20 relative">
                 <div className="absolute inset-0 bg-pattern opacity-30"></div>
-                <div className="absolute right-4 bottom-4 p-3 bg-white rounded-full">
-                  <MdLibraryBooks className="text-pink-600 text-xl" />
+                <div className="absolute left-4 bottom-4 p-3 bg-default-200 rounded-full">
+                  <MdLibraryBooks className="text-default-800 text-xl" />
                 </div>
               </div>
               <div className="p-4">
@@ -377,7 +376,7 @@ const Dashboard = () => {
                   Browse legal principles categorized by different areas of law
                 </p>
                 <Button
-                  className="w-full bg-gradient-to-r from-pink-500 to-pink-700 text-white"
+                  className="w-full bg-default "
                   onPress={() => navigate("/nuggets")}
                 >
                   Explore Areas
@@ -386,11 +385,11 @@ const Dashboard = () => {
             </Card>
 
             {/* Card 2 - Courts */}
-            <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-              <div className="h-28 bg-gradient-to-r from-blue-400 to-blue-600 relative">
+            <Card className="overflow-hidden border shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+              <div className="h-20 relative">
                 <div className="absolute inset-0 bg-pattern opacity-30"></div>
-                <div className="absolute right-4 bottom-4 p-3 bg-white rounded-full">
-                  <MdOutlineGavel className="text-blue-600 text-xl" />
+                <div className="absolute left-4 bottom-4 p-3 bg-default rounded-full">
+                  <MdOutlineGavel className="text-default-800 text-xl" />
                 </div>
               </div>
               <div className="p-4">
@@ -399,7 +398,7 @@ const Dashboard = () => {
                   Access nuggets by different courts and judicial bodies
                 </p>
                 <Button
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white"
+                  className="w-full bg-default"
                   onPress={() => navigate("/nuggets/courts")}
                 >
                   Explore Courts
@@ -408,11 +407,11 @@ const Dashboard = () => {
             </Card>
 
             {/* Card 3 - Judges */}
-            <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-              <div className="h-28 bg-gradient-to-r from-green-400 to-green-600 relative">
+            <Card className="overflow-hidden border shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+              <div className="h-20 relative">
                 <div className="absolute inset-0 bg-pattern opacity-30"></div>
-                <div className="absolute right-4 bottom-4 p-3 bg-white rounded-full">
-                  <MdPerson className="text-green-600 text-xl" />
+                <div className="absolute left-4 bottom-4 p-3 bg-default rounded-full">
+                  <MdPerson className="text-default-800 text-xl" />
                 </div>
               </div>
               <div className="p-4">
@@ -421,7 +420,7 @@ const Dashboard = () => {
                   Find legal principles from notable judges and justices
                 </p>
                 <Button
-                  className="w-full bg-gradient-to-r from-green-500 to-green-700 text-white"
+                  className="w-full bg-default"
                   onPress={() => navigate("/nuggets/judges")}
                 >
                   Explore Judges
@@ -433,11 +432,11 @@ const Dashboard = () => {
 
         {/* Dennislaw Section */}
         <section>
-          <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+          <Card className="overflow-hidden border shadow-sm hover:shadow-lg transition-all duration-300">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-2/3 p-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                  <span className="bg-default  text-xs px-2 py-1 rounded-full">
                     External Resource
                   </span>
                 </div>
@@ -449,19 +448,19 @@ const Dashboard = () => {
                   advanced library.
                 </p>
                 <Button
-                  className="bg-gradient-to-r from-indigo-700 to-blue-900 text-white"
+                  className="bg-default"
                   endContent={<MdArrowRight />}
                   onPress={() => navigate("/dennislaw")}
                 >
                   Go to Dennislaw
                 </Button>
               </div>
-              <div className="md:w-1/3 bg-gradient-to-br from-indigo-500 to-blue-700 flex items-center justify-center p-6">
+              {/* <div className="md:w-1/3 bg-gradient-to-br from-indigo-500 to-blue-700 flex items-center justify-center p-6">
                 <div className="text-white text-center">
                   <p className="text-3xl font-bold">DL</p>
                   <p className="text-sm">Full Legal Library</p>
                 </div>
-              </div>
+              </div> */}
             </div>
           </Card>
         </section>
