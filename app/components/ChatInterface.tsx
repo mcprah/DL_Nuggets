@@ -1,7 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button, Input, Textarea, Spinner, Card, CardBody, Avatar, Divider } from "@nextui-org/react";
 import { MdSend, MdInsertDriveFile } from "react-icons/md";
 import axios from "axios";
+// import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 
 interface Message {
   id: string;
@@ -17,6 +20,95 @@ interface ChatInterfaceProps {
   vectorStoreId?: string;
   fileId?: string;
 }
+
+// const components: Partial<Components> = {
+//   // @ts-expect-error
+//   code: CodeBlock,
+//   pre: ({ children }) => <>{children}</>,
+//   ol: ({ node, children, ...props }) => {
+//     return (
+//       <ol className="list-decimal list-outside ml-4" {...props}>
+//         {children}
+//       </ol>
+//     );
+//   },
+//   li: ({ node, children, ...props }) => {
+//     return (
+//       <li className="py-1" {...props}>
+//         {children}
+//       </li>
+//     );
+//   },
+//   ul: ({ node, children, ...props }) => {
+//     return (
+//       <ul className="list-decimal list-outside ml-4" {...props}>
+//         {children}
+//       </ul>
+//     );
+//   },
+//   strong: ({ node, children, ...props }) => {
+//     return (
+//       <span className="font-semibold" {...props}>
+//         {children}
+//       </span>
+//     );
+//   },
+//   a: ({ node, children, ...props }) => {
+//     return (
+//       <a
+//         className="text-blue-500 hover:underline"
+//         target="_blank"
+//         rel="noreferrer"
+//         {...props}
+//       >
+//         {children}
+//       </a>
+//     );
+//   },
+//   h1: ({ node, children, ...props }) => {
+//     return (
+//       <h1 className="text-3xl font-semibold mt-6 mb-2" {...props}>
+//         {children}
+//       </h1>
+//     );
+//   },
+//   h2: ({ node, children, ...props }) => {
+//     return (
+//       <h2 className="text-2xl font-semibold mt-6 mb-2" {...props}>
+//         {children}
+//       </h2>
+//     );
+//   },
+//   h3: ({ node, children, ...props }) => {
+//     return (
+//       <h3 className="text-xl font-semibold mt-6 mb-2" {...props}>
+//         {children}
+//       </h3>
+//     );
+//   },
+//   h4: ({ node, children, ...props }) => {
+//     return (
+//       <h4 className="text-lg font-semibold mt-6 mb-2" {...props}>
+//         {children}
+//       </h4>
+//     );
+//   },
+//   h5: ({ node, children, ...props }) => {
+//     return (
+//       <h5 className="text-base font-semibold mt-6 mb-2" {...props}>
+//         {children}
+//       </h5>
+//     );
+//   },
+//   h6: ({ node, children, ...props }) => {
+//     return (
+//       <h6 className="text-sm font-semibold mt-6 mb-2" {...props}>
+//         {children}
+//       </h6>
+//     );
+//   },
+// };
+
 
 export default function ChatInterface({
   caseTitle,
@@ -155,18 +247,13 @@ export default function ChatInterface({
                   : "bg-white text-gray-800 border border-gray-200 shadow-sm"
               }`}
             >
-              {/* {message.role === "assistant" && (
-                <div className="flex items-center mb-2">
-                  <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center mr-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M20 11a8 8 0 1 0-16 0v.5c0 1.4.7 2.7 1.8 3.5h.2c1.1 0 2-.9 2-2V10a4 4 0 1 1 8 0v3c0 1.1.9 2 2 2h.2a4.5 4.5 0 0 0 1.8-3.5V11z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <span className="font-medium text-sm text-gray-800">Assistant</span>
-                </div>
-              )} */}
               <div className="prose prose-sm max-w-none">
-                <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                {message.role === "user" ? (
+                  <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                ) : (
+                  <p>{message.content}</p>
+                  // <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{message.content}</ReactMarkdown>
+                )}
               </div>
             </div>
           </div>
@@ -229,4 +316,4 @@ export default function ChatInterface({
       </div>
     </div>
   );
-} 
+}

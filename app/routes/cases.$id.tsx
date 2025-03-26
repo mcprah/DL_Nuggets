@@ -116,9 +116,9 @@ export default function CasePreview() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const apiCallMadeRef = useRef(false);
 
   const navigate = useNavigate();
-  const effectHasRunRef = useRef(false);
 
   // Check screen size
   useEffect(() => {
@@ -144,46 +144,51 @@ export default function CasePreview() {
 
   // Fetch with auth token on client side if needed
   useEffect(() => {
-    // Skip if effect has already run
-    if (effectHasRunRef.current) return;
-
     const fetchWithAuth = async () => {
+      // Skip if we've already made this API call for this citation number
+      if (apiCallMadeRef.current) {
+        return;
+      }
+      
+      
       const token = localStorage.getItem("access_token");
       if (!token) {
         setLoading(false);
         return;
       }
+      console.log("hello");
 
       try {
+        apiCallMadeRef.current = true; // Set flag BEFORE making the API call
         setLoading(true);
         setLoadingDigest(true);
-        const response = await axios
-          .get(`${baseUrl}/case/${caseData.dl_citation_no}/fetch`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+        
+        const response = await axios.get(`${baseUrl}/case/${caseData.dl_citation_no}/fetch`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const data = response.data.data;
         setCaseDetails(data);
 
         if (caseDigestFromDB == null) {
-          console.log("runing einsbkds ");
-          // generateCaseDigest(baseAIUrl, data, token).then(
-          //   async (digestResponse) => {
-          //     console.log("digestResponse", digestResponse.data);
-          //     const digestInfo = digestResponse.data;
-          //     setCaseDigest(digestInfo);
-          //     await storeVectorFileIDs(
-          //       baseUrl,
-          //       digestInfo?.vector_store_id,
-          //       digestInfo?.file_id,
-          //       digestInfo?.dl_citation_no,
-          //       token
-          //     );
-          //     setLoadingDigest(false);
-          //   }
-          // );
+          
+          generateCaseDigest(baseAIUrl, data, token).then(
+            async (digestResponse) => {
+              console.log("digestResponse", digestResponse.data);
+              const digestInfo = digestResponse.data;
+              setCaseDigest(digestInfo);
+              await storeVectorFileIDs(
+                baseUrl,
+                digestInfo?.vector_store_id,
+                digestInfo?.file_id,
+                digestInfo?.dl_citation_no,
+                token
+              );
+              setLoadingDigest(false);
+            }
+          );
         } else {
           getCaseDigestFromAI(
             baseAIUrl,
@@ -199,17 +204,12 @@ export default function CasePreview() {
       } finally {
         setLoading(false);
         setLoadingDigest(false);
-        effectHasRunRef.current = true;
       }
     };
 
     fetchWithAuth();
 
-    // Add cleanup function
-    return () => {
-      effectHasRunRef.current = false;
-    };
-  }, [caseData.dl_citation_no, baseUrl, caseDigestFromDB]);
+  }, [caseData.dl_citation_no]);
 
   // Format the decision text for better readability
   const formatDecision = (text: string) => {
@@ -805,7 +805,7 @@ export default function CasePreview() {
                 {isChatOpen && (
                   <div className="h-full flex flex-col">
                     <div className="p-3 border-b flex justify-between items-center">
-                      <h2 className="font-semibold text-primary">
+                      <h2 className="font-semibold">
                         Dennislaw AI Case Assistant
                       </h2>
                       <Button

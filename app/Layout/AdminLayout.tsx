@@ -209,7 +209,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             <nav className="flex-1 overflow-y-auto py-6">
               <div className="px-3 space-y-1">
                 {navItems.map((item) => (
-                  <Tooltip content={item.content}>
+                  <Tooltip key={item.path} content={item.content}>
                     <Link
                       key={item.path}
                       to={item.path}
