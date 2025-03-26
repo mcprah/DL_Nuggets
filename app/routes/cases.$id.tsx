@@ -181,6 +181,7 @@ export default function CasePreview() {
               console.log("digestResponse", digestResponse.data);
               const digestInfo = digestResponse.data;
               setCaseDigest(digestInfo);
+              setLoadingDigest(false);
               await storeVectorFileIDs(
                 baseUrl,
                 digestInfo?.vector_store_id,
@@ -188,7 +189,6 @@ export default function CasePreview() {
                 digestInfo?.dl_citation_no,
                 token
               );
-              setLoadingDigest(false);
             }
           );
         } else {
