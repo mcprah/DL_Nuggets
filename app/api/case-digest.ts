@@ -78,10 +78,12 @@ export async function getCaseDigestFromAI(
         }
 
         // URL-encode the citation number to handle special characters
-        const encodedCitation = encodeURIComponent(dl_citation_no);
+
+        console.log(dl_citation_no);
+        
         const payload = {
             "vector_store_id": vector_store_id,
-            "dl_citation_no": encodedCitation
+            "dl_citation_no": dl_citation_no
         }
 
         const response = await axios.post<CaseDigestResponse>(

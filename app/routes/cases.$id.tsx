@@ -14,6 +14,7 @@ import {
   Tooltip,
   Accordion,
   AccordionItem,
+  Skeleton, // Add this import
 } from "@nextui-org/react";
 import {
   MdContentCopy,
@@ -158,7 +159,7 @@ export default function CasePreview() {
       console.log("hello");
 
       try {
-        apiCallMadeRef.current = true; // Set flag BEFORE making the API call
+        apiCallMadeRef.current = true;
         setLoading(true);
         setLoadingDigest(true);
 
@@ -193,18 +194,19 @@ export default function CasePreview() {
         } else {
           getCaseDigestFromAI(
             baseAIUrl,
-            caseDigest?.vector_store_id!,
-            caseDigest?.dl_citation_no!,
+            caseDigestFromDB?.vector_store_id!,
+            caseDigestFromDB?.dl_citation_no!,
             token
           ).then((digestResponse) => {
             setCaseDigest(digestResponse as CaseDigest);
+            setLoadingDigest(false);
           });
         }
       } catch (err) {
         console.error("Error fetching with auth:", err);
       } finally {
         setLoading(false);
-        setLoadingDigest(false);
+        // setLoadingDigest(false);
       }
     };
 
@@ -325,7 +327,7 @@ export default function CasePreview() {
                   <Button
                     color="default"
                     variant="light"
-                    onClick={() => navigate(-1)}
+                    onPress={() => navigate(-1)}
                     startContent={<MdArrowBack />}
                     size="sm"
                   >
@@ -350,7 +352,7 @@ export default function CasePreview() {
                         color="default"
                         variant="flat"
                         aria-label="Copy Text"
-                        onClick={handleCopyText}
+                        onPress={handleCopyText}
                       >
                         <MdContentCopy />
                       </Button>
@@ -362,7 +364,7 @@ export default function CasePreview() {
                         color="default"
                         variant="flat"
                         aria-label="Share"
-                        onClick={handleShare}
+                        onPress={handleShare}
                       >
                         <MdShare />
                       </Button>
@@ -376,7 +378,7 @@ export default function CasePreview() {
                         color="default"
                         variant="flat"
                         aria-label="Bookmark"
-                        onClick={handleBookmark}
+                        onPress={handleBookmark}
                       >
                         {isBookmarked ? <MdBookmark /> : <MdBookmarkBorder />}
                       </Button>
@@ -388,7 +390,6 @@ export default function CasePreview() {
                         color="default"
                         variant="flat"
                         aria-label="Print"
-                        onClick={handlePrint}
                       >
                         <MdPrint />
                       </Button>
@@ -486,11 +487,114 @@ export default function CasePreview() {
                       >
                         <div className="py-4">
                           {loadingDigest ? (
-                            <div className="h-64 flex flex-col items-center justify-center">
-                              <Spinner size="lg" color="primary" />
-                              <p className="mt-4 text-gray-600">
-                                Generating case digest...
-                              </p>
+                            <div className="space-y-6">
+                              {/* AI Generated Notice */}
+                              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 flex items-center gap-3 rounded-md">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-6 w-6 text-blue-500"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                  />
+                                </svg>
+                                <div>
+                                  <p className="font-medium text-blue-700">
+                                    AI-Generated Content
+                                  </p>
+                                  <p className="text-sm text-blue-600">
+                                    This case digest is being generated using
+                                    AI...
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Summary Section Skeleton */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-2">
+                                  Summary
+                                </h3>
+                                <div className="space-y-2">
+                                  <Skeleton className="w-full h-4 rounded-lg" />
+                                  <Skeleton className="w-full h-4 rounded-lg" />
+                                  <Skeleton className="w-4/5 h-4 rounded-lg" />
+                                </div>
+                              </div>
+
+                              {/* Facts Section Skeleton */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-2">
+                                  Facts
+                                </h3>
+                                <ul className="list-disc pl-5 space-y-3">
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </li>
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </li>
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-5/6 h-4 rounded-lg" />
+                                  </li>
+                                </ul>
+                              </div>
+
+                              {/* Issues Section Skeleton */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-2">
+                                  Issues
+                                </h3>
+                                <ul className="list-disc pl-5 space-y-3">
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </li>
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-4/5 h-4 rounded-lg" />
+                                  </li>
+                                </ul>
+                              </div>
+
+                              {/* Arguments Section Skeleton */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-2">
+                                  Arguments
+                                </h3>
+                                <div className="mb-4">
+                                  <Skeleton className="w-1/4 h-5 rounded-lg mb-2" />
+                                  <div className="pl-4 border-l-2 border-gray-300 space-y-2">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </div>
+                                </div>
+                                <div className="mb-4">
+                                  <Skeleton className="w-1/4 h-5 rounded-lg mb-2" />
+                                  <div className="pl-4 border-l-2 border-gray-300 space-y-2">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Holding Section Skeleton */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-2">
+                                  Holding
+                                </h3>
+                                <ul className="list-disc pl-5 space-y-3">
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </li>
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-4/5 h-4 rounded-lg" />
+                                  </li>
+                                </ul>
+                              </div>
                             </div>
                           ) : (
                             <>
@@ -532,161 +636,69 @@ export default function CasePreview() {
                                 </p>
                               </div>
 
-                              {/* Accordion for Key Components */}
-                              <div className="space-y-4">
-                                <Accordion
-                                  defaultExpandedKeys={[
-                                    "facts",
-                                    "issues",
-                                    "arguments",
-                                    "holding",
-                                    "reasoning",
-                                  ]}
-                                >
-                                  <AccordionItem key="facts" title="Facts">
-                                    <ul className="list-disc pl-5 space-y-2">
+                              {/* Digest Content with Cards */}
+                              <div className="space-y-6">
+                                {/* Facts Card */}
+                                <Card shadow="sm" className="border border-gray-100 overflow-visible bg-white">
+                                  <div className="p-5">
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Facts</h3>
+                                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
                                       {caseDigest?.facts?.map((item, index) => (
-                                        <li key={index}>
-                                          {item.content || item.value}
-                                        </li>
+                                        <li key={index}>{item.content || item.value}</li>
                                       ))}
                                     </ul>
-                                  </AccordionItem>
+                                  </div>
+                                </Card>
 
-                                  <AccordionItem key="issues" title="Issues">
-                                    <ul className="list-disc pl-5 space-y-2">
-                                      {caseDigest?.issues?.map(
-                                        (item, index) => (
-                                          <li key={index}>
-                                            {item.content || item.value}
-                                          </li>
-                                        )
-                                      )}
+                                {/* Issues Card */}
+                                <Card shadow="sm" className="border border-gray-100  overflow-visible bg-white">
+                                  <div className="p-5">
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Issues</h3>
+                                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                                      {caseDigest?.issues?.map((item, index) => (
+                                        <li key={index}>{item.content || item.value}</li>
+                                      ))}
                                     </ul>
-                                  </AccordionItem>
+                                  </div>
+                                </Card>
 
-                                  {/* New Arguments Section */}
-                                  <AccordionItem
-                                    key="arguments"
-                                    title="Arguments"
-                                  >
-                                    {caseDigest?.arguments?.map(
-                                      (arg, index) => (
-                                        <div key={index} className="mb-4">
-                                          <h4 className="font-medium mb-2">
-                                            {arg.party}
-                                          </h4>
-                                          <p className="pl-4 border-l-2 border-gray-300">
-                                            {arg.argument}
-                                          </p>
-                                        </div>
-                                      )
-                                    )}
-                                  </AccordionItem>
+                                {/* Arguments Card */}
+                                <Card shadow="sm" className="border border-gray-100 overflow-visible bg-white">
+                                  <div className="p-5">
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Arguments</h3>
+                                    {caseDigest?.arguments?.map((arg, index) => (
+                                      <div key={index} className="mb-4">
+                                        <h4 className="font-medium mb-2 text-primary-700">{arg.party}</h4>
+                                        <p className="pl-4 border-l-2 border-primary-200 text-gray-700">{arg.argument}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </Card>
 
-                                  <AccordionItem key="holding" title="Holding">
-                                    <ul className="list-disc pl-5 space-y-2">
-                                      {caseDigest?.holding?.map(
-                                        (item, index) => (
-                                          <li key={index}>
-                                            {item.content || item.value}
-                                          </li>
-                                        )
-                                      )}
+                                {/* Holding Card */}
+                                <Card shadow="sm" className="border border-gray-100 overflow-visible bg-white">
+                                  <div className="p-5">
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Holding</h3>
+                                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                                      {caseDigest?.holding?.map((item, index) => (
+                                        <li key={index}>{item.content || item.value}</li>
+                                      ))}
                                     </ul>
-                                  </AccordionItem>
+                                  </div>
+                                </Card>
 
-                                  <AccordionItem
-                                    key="reasoning"
-                                    title="Reasoning"
-                                  >
-                                    <h4 className="font-medium mb-2">
-                                      Ratio Decidendi
-                                    </h4>
-                                    <p className="mb-4">
-                                      {caseDigest?.ratio_decidendi}
-                                    </p>
-
-                                    {caseDigest?.obiter_dicta &&
-                                      caseDigest?.obiter_dicta.length > 0 && (
-                                        <>
-                                          <h4 className="font-medium mb-2">
-                                            Obiter Dicta
-                                          </h4>
-                                          <ul className="list-disc pl-5 space-y-2">
-                                            {caseDigest?.obiter_dicta.map(
-                                              (item, index) => (
-                                                <li key={index}>
-                                                  {item.content || item.value}
-                                                </li>
-                                              )
-                                            )}
-                                          </ul>
-                                        </>
-                                      )}
-
-                                    {/* New Opinions Sections */}
-                                    {caseDigest?.concurring_opinions &&
-                                      caseDigest?.concurring_opinions.length >
-                                        0 && (
-                                        <>
-                                          <h4 className="font-medium mt-4 mb-2">
-                                            Concurring Opinions
-                                          </h4>
-                                          {caseDigest?.concurring_opinions.map(
-                                            (opinion, index) => (
-                                              <div
-                                                key={index}
-                                                className="mb-3 p-3 bg-gray-50 rounded"
-                                              >
-                                                <p className="italic mb-1">
-                                                  {opinion.party ||
-                                                    opinion.judge ||
-                                                    "Judge"}
-                                                  :
-                                                </p>
-                                                <p>
-                                                  {opinion.argument ||
-                                                    opinion.content ||
-                                                    opinion.opinion}
-                                                </p>
-                                              </div>
-                                            )
-                                          )}
-                                        </>
-                                      )}
-
-                                    {caseDigest?.dissenting_opinions &&
-                                      caseDigest?.dissenting_opinions.length >
-                                        0 && (
-                                        <>
-                                          <h4 className="font-medium mt-4 mb-2">
-                                            Dissenting Opinions
-                                          </h4>
-                                          {caseDigest?.dissenting_opinions.map(
-                                            (opinion, index) => (
-                                              <div
-                                                key={index}
-                                                className="mb-3 p-3 bg-gray-50 rounded"
-                                              >
-                                                <p className="italic mb-1">
-                                                  {opinion.party ||
-                                                    opinion.judge ||
-                                                    "Judge"}
-                                                  :
-                                                </p>
-                                                <p>
-                                                  {opinion.argument ||
-                                                    opinion.content ||
-                                                    opinion.opinion}
-                                                </p>
-                                              </div>
-                                            )
-                                          )}
-                                        </>
-                                      )}
-                                  </AccordionItem>
-                                </Accordion>
+                                {/* Reasoning Card */}
+                                <Card shadow="sm" className="border border-gray-100 overflow-visible bg-white">
+                                  <div className="p-5">
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Reasoning</h3>
+                                    <div className="space-y-4">
+                                      <div>
+                                        <h4 className="font-medium mb-2 text-primary-700">Ratio Decidendi</h4>
+                                        <p className="text-gray-700">{caseDigest?.ratio_decidendi}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </Card>
                               </div>
                             </>
                           )}
@@ -705,89 +717,123 @@ export default function CasePreview() {
                         }
                       >
                         <div className="py-4">
-                          {/* Cases Cited Section */}
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-3">
-                              Cases Cited
-                            </h3>
-                            <ul className="list-disc pl-5 space-y-2">
-                              {caseDigest?.cases_cited?.map((item, index) => (
-                                <li key={index}>
-                                  {item.content || item.value}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                          {loadingDigest ? (
+                            <div className="space-y-6">
+                              {/* Cases Cited Section Skeleton */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-3">
+                                  Cases Cited
+                                </h3>
+                                <ul className="list-disc pl-5 space-y-3">
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </li>
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </li>
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-5/6 h-4 rounded-lg" />
+                                  </li>
+                                </ul>
+                              </div>
 
-                          {/* Laws Cited Section */}
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-3">
-                              Laws Cited
-                            </h3>
-                            <ul className="list-disc pl-5 space-y-2">
-                              {caseDigest?.laws_cited?.map((item, index) => (
-                                <li key={index}>
-                                  {item.content || item.value}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                              {/* Laws Cited Section Skeleton */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-3">
+                                  Laws Cited
+                                </h3>
+                                <ul className="list-disc pl-5 space-y-3">
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-full h-4 rounded-lg" />
+                                  </li>
+                                  <li className="flex items-center">
+                                    <Skeleton className="w-4/5 h-4 rounded-lg" />
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {/* Cases Cited Section */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-3">
+                                  Cases Cited
+                                </h3>
+                                <ul className="list-disc pl-5 space-y-2">
+                                  {caseDigest?.cases_cited?.map(
+                                    (item, index) => (
+                                      <li key={index}>
+                                        {item.content || item.value}
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                              </div>
 
-                          {/* New Metadata Section */}
-                          <Accordion defaultExpandedKeys={["metadata"]}>
-                            <AccordionItem
-                              key="metadata"
-                              title="Additional Metadata"
-                            >
-                              {/* Subject Matter */}
-                              {caseDigest?.subject_matter &&
-                                caseDigest?.subject_matter.length > 0 && (
-                                  <div className="mb-4">
-                                    <h4 className="font-medium mb-2">
-                                      Subject Matter
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2">
-                                      {caseDigest?.subject_matter.map(
-                                        (item, index) => (
+                              {/* Laws Cited Section */}
+                              <div className="mb-6">
+                                <h3 className="text-lg font-semibold mb-3">
+                                  Laws Cited
+                                </h3>
+                                <ul className="list-disc pl-5 space-y-2">
+                                  {caseDigest?.laws_cited?.map(
+                                    (item, index) => (
+                                      <li key={index}>
+                                        {item.content || item.value}
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                              </div>
+
+                              {/* Metadata Card */}
+                              <Card className="border border-gray-100 shadow-sm overflow-visible bg-white">
+                                <div className="p-5">
+                                  <h3 className="text-lg font-semibold text-primary-800 mb-3">Additional Metadata</h3>
+                                  
+                                  {/* Subject Matter */}
+                                  {caseDigest?.subject_matter && caseDigest?.subject_matter.length > 0 && (
+                                    <div className="mb-4">
+                                      <h4 className="font-medium mb-2 text-primary-700">Subject Matter</h4>
+                                      <div className="flex flex-wrap gap-2">
+                                        {caseDigest?.subject_matter.map((item, index) => (
                                           <Chip
                                             key={index}
                                             size="sm"
                                             variant="flat"
                                             color="secondary"
+                                            className="transition-all hover:scale-105"
                                           >
                                             {item.content || item.value}
                                           </Chip>
-                                        )
-                                      )}
+                                        ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
 
-                              {/* Keywords */}
-                              {caseDigest?.keywords &&
-                                caseDigest?.keywords.length > 0 && (
-                                  <div>
-                                    <h4 className="font-medium mb-2">
-                                      Keywords
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2">
-                                      {caseDigest?.keywords.map(
-                                        (item, index) => (
+                                  {/* Keywords */}
+                                  {caseDigest?.keywords && caseDigest?.keywords.length > 0 && (
+                                    <div>
+                                      <h4 className="font-medium mb-2 text-primary-700">Keywords</h4>
+                                      <div className="flex flex-wrap gap-2">
+                                        {caseDigest?.keywords.map((item, index) => (
                                           <Chip
                                             key={index}
                                             size="sm"
                                             variant="flat"
-                                            color="default"
+                                            color="default" 
+                                            className="transition-all hover:scale-105"
                                           >
                                             {item.content || item.value}
                                           </Chip>
-                                        )
-                                      )}
+                                        ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
-                            </AccordionItem>
-                          </Accordion>
+                                  )}
+                                </div>
+                              </Card>
+                            </>
+                          )}
                         </div>
                       </Tab>
                     </Tabs>
