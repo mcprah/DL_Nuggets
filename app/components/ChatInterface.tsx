@@ -267,10 +267,10 @@ export default function ChatInterface({
             }`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl p-4 ${
+              className={`max-w-[85%] rounded-2xl px-4 py-2 ${
                 message.role === "user"
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-800 border border-gray-200 shadow-sm"
+                  ? "bg-slate-800 text-white"
+                  : "bg-white text-gray-800 border border-gray-200 shadow-sm py-4"
               }`}
             >
               <div className="prose prose-sm max-w-none">
