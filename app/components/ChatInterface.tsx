@@ -116,18 +116,20 @@ export default function ChatInterface({
   vectorStoreId,
   fileId
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    // {
-    //   id: "welcome",
-    //   content: `Hello! I'm your AI assistant. Ask me anything about "${caseTitle}" (${dlCitationNo}).`,
-    //   role: "assistant",
-    //   timestamp: new Date()
-    // }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
+  // Sample legal questions that users might want to ask
+  const sampleQuestions = [
+    "What are the key facts of this case?",
+    "What was the court's reasoning in this decision?",
+    "How might this ruling impact similar cases?",
+    "What precedents were cited in this case?",
+    "What were the arguments of the plaintiff and defendant?"
+  ];
+
   // Scroll to bottom of chat when messages update
   useEffect(() => {
     scrollToBottom();
@@ -221,6 +223,12 @@ export default function ChatInterface({
     }
   };
   
+  const handleSampleQuestionClick = (question: string) => {
+    setInputMessage(question);
+    // Optional: Auto-send the question immediately
+    // setTimeout(() => handleSendMessage(), 100);
+  };
+
   return (
     <div className="flex flex-col h-full bg-gray-50">
       {/* System message - brief instructions */}
@@ -229,6 +237,25 @@ export default function ChatInterface({
           I'm an AI assistant that can help you understand case <strong>{caseTitle}</strong>. Ask me any questions about the facts, legal reasoning, or implications.
         </p>
       </div>
+      
+      {/* Sample questions - only show if no messages have been sent yet */}
+      {messages.length === 0 && (
+        <div className="px-4 py-3 bg-white border-b border-gray-200">
+          <p className="text-sm text-gray-600 mb-2">Sample questions:</p>
+          <div className="flex flex-wrap gap-2">
+            {sampleQuestions.map((question, index) => (
+              <Button
+                key={index}
+                size="sm"
+                color="primary"
+                onPress={() => handleSampleQuestionClick(question)}
+              >
+                {question}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Messages container */}
       <div className="flex-grow overflow-y-auto p-4 space-y-6">
