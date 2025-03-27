@@ -1,7 +1,6 @@
 import axios from "axios";
 import { CaseDigestResponse } from "~/types/CaseDigest";
 
-
 export async function storeVectorFileIDs(
     baseUrl: string,
     vector_store_id?: string,

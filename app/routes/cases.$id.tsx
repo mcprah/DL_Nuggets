@@ -34,6 +34,7 @@ import {
   generateCaseDigest,
   getCaseDigestByDlCitationFromDB,
   getCaseDigestFromAI,
+  storeCaseDigest,
 } from "~/api/case-digest";
 import { storeVectorFileIDs } from "~/api/vector_files";
 import ChatInterface from "~/components/ChatInterface";
@@ -182,25 +183,26 @@ export default function CasePreview() {
               const digestInfo = digestResponse.data;
               setCaseDigest(digestInfo);
               setLoadingDigest(false);
-              await storeVectorFileIDs(
-                baseUrl,
-                digestInfo?.vector_store_id,
-                digestInfo?.file_id,
-                digestInfo?.dl_citation_no,
-                token
-              );
+              // await storeVectorFileIDs(
+              //   baseUrl,
+              //   digestInfo?.vector_store_id,
+              //   digestInfo?.file_id,
+              //   digestInfo?.dl_citation_no,
+              //   token
+              // );
+              await storeCaseDigest(baseUrl, digestInfo, token);
             }
           );
         } else {
-          getCaseDigestFromAI(
-            baseAIUrl,
-            caseDigestFromDB?.vector_store_id!,
-            caseDigestFromDB?.dl_citation_no!,
-            token
-          ).then((digestResponse) => {
-            setCaseDigest(digestResponse as CaseDigest);
+          // getCaseDigestFromAI(
+          //   baseAIUrl,
+          //   caseDigestFromDB?.vector_store_id!,
+          //   caseDigestFromDB?.dl_citation_no!,
+          //   token
+          // ).then((digestResponse) => {
+            setCaseDigest(caseDigestFromDB as CaseDigest);
             setLoadingDigest(false);
-          });
+          // });
         }
       } catch (err) {
         console.error("Error fetching with auth:", err);
@@ -319,7 +321,9 @@ export default function CasePreview() {
               <div
                 ref={mainContentRef}
                 className={`${
-                  isChatOpen ? "w-full lg:w-3/5 lg:border-r border-gray-200" : "w-full"
+                  isChatOpen
+                    ? "w-full lg:w-3/5 lg:border-r border-gray-200"
+                    : "w-full"
                 } transition-all duration-300 ease-in-out overflow-y-auto px-4`}
               >
                 {/* Back button row */}
@@ -639,62 +643,107 @@ export default function CasePreview() {
                               {/* Digest Content with Cards */}
                               <div className="space-y-6">
                                 {/* Facts Card */}
-                                <Card shadow="sm" className="border border-gray-100 overflow-visible bg-white">
+                                <Card
+                                  shadow="sm"
+                                  className="border border-gray-100 overflow-visible bg-white"
+                                >
                                   <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Facts</h3>
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
+                                      Facts
+                                    </h3>
                                     <ul className="list-disc pl-5 space-y-2 text-gray-700">
                                       {caseDigest?.facts?.map((item, index) => (
-                                        <li key={index}>{item.content || item.value}</li>
+                                        <li key={index}>
+                                          {item.content || item.value}
+                                        </li>
                                       ))}
                                     </ul>
                                   </div>
                                 </Card>
 
                                 {/* Issues Card */}
-                                <Card shadow="sm" className="border border-gray-100  overflow-visible bg-white">
+                                <Card
+                                  shadow="sm"
+                                  className="border border-gray-100  overflow-visible bg-white"
+                                >
                                   <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Issues</h3>
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
+                                      Issues
+                                    </h3>
                                     <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                                      {caseDigest?.issues?.map((item, index) => (
-                                        <li key={index}>{item.content || item.value}</li>
-                                      ))}
+                                      {caseDigest?.issues?.map(
+                                        (item, index) => (
+                                          <li key={index}>
+                                            {item.content || item.value}
+                                          </li>
+                                        )
+                                      )}
                                     </ul>
                                   </div>
                                 </Card>
 
                                 {/* Arguments Card */}
-                                <Card shadow="sm" className="border border-gray-100 overflow-visible bg-white">
+                                <Card
+                                  shadow="sm"
+                                  className="border border-gray-100 overflow-visible bg-white"
+                                >
                                   <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Arguments</h3>
-                                    {caseDigest?.arguments?.map((arg, index) => (
-                                      <div key={index} className="mb-4">
-                                        <h4 className="font-medium mb-2 text-primary-700">{arg.party}</h4>
-                                        <p className="pl-4 border-l-2 border-primary-200 text-gray-700">{arg.argument}</p>
-                                      </div>
-                                    ))}
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
+                                      Arguments
+                                    </h3>
+                                    {caseDigest?.arguments?.map(
+                                      (arg, index) => (
+                                        <div key={index} className="mb-4">
+                                          <h4 className="font-medium mb-2 text-primary-700">
+                                            {arg.party}
+                                          </h4>
+                                          <p className="pl-4 border-l-2 border-primary-200 text-gray-700">
+                                            {arg.argument}
+                                          </p>
+                                        </div>
+                                      )
+                                    )}
                                   </div>
                                 </Card>
 
                                 {/* Holding Card */}
-                                <Card shadow="sm" className="border border-gray-100 overflow-visible bg-white">
+                                <Card
+                                  shadow="sm"
+                                  className="border border-gray-100 overflow-visible bg-white"
+                                >
                                   <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Holding</h3>
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
+                                      Holding
+                                    </h3>
                                     <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                                      {caseDigest?.holding?.map((item, index) => (
-                                        <li key={index}>{item.content || item.value}</li>
-                                      ))}
+                                      {caseDigest?.holding?.map(
+                                        (item, index) => (
+                                          <li key={index}>
+                                            {item.content || item.value}
+                                          </li>
+                                        )
+                                      )}
                                     </ul>
                                   </div>
                                 </Card>
 
                                 {/* Reasoning Card */}
-                                <Card shadow="sm" className="border border-gray-100 overflow-visible bg-white">
+                                <Card
+                                  shadow="sm"
+                                  className="border border-gray-100 overflow-visible bg-white"
+                                >
                                   <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">Reasoning</h3>
+                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
+                                      Reasoning
+                                    </h3>
                                     <div className="space-y-4">
                                       <div>
-                                        <h4 className="font-medium mb-2 text-primary-700">Ratio Decidendi</h4>
-                                        <p className="text-gray-700">{caseDigest?.ratio_decidendi}</p>
+                                        <h4 className="font-medium mb-2 text-primary-700">
+                                          Ratio Decidendi
+                                        </h4>
+                                        <p className="text-gray-700">
+                                          {caseDigest?.ratio_decidendi}
+                                        </p>
                                       </div>
                                     </div>
                                   </div>
@@ -789,47 +838,59 @@ export default function CasePreview() {
                               {/* Metadata Card */}
                               <Card className="border border-gray-100 shadow-sm overflow-visible bg-white">
                                 <div className="p-5">
-                                  <h3 className="text-lg font-semibold text-primary-800 mb-3">Additional Metadata</h3>
-                                  
+                                  <h3 className="text-lg font-semibold text-primary-800 mb-3">
+                                    Additional Metadata
+                                  </h3>
+
                                   {/* Subject Matter */}
-                                  {caseDigest?.subject_matter && caseDigest?.subject_matter.length > 0 && (
-                                    <div className="mb-4">
-                                      <h4 className="font-medium mb-2 text-primary-700">Subject Matter</h4>
-                                      <div className="flex flex-wrap gap-2">
-                                        {caseDigest?.subject_matter.map((item, index) => (
-                                          <Chip
-                                            key={index}
-                                            size="sm"
-                                            variant="flat"
-                                            color="secondary"
-                                            className="transition-all hover:scale-105"
-                                          >
-                                            {item.content || item.value}
-                                          </Chip>
-                                        ))}
+                                  {caseDigest?.subject_matter &&
+                                    caseDigest?.subject_matter.length > 0 && (
+                                      <div className="mb-4">
+                                        <h4 className="font-medium mb-2 text-primary-700">
+                                          Subject Matter
+                                        </h4>
+                                        <div className="flex flex-wrap gap-2">
+                                          {caseDigest?.subject_matter.map(
+                                            (item, index) => (
+                                              <Chip
+                                                key={index}
+                                                size="sm"
+                                                variant="flat"
+                                                color="secondary"
+                                                className="transition-all hover:scale-105"
+                                              >
+                                                {item.content || item.value}
+                                              </Chip>
+                                            )
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  )}
+                                    )}
 
                                   {/* Keywords */}
-                                  {caseDigest?.keywords && caseDigest?.keywords.length > 0 && (
-                                    <div>
-                                      <h4 className="font-medium mb-2 text-primary-700">Keywords</h4>
-                                      <div className="flex flex-wrap gap-2">
-                                        {caseDigest?.keywords.map((item, index) => (
-                                          <Chip
-                                            key={index}
-                                            size="sm"
-                                            variant="flat"
-                                            color="default" 
-                                            className="transition-all hover:scale-105"
-                                          >
-                                            {item.content || item.value}
-                                          </Chip>
-                                        ))}
+                                  {caseDigest?.keywords &&
+                                    caseDigest?.keywords.length > 0 && (
+                                      <div>
+                                        <h4 className="font-medium mb-2 text-primary-700">
+                                          Keywords
+                                        </h4>
+                                        <div className="flex flex-wrap gap-2">
+                                          {caseDigest?.keywords.map(
+                                            (item, index) => (
+                                              <Chip
+                                                key={index}
+                                                size="sm"
+                                                variant="flat"
+                                                color="default"
+                                                className="transition-all hover:scale-105"
+                                              >
+                                                {item.content || item.value}
+                                              </Chip>
+                                            )
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  )}
+                                    )}
                                 </div>
                               </Card>
                             </>
@@ -852,7 +913,7 @@ export default function CasePreview() {
               {/* Chat Canvas - ChatGPT Style */}
               <div
                 className={`${
-                  isChatOpen ? "block lg:w-2/5" : "hidden" 
+                  isChatOpen ? "block lg:w-2/5" : "hidden"
                 } fixed lg:static inset-0 bg-white z-30 transition-all duration-300 h-screen lg:h-[calc(100vh-120px)] overflow-hidden`}
                 style={{
                   boxShadow: isChatOpen ? "0 0 15px rgba(0,0,0,0.1)" : "none",

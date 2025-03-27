@@ -105,3 +105,38 @@ export async function getCaseDigestFromAI(
         throw error;
     }
 }
+
+/**
+ * Store case digest data in the database
+ * @param baseUrl API base URL
+ * @param caseDigest The case digest data to store
+ * @param token Authentication token
+ * @returns Response data from the API
+ */
+export async function storeCaseDigest(
+    baseUrl: string,
+    caseDigest: CaseDigest,
+    token?: string,
+) {
+    try {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json'
+        };
+        
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+
+        const response = await axios.post(
+            `${baseUrl}/case-digests`,
+            caseDigest,
+            { headers }
+        );
+
+        console.log("Case digest stored successfully:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error storing case digest:", error);
+        throw error;
+    }
+}
