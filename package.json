@@ -2,6 +2,7 @@
   "name": "online",
   "private": true,
   "sideEffects": false,
+  "type": "module",
   "scripts": {
     "build": "remix build",
     "dev": "remix dev --manual",
