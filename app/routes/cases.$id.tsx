@@ -319,7 +319,7 @@ export default function CasePreview() {
               <div
                 ref={mainContentRef}
                 className={`${
-                  isChatOpen ? "lg:w-3/5 lg:border-r border-gray-200" : "w-full"
+                  isChatOpen ? "w-full lg:w-3/5 lg:border-r border-gray-200" : "w-full"
                 } transition-all duration-300 ease-in-out overflow-y-auto px-4`}
               >
                 {/* Back button row */}
@@ -852,7 +852,7 @@ export default function CasePreview() {
               {/* Chat Canvas - ChatGPT Style */}
               <div
                 className={`${
-                  isChatOpen ? "lg:w-2/5 lg:block" : "lg:hidden"
+                  isChatOpen ? "block lg:w-2/5" : "hidden" 
                 } fixed lg:static inset-0 bg-white z-30 transition-all duration-300 h-screen lg:h-[calc(100vh-120px)] overflow-hidden`}
                 style={{
                   boxShadow: isChatOpen ? "0 0 15px rgba(0,0,0,0.1)" : "none",
