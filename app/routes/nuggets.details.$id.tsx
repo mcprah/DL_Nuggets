@@ -1,12 +1,30 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLoaderData, Link } from "@remix-run/react";
-import { MdArrowBack } from "react-icons/md";
+import {
+  MdArrowBack,
+  MdContentCopy,
+  MdBookmark,
+  MdBookmarkBorder,
+  MdShare,
+  MdOutlineMenuBook,
+  MdOutlineGavel,
+  MdLabelOutline,
+  MdOutlineCalendarToday,
+  MdDescription,
+} from "react-icons/md";
 import { LoaderFunction, MetaFunction } from "@remix-run/node";
 import axios from "axios";
 import NuggetDrawer, { Nugget } from "~/components/NuggetDrawer";
-import { Button } from "@nextui-org/react";
+import {
+  Button,
+  Tooltip,
+  Divider,
+  Chip,
+  Avatar,
+  Badge,
+} from "@nextui-org/react";
 import { recordNuggetView, recordResourceAccess } from "~/utils/api";
-import { recordResourceAccess as oldRecordResourceAccess } from "../utils/tracking";
+import { motion } from "framer-motion";
 
 // Define the Nugget interface to fix the linter error
 interface Nugget {
@@ -54,6 +72,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   }
 
   const { nugget } = data;
+  console.log(nugget);
+
   return [
     { title: `${nugget?.headnote || "Nugget Details"} | Dennislaw` },
     {
@@ -80,6 +100,7 @@ const NuggetDetails = () => {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const { nugget, baseUrl } = useLoaderData<LoaderData>();
 
@@ -90,197 +111,312 @@ const NuggetDetails = () => {
     }
   }, [nugget?.id, baseUrl]);
 
-  const openDrawer = () => {
-    setIsDrawerOpen(true);
-  };
+  useEffect(() => {
+    setIsBookmarked(nugget?.is_bookmarked || false);
+  }, [nugget?.is_bookmarked]);
 
-  const closeDrawer = () => {
-    setIsDrawerOpen(false);
-  };
+  const openDrawer = () => setIsDrawerOpen(true);
+  const closeDrawer = () => setIsDrawerOpen(false);
 
   const handleBookmarkChange = () => {
-    // Reload data if needed after bookmark change
-    // This could be implemented to update the UI
+    setIsBookmarked(!isBookmarked);
+    // Implement bookmark functionality here
   };
 
-  // Handle navigation to judge page with tracking
-  const handleJudgeClick = (judgeId: number | string) => {
-    if (judgeId) {
-      recordResourceAccess(baseUrl, "judge", judgeId);
+  const handleCopyPrinciple = () => {
+    if (nugget?.principle) {
+      const text = nugget.principle;
+      const citation = nugget?.dl_citation_no  || '';
+      const pageLink = window.location.href;
+      
+      const formattedText = `${text}\n\nSource: Dennislaw - ${citation}\nLink: ${pageLink}`;
+      
+      navigator.clipboard.writeText(formattedText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  // Handle navigation to court page with tracking
-  const handleCourtClick = (courtId: number | string) => {
-    if (courtId) {
-      recordResourceAccess(baseUrl, "court", courtId);
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: nugget?.headnote || "Legal Nugget",
+        text: nugget?.principle?.substring(0, 100) + "...",
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Link copied to clipboard!");
+    }
+  };
+
+  const handleViewFullCase = () => {
+    if (nugget?.dl_citation_no) {
+      navigate(`/cases/${nugget.dl_citation_no}`);
     }
   };
 
   return (
-    <div className="flex transition-all duration-300">
-      {/* Main Content Area */}
+    <motion.div
+      className="max-w-6xl mx-auto p-4 sm:p-6 md:py-0 md:px-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Top Navigation & Actions Bar */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-gray-600 hover:text-primary transition-all px-3 py-1.5 rounded-lg hover:bg-gray-100"
+        >
+          <MdArrowBack className="text-xl" />
+          <span className="text-sm font-medium">Back</span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          <Tooltip
+            content={isBookmarked ? "Remove bookmark" : "Bookmark nugget"}
+          >
+            <Button
+              isIconOnly
+              variant="light"
+              size="sm"
+              onClick={handleBookmarkChange}
+              className={isBookmarked ? "text-primary" : "text-gray-500"}
+            >
+              {isBookmarked ? (
+                <MdBookmark className="text-lg" />
+              ) : (
+                <MdBookmarkBorder className="text-lg" />
+              )}
+            </Button>
+          </Tooltip>
+
+          <Tooltip content="Share nugget">
+            <Button
+              isIconOnly
+              variant="light"
+              size="sm"
+              onClick={handleShare}
+              className="text-gray-500"
+            >
+              <MdShare className="text-lg" />
+            </Button>
+          </Tooltip>
+
+          <Button
+            variant="flat"
+            color="primary"
+            size="sm"
+            onClick={handleViewFullCase}
+            startContent={<MdOutlineMenuBook className="text-lg" />}
+          >
+            Full Case
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content */}
       <div
-        className={`flex-1 p-2 overflow-x-hidden transition-all duration-300 ${
+        className={`transition-all duration-300 ${
           isDrawerOpen ? "pr-[400px]" : ""
         }`}
       >
-        {/* Back Button and Title */}
-        <div className="flex items-center gap-2 mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-gray-600 hover:text-primary transition-all duration-300"
-          >
-            <MdArrowBack className="text-2xl" />
-          </button>
-          {/* <h1 className="font-montserrat font-bold text-xl md:text-2xl">
-            {nugget?.headnote || "Nugget Details"}
-          </h1> */}
-        </div>
-
-        {/* Nugget Detail Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-black/10 p-6 mb-6">
-          {/* Nugget Header */}
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-primary mb-4">
-              {nugget?.headnote}
-            </h2>
-
-            {/* Meta Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="font-semibold text-gray-700">Case:</span>{" "}
-                <span>{nugget?.case_title || nugget?.title}</span>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Citation:</span>{" "}
-                <span>
-                  {nugget?.dl_citation_no ||
-                    nugget?.case_citation ||
-                    nugget?.citation_no}
-                </span>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Year:</span>{" "}
-                <span>{nugget?.year}</span>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Court:</span>{" "}
-                <span>{nugget?.courts}</span>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Judge:</span>{" "}
-                <span>
-                  {nugget?.judges ||
-                    (nugget?.judge ? nugget.judge.fullname : "")}
-                </span>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">
-                  Area of Law:
-                </span>
-                <Link
-                  to={`/nuggets/areas/${nugget?.area_of_law?.split(",")[0]}`}
-                  className="text-secondary hover:underline"
-                >
-                  {nugget?.area_of_law}
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Principle */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Principle</h3>
-            <div className="bg-gray-50 p-4 rounded-lg  shadow-lg">
-              <p className="whitespace-pre-wrap">{nugget?.principle}</p>
-            </div>
-          </div>
-
-          {/* Keywords */}
-          {nugget?.keywords && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Keywords</h3>
-              <div className="flex flex-wrap gap-2">
-                {Array.isArray(nugget.keywords)
-                  ? nugget.keywords.map((keywordObj, index) => (
-                      <Link
-                        key={index}
-                        to={`/search?keyword=${keywordObj.keyword.value}`}
-                        className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-secondary hover:text-white transition-colors"
-                      >
-                        {keywordObj.keyword.value}
-                      </Link>
-                    ))
-                  : typeof nugget.keywords === "string" &&
-                    nugget.keywords?.split(",").map((keyword, index) => (
-                      <Link
-                        key={index}
-                        to={`/search?keyword=${keyword.trim()}`}
-                        className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-secondary hover:text-white transition-colors"
-                      >
-                        {keyword.trim()}
-                      </Link>
-                    ))}
-              </div>
-            </div>
-          )}
-
-          {/* Additional Actions */}
-          <div className="mt-8 flex flex-wrap gap-4">
-            <button
-              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
-              onClick={() => window.print()}
+        <article className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          {/* Title Section with gradient header */}
+          <div className="bg-gradient-to-r from-primary/5 to-secondary/5 border-b border-slate-200 p-6">
+            <Badge
+              // content="Legal Principle"
+              color="secondary"
+              size="sm"
+              placement="top-right"
+              className="absolute top-4 right-4"
             >
-              Print Nugget
-            </button>
+              <h1 className="text-2xl font-bold text-slate-800 pr-28">
+                {nugget?.headnote}
+              </h1>
+            </Badge>
+          </div>
 
-            <Button className="bg-secondary text-white" onClick={openDrawer}>
-              View in Drawer
-            </Button>
+          <div className="p-6">
+            {/* Meta Information in Cards */}
+            <div className="mt-4 bg-gray-50 p-4 rounded-lg border-l-4 border-gray-300 mb-8">
+              {/* Quoted From Section */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-gray-700 font-semibold">Quoted from:</p>
+                  <p className="text-gray-500 text-xs italic">
+                    Tap title below for full case
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {nugget?.dl_citation_no && (
+                    <Chip
+                      variant="flat"
+                      size="sm"
+                      startContent={<MdDescription className="text-primary" />}
+                      classNames={{
+                        base: "bg-primary/10 text-primary-700 px-2",
+                        content: "font-medium",
+                      }}
+                    >
+                      {nugget.dl_citation_no}
+                    </Chip>
+                  )}
+                  {nugget?.year && (
+                    <Chip
+                      variant="flat"
+                      size="sm"
+                      startContent={<MdOutlineCalendarToday />}
+                      classNames={{
+                        base: "bg-secondary-100 px-2",
+                        content: "font-medium",
+                      }}
+                    >
+                      {nugget.year}
+                    </Chip>
+                  )}
+                </div>
+              </div>
 
-            {nugget?.judge_id && (
-              <Link
-                to={`/nuggets/judges/${nugget.judge_id}`}
-                className="px-4 py-2 bg-secondary text-white rounded hover:bg-secondary-dark transition-colors"
-                onClick={() => handleJudgeClick(nugget.judge_id)}
-              >
-                More by{" "}
-                {nugget?.judges?.split(",")[0] ||
-                  (nugget?.judge ? nugget.judge.fullname : "")}
-              </Link>
+              {/* Title with Link */}
+              <div className="mt-2">
+                <button
+                  onClick={handleViewFullCase}
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  {nugget?.title}
+                </button>
+
+                <div className="flex items-center text-sm text-gray-500 mt-1">
+                  <span className="font-medium">
+                    {nugget?.dl_citation_no || nugget?.citation_no}
+                  </span>
+                  {nugget?.page_number && (
+                    <span className="ml-2">at page {nugget.page_number}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Judge Information */}
+              {(nugget?.judges || nugget?.judge) && (
+                <div className="mt-3">
+                  <Link
+                    to={
+                      nugget?.judge_id
+                        ? `/nuggets/judges/${nugget.judge_id}`
+                        : "#"
+                    }
+                    className="font-semibold hover:underline"
+                  >
+                    <span className="font-normal">by</span>{" "}
+                    {nugget?.judges?.split(",")[0] ||
+                      (nugget?.judge ? nugget.judge.fullname : "")}{" "}
+                    {nugget?.judge_title}
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Principle */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-slate-800">
+                  Principle
+                </h3>
+                <Tooltip content={copied ? "Copied!" : "Copy principle"}>
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    size="sm"
+                    onPress={handleCopyPrinciple}
+                    className="text-gray-500"
+                  >
+                    <MdContentCopy className="text-lg" />
+                  </Button>
+                </Tooltip>
+              </div>
+              <div className="bg-gradient-to-r from-slate-50 to-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                <p className="whitespace-pre-wrap text-slate-700 leading-relaxed">
+                  {nugget?.principle}
+                </p>
+              </div>
+            </div>
+            {/* Area of Law */}
+            {nugget?.area_of_laws && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                  Area of Law
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {Array.isArray(nugget.area_of_laws)
+                    ? nugget.area_of_laws.map((areaOfLaw, index) => (
+                        <Link
+                          key={index}
+                          to={`/nuggets/areas/${areaOfLaw.id}`}
+                          className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-secondary hover:text-white transition-colors"
+                        >
+                          {areaOfLaw.display_name}
+                        </Link>
+                      ))
+                    : typeof nugget.area_of_laws === "string" &&
+                      nugget.area_of_laws
+                        ?.split(",")
+                        .map((areaOfLaw, index) => (
+                          <Link
+                            key={index}
+                            to={`/search?q=${areaOfLaw.trim()}`}
+                            className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-secondary hover:text-white transition-colors"
+                          >
+                            {areaOfLaw.trim()}
+                          </Link>
+                        ))}
+                </div>
+              </div>
             )}
-
-            {nugget?.courts && (
-              <Link
-                to={`/nuggets/courts/${nugget?.courts?.split(",")[0]}`}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
-                onClick={() => handleCourtClick(nugget?.courts?.split(",")[0])}
-              >
-                More from {nugget?.courts?.split(",")[0]}
-              </Link>
+            {/* Keywords */}
+            {nugget?.keywords && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                  Keywords
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {Array.isArray(nugget.keywords)
+                    ? nugget.keywords.map((keywordObj, index) => (
+                        <Link
+                          key={index}
+                          to={`/search?q=${keywordObj?.keyword?.value}`}
+                          className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-secondary hover:text-white transition-colors"
+                        >
+                          {keywordObj?.keyword?.value}
+                        </Link>
+                      ))
+                    : typeof nugget.keywords === "string" &&
+                      nugget.keywords?.split(",").map((keyword, index) => (
+                        <Link
+                          key={index}
+                          to={`/search?keyword=${keyword.trim()}`}
+                          className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-secondary hover:text-white transition-colors"
+                        >
+                          {keyword.trim()}
+                        </Link>
+                      ))}
+                </div>
+              </div>
             )}
           </div>
-        </div>
-
-        {/* Related Nuggets Section (Placeholder) */}
-        {/* <div className="bg-white rounded-xl shadow-sm border border-black/10 p-6">
-          <h3 className="text-lg font-semibold mb-4">Related Nuggets</h3>
-          <p className="text-gray-500">
-            Related nuggets will be displayed here in future updates.
-          </p>
-        </div> */}
+        </article>
       </div>
 
       {/* Nugget Drawer */}
-      <NuggetDrawer
+      {/* <NuggetDrawer
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
         nugget={nugget}
         onBookmarkChange={handleBookmarkChange}
         baseUrl={baseUrl}
-      />
-    </div>
+      /> */}
+    </motion.div>
   );
 };
 
@@ -294,7 +430,6 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
   try {
     const response = await axios.get(`${baseUrl}/nugget/${id}`);
-    console.log("Nugget details:", response?.data?.data);
 
     // Map API response to match the Nugget interface if needed
     const nuggetData = response.data?.data || {};

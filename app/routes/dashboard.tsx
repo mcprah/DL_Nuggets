@@ -341,7 +341,7 @@ const Dashboard = () => {
             >
               Judges
             </Button>
-          </div>
+          </div> */}
         </section>
 
         {/* Main Categories Section */}

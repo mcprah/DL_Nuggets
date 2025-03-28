@@ -141,6 +141,12 @@ const NuggetDrawer = ({
     navigate(`/nuggets/area-of-law/${areaId}`);
   };
 
+  const handleViewFullCase = (dl_citation_no: string) => {
+    if (dl_citation_no) {
+      navigate(`/cases/${dl_citation_no}`);
+    }
+  };
+
   return (
     <div
       className={`fixed z-50 right-0 top-0 h-full w-full sm:w-lg lg:max-w-lg xl:max-w-2xl bg-white shadow-lg transition-transform duration-300 border-l overflow-y-auto ${
@@ -199,15 +205,16 @@ const NuggetDrawer = ({
 
             {/* Title with Link */}
             <div className="mt-2">
-              <Link
-                to={`https://www.dennislawgh.com/case-preview?dl_citation_no=${
-                  nugget.dl_citation_no || nugget.citation_no
-                }`}
-                target="_blank"
-                className="text-sm font-medium text-blue-600 hover:underline"
+              <p
+                onClick={() =>
+                  handleViewFullCase(
+                    nugget?.dl_citation_no || nugget.citation_no || ""
+                  )
+                }
+                className="text-sm font-medium text-blue-600 cursor-pointer hover:text-blue-800"
               >
                 {nugget.title}
-              </Link>
+              </p>
 
               <div className="flex items-center text-sm text-gray-500 mt-1">
                 <span className="font-medium">
@@ -226,7 +233,8 @@ const NuggetDrawer = ({
                   to={`/nuggets/judges/${nugget.judge.id}`}
                   className="font-semibold hover:underline"
                 >
-                  - {nugget.judge.fullname} {nugget.judge_title}
+                  <span className="font-normal">by</span>{" "}
+                  {nugget.judge.fullname} {nugget.judge_title}
                 </Link>
               </div>
             )}
