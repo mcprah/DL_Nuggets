@@ -38,6 +38,8 @@ import {
 } from "~/api/case-digest";
 import { storeVectorFileIDs } from "~/api/vector_files";
 import ChatInterface from "~/components/ChatInterface";
+import { analyzeCaseWithAI } from "~/api/case-analysis";
+import CaseAnalysisDisplay from "~/components/CaseAnalysisDisplay";
 
 interface CaseData {
   id: number;
@@ -119,6 +121,8 @@ export default function CasePreview() {
   const [isMobile, setIsMobile] = useState(false);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const apiCallMadeRef = useRef(false);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [vectorStoreId, setVectorStoreId] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
@@ -157,7 +161,6 @@ export default function CasePreview() {
         setLoading(false);
         return;
       }
-      console.log("hello");
 
       try {
         apiCallMadeRef.current = true;
@@ -177,38 +180,23 @@ export default function CasePreview() {
         setCaseDetails(data);
 
         if (caseDigestFromDB == null) {
-          generateCaseDigest(baseAIUrl, data, token).then(
-            async (digestResponse) => {
-              console.log("digestResponse", digestResponse.data);
-              const digestInfo = digestResponse.data;
-              setCaseDigest(digestInfo);
-              setLoadingDigest(false);
-              // await storeVectorFileIDs(
-              //   baseUrl,
-              //   digestInfo?.vector_store_id,
-              //   digestInfo?.file_id,
-              //   digestInfo?.dl_citation_no,
-              //   token
-              // );
-              await storeCaseDigest(baseUrl, digestInfo, token);
-            }
-          );
+          // generateCaseDigest(baseAIUrl, data, token).then(
+          //   async (digestResponse) => {
+          //     console.log("digestResponse", digestResponse.data);
+          //     const digestInfo = digestResponse.data;
+          //     setCaseDigest(digestInfo);
+          //     setLoadingDigest(false);
+          //     await storeCaseDigest(baseUrl, digestInfo, token);
+          //   }
+          // );
         } else {
-          // getCaseDigestFromAI(
-          //   baseAIUrl,
-          //   caseDigestFromDB?.vector_store_id!,
-          //   caseDigestFromDB?.dl_citation_no!,
-          //   token
-          // ).then((digestResponse) => {
-            setCaseDigest(caseDigestFromDB as CaseDigest);
-            setLoadingDigest(false);
-          // });
+          setCaseDigest(caseDigestFromDB as CaseDigest);
+          setLoadingDigest(false);
         }
       } catch (err) {
         console.error("Error fetching with auth:", err);
       } finally {
         setLoading(false);
-        // setLoadingDigest(false);
       }
     };
 
@@ -223,45 +211,6 @@ export default function CasePreview() {
         {paragraph}
       </p>
     ));
-  };
-
-  // Extract case sections (Introduction, Issues, etc.)
-  const extractSections = () => {
-    const sections: { title: string; content: string }[] = [];
-    const lines = caseDetails.decision.split("\r\n");
-
-    let currentSection = "";
-    let currentContent: string[] = [];
-
-    lines.forEach((line) => {
-      // Check if line is a potential section title (capitalized, ends with colon, etc.)
-      if (line.trim().match(/^[A-Z].*:$/)) {
-        // Save previous section if it exists
-        if (currentSection && currentContent.length > 0) {
-          sections.push({
-            title: currentSection,
-            content: currentContent.join("\r\n"),
-          });
-        }
-
-        // Start new section
-        currentSection = line.trim();
-        currentContent = [];
-      } else {
-        // Add line to current section
-        currentContent.push(line);
-      }
-    });
-
-    // Add the last section
-    if (currentSection && currentContent.length > 0) {
-      sections.push({
-        title: currentSection,
-        content: currentContent.join("\r\n"),
-      });
-    }
-
-    return sections;
   };
 
   const handleCopyText = () => {
@@ -479,423 +428,24 @@ export default function CasePreview() {
                       </Tab>
 
                       <Tab
-                        key="digest"
+                        key="analysis"
                         title={
                           <div className="flex items-center gap-1">
-                            Case Digest{" "}
+                            Case Analysis{" "}
                             <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
                               AI
                             </span>
                           </div>
                         }
                       >
-                        <div className="py-4">
-                          {loadingDigest ? (
-                            <div className="space-y-6">
-                              {/* AI Generated Notice */}
-                              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 flex items-center gap-3 rounded-md">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-6 w-6 text-blue-500"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                                  />
-                                </svg>
-                                <div>
-                                  <p className="font-medium text-blue-700">
-                                    AI-Generated Content
-                                  </p>
-                                  <p className="text-sm text-blue-600">
-                                    This case digest is being generated using
-                                    AI...
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Summary Section Skeleton */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-2">
-                                  Summary
-                                </h3>
-                                <div className="space-y-2">
-                                  <Skeleton className="w-full h-4 rounded-lg" />
-                                  <Skeleton className="w-full h-4 rounded-lg" />
-                                  <Skeleton className="w-4/5 h-4 rounded-lg" />
-                                </div>
-                              </div>
-
-                              {/* Facts Section Skeleton */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-2">
-                                  Facts
-                                </h3>
-                                <ul className="list-disc pl-5 space-y-3">
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </li>
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </li>
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-5/6 h-4 rounded-lg" />
-                                  </li>
-                                </ul>
-                              </div>
-
-                              {/* Issues Section Skeleton */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-2">
-                                  Issues
-                                </h3>
-                                <ul className="list-disc pl-5 space-y-3">
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </li>
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-4/5 h-4 rounded-lg" />
-                                  </li>
-                                </ul>
-                              </div>
-
-                              {/* Arguments Section Skeleton */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-2">
-                                  Arguments
-                                </h3>
-                                <div className="mb-4">
-                                  <Skeleton className="w-1/4 h-5 rounded-lg mb-2" />
-                                  <div className="pl-4 border-l-2 border-gray-300 space-y-2">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </div>
-                                </div>
-                                <div className="mb-4">
-                                  <Skeleton className="w-1/4 h-5 rounded-lg mb-2" />
-                                  <div className="pl-4 border-l-2 border-gray-300 space-y-2">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Holding Section Skeleton */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-2">
-                                  Holding
-                                </h3>
-                                <ul className="list-disc pl-5 space-y-3">
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </li>
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-4/5 h-4 rounded-lg" />
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              {/* AI Generated Notice */}
-                              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 flex items-center gap-3 rounded-md">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-6 w-6 text-blue-500"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                                  />
-                                </svg>
-                                <div>
-                                  <p className="font-medium text-blue-700">
-                                    AI-Generated Content
-                                  </p>
-                                  <p className="text-sm text-blue-600">
-                                    This case digest was automatically generated
-                                    using AI and may not be comprehensive or
-                                    entirely accurate.
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Summary Section */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-2">
-                                  Summary
-                                </h3>
-                                <p className="text-gray-700">
-                                  {caseDigest?.summary}
-                                </p>
-                              </div>
-
-                              {/* Digest Content with Cards */}
-                              <div className="space-y-6">
-                                {/* Facts Card */}
-                                <Card
-                                  shadow="sm"
-                                  className="border border-gray-100 overflow-visible bg-white"
-                                >
-                                  <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
-                                      Facts
-                                    </h3>
-                                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                                      {caseDigest?.facts?.map((item, index) => (
-                                        <li key={index}>
-                                          {item.content || item.value}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                </Card>
-
-                                {/* Issues Card */}
-                                <Card
-                                  shadow="sm"
-                                  className="border border-gray-100  overflow-visible bg-white"
-                                >
-                                  <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
-                                      Issues
-                                    </h3>
-                                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                                      {caseDigest?.issues?.map(
-                                        (item, index) => (
-                                          <li key={index}>
-                                            {item.content || item.value}
-                                          </li>
-                                        )
-                                      )}
-                                    </ul>
-                                  </div>
-                                </Card>
-
-                                {/* Arguments Card */}
-                                <Card
-                                  shadow="sm"
-                                  className="border border-gray-100 overflow-visible bg-white"
-                                >
-                                  <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
-                                      Arguments
-                                    </h3>
-                                    {caseDigest?.arguments?.map(
-                                      (arg, index) => (
-                                        <div key={index} className="mb-4">
-                                          <h4 className="font-medium mb-2 text-primary-700">
-                                            {arg.party}
-                                          </h4>
-                                          <p className="pl-4 border-l-2 border-primary-200 text-gray-700">
-                                            {arg.argument}
-                                          </p>
-                                        </div>
-                                      )
-                                    )}
-                                  </div>
-                                </Card>
-
-                                {/* Holding Card */}
-                                <Card
-                                  shadow="sm"
-                                  className="border border-gray-100 overflow-visible bg-white"
-                                >
-                                  <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
-                                      Holding
-                                    </h3>
-                                    <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                                      {caseDigest?.holding?.map(
-                                        (item, index) => (
-                                          <li key={index}>
-                                            {item.content || item.value}
-                                          </li>
-                                        )
-                                      )}
-                                    </ul>
-                                  </div>
-                                </Card>
-
-                                {/* Reasoning Card */}
-                                <Card
-                                  shadow="sm"
-                                  className="border border-gray-100 overflow-visible bg-white"
-                                >
-                                  <div className="p-5">
-                                    <h3 className="text-lg font-semibold text-primary-800 mb-3">
-                                      Reasoning
-                                    </h3>
-                                    <div className="space-y-4">
-                                      <div>
-                                        <h4 className="font-medium mb-2 text-primary-700">
-                                          Ratio Decidendi
-                                        </h4>
-                                        <p className="text-gray-700">
-                                          {caseDigest?.ratio_decidendi}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </Card>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </Tab>
-
-                      <Tab
-                        key="references"
-                        title={
-                          <div className="flex items-center gap-1">
-                            References{" "}
-                            <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
-                              AI
-                            </span>
-                          </div>
-                        }
-                      >
-                        <div className="py-4">
-                          {loadingDigest ? (
-                            <div className="space-y-6">
-                              {/* Cases Cited Section Skeleton */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-3">
-                                  Cases Cited
-                                </h3>
-                                <ul className="list-disc pl-5 space-y-3">
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </li>
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </li>
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-5/6 h-4 rounded-lg" />
-                                  </li>
-                                </ul>
-                              </div>
-
-                              {/* Laws Cited Section Skeleton */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-3">
-                                  Laws Cited
-                                </h3>
-                                <ul className="list-disc pl-5 space-y-3">
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-full h-4 rounded-lg" />
-                                  </li>
-                                  <li className="flex items-center">
-                                    <Skeleton className="w-4/5 h-4 rounded-lg" />
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              {/* Cases Cited Section */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-3">
-                                  Cases Cited
-                                </h3>
-                                <ul className="list-disc pl-5 space-y-2">
-                                  {caseDigest?.cases_cited?.map(
-                                    (item, index) => (
-                                      <li key={index}>
-                                        {item.content || item.value}
-                                      </li>
-                                    )
-                                  )}
-                                </ul>
-                              </div>
-
-                              {/* Laws Cited Section */}
-                              <div className="mb-6">
-                                <h3 className="text-lg font-semibold mb-3">
-                                  Laws Cited
-                                </h3>
-                                <ul className="list-disc pl-5 space-y-2">
-                                  {caseDigest?.laws_cited?.map(
-                                    (item, index) => (
-                                      <li key={index}>
-                                        {item.content || item.value}
-                                      </li>
-                                    )
-                                  )}
-                                </ul>
-                              </div>
-
-                              {/* Metadata Card */}
-                              <Card className="border border-gray-100 shadow-sm overflow-visible bg-white">
-                                <div className="p-5">
-                                  <h3 className="text-lg font-semibold text-primary-800 mb-3">
-                                    Additional Metadata
-                                  </h3>
-
-                                  {/* Subject Matter */}
-                                  {caseDigest?.subject_matter &&
-                                    caseDigest?.subject_matter.length > 0 && (
-                                      <div className="mb-4">
-                                        <h4 className="font-medium mb-2 text-primary-700">
-                                          Subject Matter
-                                        </h4>
-                                        <div className="flex flex-wrap gap-2">
-                                          {caseDigest?.subject_matter.map(
-                                            (item, index) => (
-                                              <Chip
-                                                key={index}
-                                                size="sm"
-                                                variant="flat"
-                                                color="secondary"
-                                                className="transition-all hover:scale-105"
-                                              >
-                                                {item.content || item.value}
-                                              </Chip>
-                                            )
-                                          )}
-                                        </div>
-                                      </div>
-                                    )}
-
-                                  {/* Keywords */}
-                                  {caseDigest?.keywords &&
-                                    caseDigest?.keywords.length > 0 && (
-                                      <div>
-                                        <h4 className="font-medium mb-2 text-primary-700">
-                                          Keywords
-                                        </h4>
-                                        <div className="flex flex-wrap gap-2">
-                                          {caseDigest?.keywords.map(
-                                            (item, index) => (
-                                              <Chip
-                                                key={index}
-                                                size="sm"
-                                                variant="flat"
-                                                color="default"
-                                                className="transition-all hover:scale-105"
-                                              >
-                                                {item.content || item.value}
-                                              </Chip>
-                                            )
-                                          )}
-                                        </div>
-                                      </div>
-                                    )}
-                                </div>
-                              </Card>
-                            </>
-                          )}
-                        </div>
+                        <CaseAnalysisDisplay
+                          caseData={caseDetails}
+                          baseAIUrl={baseAIUrl}
+                          baseUrl={baseUrl}
+                          onAnalysisGenerated={() => {
+                            setAnalysisLoading(false);
+                          }}
+                        />
                       </Tab>
                     </Tabs>
 
