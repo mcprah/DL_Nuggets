@@ -199,8 +199,12 @@ export default function RecentlyViewed() {
   return (
     <AdminLayout>
       <div className="p-4">
-        {/* Header with back button */}
-        <div className="flex items-center mb-6">
+        <div
+          className={`p-2 overflow-x-hidden transition-all duration-300 overflow-y-hidden ${isDrawerOpen ? "w-full sm:w-1/3 md:w-3/6 lg:w-2xl" : "flex-1"
+            }`}
+        >
+          {/* Header with back button */}
+          <div className="flex items-center mb-6">
           <Button
             isIconOnly
             variant="light"
@@ -324,6 +328,7 @@ export default function RecentlyViewed() {
             )}
           </>
         )}
+        </div>
 
         {/* Nugget Drawer */}
         <NuggetDrawer
