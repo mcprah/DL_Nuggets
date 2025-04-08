@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLoaderData, useNavigate, useParams } from "@remix-run/react";
-import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
+import { json, LoaderFunction, MetaFunction, redirect } from "@remix-run/node";
 import axios from "axios";
 import AdminLayout from "~/Layout/AdminLayout";
 import {
@@ -78,10 +78,11 @@ export const meta: MetaFunction = ({ data }) => {
   ];
 };
 
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader: LoaderFunction = async ({ request, params }) => {
   const { id } = params;
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
   const baseAIUrl = process.env.NEXT_PUBLIC_DL_AI_API_URL;
+
 
   try {
     // Make initial request for case details
@@ -155,6 +156,7 @@ export default function CasePreview() {
       const token = localStorage.getItem("access_token");
       if (!token) {
         setLoading(false);
+        navigate('/'); 
         return;
       }
       console.log("hello");
