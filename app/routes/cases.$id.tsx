@@ -38,7 +38,7 @@ import {
 } from "~/api/case-digest";
 import { storeVectorFileIDs } from "~/api/vector_files";
 import ChatInterface from "~/components/ChatInterface";
-import { analyzeCaseWithAI } from "~/api/case-analysis";
+import { analyzeCaseWithAI, CaseAnalysis } from "~/api/case-analysis";
 import CaseAnalysisDisplay from "~/components/CaseAnalysisDisplay";
 
 interface CaseData {
@@ -123,6 +123,7 @@ export default function CasePreview() {
   const apiCallMadeRef = useRef(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [vectorStoreId, setVectorStoreId] = useState<string | null>(null);
+  const [caseAnalysis, setCaseAnalysis] = useState<CaseAnalysis | null>(null);
 
   const navigate = useNavigate();
 
@@ -442,7 +443,9 @@ export default function CasePreview() {
                           caseData={caseDetails}
                           baseAIUrl={baseAIUrl}
                           baseUrl={baseUrl}
-                          onAnalysisGenerated={() => {
+                          initialAnalysis={caseAnalysis}
+                          onAnalysisGenerated={(analysis) => {
+                            setCaseAnalysis(analysis);
                             setAnalysisLoading(false);
                           }}
                         />

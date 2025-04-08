@@ -14,6 +14,7 @@ interface CaseAnalysisDisplayProps {
   caseData: Record<string, any>;
   baseUrl: string;
   baseAIUrl: string;
+  initialAnalysis?: CaseAnalysis | null; // New prop to receive analysis directly
   onAnalysisGenerated?: (analysis: CaseAnalysis) => void;
 }
 
@@ -107,13 +108,23 @@ export default function CaseAnalysisDisplay({
   caseData,
   baseUrl,
   baseAIUrl,
+  initialAnalysis,
   onAnalysisGenerated,
 }: CaseAnalysisDisplayProps) {
-  const [analysis, setAnalysis] = useState<CaseAnalysis | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [analysis, setAnalysis] = useState<CaseAnalysis | null>(initialAnalysis || null);
+  const [loading, setLoading] = useState<boolean>(!initialAnalysis);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // If initialAnalysis is provided, use it and skip the fetch/generate process
+    if (initialAnalysis) {
+      setAnalysis(initialAnalysis);
+      if (onAnalysisGenerated) {
+        onAnalysisGenerated(initialAnalysis);
+      }
+      return;
+    }
+
     const fetchOrGenerateAnalysis = async () => {
       try {
         setLoading(true);
@@ -126,7 +137,6 @@ export default function CaseAnalysisDisplay({
         }
 
         // First, check if analysis already exists in the database
-
         const existingAnalysis = await getCaseAnalysisByCitation(
           baseUrl,
           caseData.dl_citation_no,
@@ -184,7 +194,7 @@ export default function CaseAnalysisDisplay({
     };
 
     fetchOrGenerateAnalysis();
-  }, [caseData.dl_citation_no]);
+  }, [caseData.dl_citation_no, baseUrl, baseAIUrl, initialAnalysis, onAnalysisGenerated]);
 
   if (error) {
     return (
