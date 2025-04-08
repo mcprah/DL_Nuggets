@@ -1,4 +1,4 @@
-import { Button, Card, Progress } from "@nextui-org/react";
+import { Button, Card, Link, Progress } from "@nextui-org/react";
 import AdminLayout from "../Layout/AdminLayout";
 import {
   MdArrowRight,
@@ -451,7 +451,9 @@ const Dashboard = () => {
                 <Button
                   className="bg-gradient-to-r from-indigo-700 to-blue-900 text-white"
                   endContent={<MdArrowRight />}
-                  onPress={() => navigate("/dennislaw")}
+                  as={Link}
+                  href="https://www.dennislawgh.com"
+                  target="__blank"
                 >
                   Go to Dennislaw
                 </Button>
