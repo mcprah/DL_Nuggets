@@ -10,7 +10,7 @@ import {
   MdPerson,
   MdCalendarToday,
 } from "react-icons/md";
-import { useNavigate, useLoaderData, Link } from "@remix-run/react";
+import { useNavigate, useLoaderData } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { MetaFunction, LoaderFunction, json, redirect } from "@remix-run/node";
 import axios from "axios";
