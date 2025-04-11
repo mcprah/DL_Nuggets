@@ -9,6 +9,7 @@ import {
   getCaseAnalysisByCitation,
   createCaseAnalysis,
 } from "~/api/case-analysis";
+import { convertAnalysisToMarkdown } from "~/utils/helpers";
 
 interface CaseAnalysisDisplayProps {
   caseData: Record<string, any>;
@@ -111,7 +112,9 @@ export default function CaseAnalysisDisplay({
   initialAnalysis,
   onAnalysisGenerated,
 }: CaseAnalysisDisplayProps) {
-  const [analysis, setAnalysis] = useState<CaseAnalysis | null>(initialAnalysis || null);
+  const [analysis, setAnalysis] = useState<CaseAnalysis | null>(
+    initialAnalysis || null
+  );
   const [loading, setLoading] = useState<boolean>(!initialAnalysis);
   const [error, setError] = useState<string | null>(null);
 
@@ -162,10 +165,16 @@ export default function CaseAnalysisDisplay({
         );
 
         if (analysisResponse.success && analysisResponse.data) {
+          const analysisMarkdown = convertAnalysisToMarkdown(
+            analysisResponse.data
+          );
+
           const newAnalysis: CaseAnalysis = {
-            analysis: analysisResponse.data,
+            analysis: analysisMarkdown ?? "",
             created_at: new Date().toISOString(),
             dl_citation_no: caseData.dl_citation_no,
+            vector_store_id: analysisResponse.data.vector_store_id,
+            vector_file_id: analysisResponse.data.file_id,
           };
           setAnalysis(newAnalysis);
 
@@ -173,8 +182,10 @@ export default function CaseAnalysisDisplay({
           await createCaseAnalysis(
             baseUrl,
             {
-              analysis: newAnalysis.analysis,
+              analysis: analysisMarkdown ?? "",
               dl_citation_no: caseData.dl_citation_no,
+              vector_store_id: analysisResponse.data.vector_store_id,
+              vector_file_id: analysisResponse.data.file_id,
             },
             token
           );
@@ -194,7 +205,13 @@ export default function CaseAnalysisDisplay({
     };
 
     fetchOrGenerateAnalysis();
-  }, [caseData.dl_citation_no, baseUrl, baseAIUrl, initialAnalysis, onAnalysisGenerated]);
+  }, [
+    caseData.dl_citation_no,
+    baseUrl,
+    baseAIUrl,
+    initialAnalysis,
+    onAnalysisGenerated,
+  ]);
 
   if (error) {
     return (

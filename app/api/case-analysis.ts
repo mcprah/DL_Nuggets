@@ -4,6 +4,8 @@ export interface CaseAnalysis {
     id?: number;
     analysis: string;
     dl_citation_no: string;
+    vector_store_id?: string;
+    vector_file_id?: string;
     created_at?: string;
     updated_at?: string;
 }

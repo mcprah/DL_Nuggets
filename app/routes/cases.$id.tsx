@@ -40,26 +40,48 @@ import { storeVectorFileIDs } from "~/api/vector_files";
 import ChatInterface from "~/components/ChatInterface";
 import { analyzeCaseWithAI, CaseAnalysis } from "~/api/case-analysis";
 import CaseAnalysisDisplay from "~/components/CaseAnalysisDisplay";
+import { convertAnalysisToMarkdown } from "~/utils/helpers";
 
 interface CaseData {
   id: number;
+  title: string;
   date: string;
   dl_citation_no: string;
-  type: string;
-  c_t: number;
-  region: {
-    code: string;
-    name: string;
-  };
-  judges: string;
-  lawyers: string | null;
-  court: string | null;
-  keywords_phrases: string | null;
-  area_of_law: string | null;
-  title: string;
-  subject_matters: string | null;
-  snippet: string;
   decision: string;
+  c_t: number;
+
+  // Court information
+  court_type?: string;
+  court?: string | null;
+
+  // Case metadata
+  suit_reference_number?: string;
+  year?: string;
+  file_url?: string;
+  file_name?: string;
+  citation?: string | null;
+
+  // Location information
+  town?: string;
+  region?:
+    | string
+    | {
+        code: string;
+        name: string;
+      };
+
+  // People involved
+  presiding_judge?: string;
+  judgement_by?: string;
+  judges?: string;
+  lawyers?: string | null;
+
+  // Categorization fields
+  area_of_law?: string | null;
+  keywords_phrases?: string | null;
+  subject_matters?: string | null;
+  snippet?: string;
+  type?: string;
 }
 
 interface LoaderData {
@@ -84,7 +106,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const { id } = params;
   const baseUrl = process.env.NEXT_PUBLIC_DL_LIVE_URL;
   const baseAIUrl = process.env.NEXT_PUBLIC_DL_AI_API_URL;
-
 
   try {
     // Make initial request for case details
@@ -161,7 +182,7 @@ export default function CasePreview() {
       const token = localStorage.getItem("access_token");
       if (!token) {
         setLoading(false);
-        navigate('/'); 
+        navigate("/");
         return;
       }
 
@@ -180,7 +201,13 @@ export default function CasePreview() {
         );
 
         const data = response.data.data;
-        setCaseDetails(data);
+        const analysisMarkdown = convertAnalysisToMarkdown(data);
+        setCaseDetails({
+          ...data,
+          analysis: analysisMarkdown,
+          vector_store_id: data.vector_store_id,
+          vector_file_id: data.file_id,
+        });
 
         if (caseDigestFromDB == null) {
           // generateCaseDigest(baseAIUrl, data, token).then(
@@ -360,7 +387,7 @@ export default function CasePreview() {
                       {caseDetails.title}
                     </h1>
 
-                    {/* Case Metadata Grid */}
+                    {/* Case Metadata Grid - Enhanced */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-gray-500">Citation:</p>
@@ -373,26 +400,70 @@ export default function CasePreview() {
                         <p className="font-semibold">{caseDetails.date}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Type:</p>
-                        <p className="font-semibold capitalize">
-                          {caseDetails.type}
+                        <p className="text-sm text-gray-500">Court:</p>
+                        <p className="font-semibold">
+                          {caseDetails.court_type === "SC"
+                            ? "Supreme Court"
+                            : caseDetails.court_type === "CA"
+                            ? "Court of Appeal"
+                            : caseDetails.court_type === "HC"
+                            ? "High Court"
+                            : caseDetails.court ||
+                              caseDetails.court_type ||
+                              "Not specified"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Region:</p>
+                        <p className="text-sm text-gray-500">
+                          Reference Number:
+                        </p>
                         <p className="font-semibold">
-                          {caseDetails.region?.name || "Not specified"}
+                          {caseDetails.suit_reference_number || "Not specified"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Year:</p>
+                        <p className="font-semibold">
+                          {caseDetails.year ||
+                            (caseDetails.date &&
+                              new Date(caseDetails.date).getFullYear()) ||
+                            "Not specified"}
                         </p>
                       </div>
                     </div>
 
-                    {/* Judges */}
+                    {/* Judges & Lawyers Section */}
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500">Presiding Judge:</p>
+                      <p className="font-semibold">
+                        {caseDetails.judgement_by ||
+                          (caseDetails.presiding_judge &&
+                            caseDetails.presiding_judge.split(",")[0]) ||
+                          "Not specified"}
+                      </p>
+                    </div>
+
                     <div className="mb-4">
                       <p className="text-sm text-gray-500">Judges:</p>
                       <p className="font-semibold">
-                        {caseDetails.judges || "Not specified"}
+                        {caseDetails.presiding_judge ||
+                          caseDetails.judges ||
+                          "Not specified"}
                       </p>
                     </div>
+
+                    {caseDetails.lawyers && (
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500">Lawyers:</p>
+                        <p className="font-semibold">
+                          {caseDetails.lawyers.split(",").map((lawyer, idx) => (
+                            <span key={idx} className="block">
+                              {lawyer.trim()}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Categorizations */}
                     <div className="flex flex-wrap gap-2 mb-4">
