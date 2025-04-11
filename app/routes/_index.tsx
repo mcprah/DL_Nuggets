@@ -154,17 +154,15 @@ const Login = () => {
         {/* Login/Signup toggle */}
         <div className="flex border rounded-lg mb-6 p-1 bg-gray-50">
           <button
-            className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
-              !isSignUp ? "bg-white shadow-sm text-primary" : "text-gray-500"
-            }`}
+            className={`flex-1 py-2 rounded-md text-sm font-medium transition ${!isSignUp ? "bg-white shadow-sm text-primary" : "text-gray-500"
+              }`}
             onClick={() => setIsSignUp(false)}
           >
             Sign In
           </button>
           <button
-            className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
-              isSignUp ? "bg-white shadow-sm text-primary" : "text-gray-500"
-            }`}
+            className={`flex-1 py-2 rounded-md text-sm font-medium transition ${isSignUp ? "bg-white shadow-sm text-primary" : "text-gray-500"
+              }`}
             onClick={() => setIsSignUp(true)}
           >
             Sign Up
