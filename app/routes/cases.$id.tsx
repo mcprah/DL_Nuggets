@@ -69,6 +69,8 @@ interface LoaderData {
 
 export const meta: MetaFunction = ({ data }) => {
   const { caseData } = data as LoaderData;
+  console.log(caseData);
+
   return [
     { title: `${caseData.title} | Dennislaw` },
     {
@@ -294,6 +296,34 @@ export default function CasePreview() {
     window.print();
   };
 
+  interface CaseNugget {
+    id: string
+    quote: string
+    page: number
+  }
+
+  const keyQuotes = [
+    {
+      id: "1",
+      quote:
+        "On the 30th day of November 2022, this court by a unanimous decision allowed the appeal by the Plaintiffs/Respondents/Appellants hereafter referred to as Plaintiffs.",
+      page: 1,
+    },
+    {
+      id: "2",
+      quote:
+        "The Court of Appeal judgment dated 30th July 2020 which was in favour of Defendants/Appellants/Respondents hereafter, Defendants.",
+      page: 1,
+    },
+    {
+      id: "3",
+      quote: "The parties entered into a contract for the sale of land situated at East Legon.",
+      page: 2,
+    },
+  ];
+
+
+
   return (
     <AdminLayout>
       <div className="container mx-auto py-0 relative">
@@ -411,7 +441,7 @@ export default function CasePreview() {
                     </h1>
 
                     {/* Case Metadata Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-gray-500">Citation:</p>
                         <p className="font-semibold">
@@ -434,15 +464,15 @@ export default function CasePreview() {
                           {caseDetails.region?.name || "Not specified"}
                         </p>
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* Judges */}
-                    <div className="mb-4">
+                        {/* <div className="mb-4">
                       <p className="text-sm text-gray-500">Judges:</p>
                       <p className="font-semibold">
                         {caseDetails.judges || "Not specified"}
                       </p>
-                    </div>
+                    </div> */}
 
                     {/* Categorizations */}
                     <div className="flex flex-wrap gap-2 mb-4">
@@ -474,7 +504,7 @@ export default function CasePreview() {
                         tabList: "shadow-sm bg-gray-200/50",
                       }}
                     >
-                      <Tab key="full" title="Full Case">
+                          <Tab key="full" title="FULL CASE">
                         <div className="py-4 prose prose-slate max-w-none">
                           {formatDecision(caseDetails.decision)}
                         </div>
@@ -484,7 +514,7 @@ export default function CasePreview() {
                         key="digest"
                         title={
                           <div className="flex items-center gap-1">
-                            Case Digest{" "}
+                            CASE DIGEST{" "}
                             <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
                               AI
                             </span>
@@ -760,7 +790,7 @@ export default function CasePreview() {
                         key="references"
                         title={
                           <div className="flex items-center gap-1">
-                            References{" "}
+                            REFERENCES{" "}
                             <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
                               AI
                             </span>
@@ -897,8 +927,82 @@ export default function CasePreview() {
                               </Card>
                             </>
                           )}
-                        </div>
-                      </Tab>
+                            </div>
+                          </Tab>
+                          <Tab title={
+                            <span className="flex items-center">
+                              CASE INFO & CLASSIFICATION
+                            </span>
+                          }>
+                            {/* Case Metadata Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2  mb-6">
+                              {/* Right Column - Judges */}
+                              <div className="flex flex-col gap-4">
+                                <div>
+                                  <p className="text-sm text-gray-500">Judges:</p>
+                                  <p className="font-semibold">{caseDetails.judges || "Not specified"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Area of Law:</p>
+                                  <p className="font-semibold">{caseDetails.area_of_law || "Not specified"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Keyword Phrase:</p>
+                                  <p className="font-semibold">{caseDetails.keywords_phrases || "Not specified"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Lawyers:</p>
+                                  <p className="font-semibold">{caseDetails.lawyers || "Not specified"}</p>
+                                </div>
+
+                              </div>
+
+                              {/* Left Column */}
+                              <div className="flex flex-col gap-4">
+                                <div>
+                                  <p className="text-sm text-gray-500">Citation:</p>
+                                  <p className="font-semibold">{caseDetails.dl_citation_no}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Court:</p>
+                                  <p className="font-semibold">{caseDetails.court || "Not Specified"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Date:</p>
+                                  <p className="font-semibold">{caseDetails.date}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Type:</p>
+                                  <p className="font-semibold capitalize">{caseDetails.c_t}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Region:</p>
+                                  <p className="font-semibold">
+                                    {caseDetails.region?.name || "Not specified"}
+                                  </p>
+                                </div>
+                              </div>
+
+
+                            </div>
+
+                          </Tab>
+
+                          <Tab title="KEY QUOTES/NUGGETS">
+                            <div className="space-y-4">
+                              <div className="space-y-4">
+                                {keyQuotes.map((nugget) => (
+                                  <div key={nugget.id} className="border rounded-md p-4 bg-gray-50">
+                                    <blockquote className="text-gray-800 italic border-l-4 border-primary pl-4">
+                                      "{nugget.quote}"
+                                    </blockquote>
+                                    <div className="text-sm text-gray-500 mt-2">Page {nugget.page}</div>
+                                  </div>
+                                ))}
+                              </div>
+
+                            </div>
+                          </Tab>
                     </Tabs>
 
                     {/* Print version - only visible when printing */}
