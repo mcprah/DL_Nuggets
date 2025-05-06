@@ -93,8 +93,6 @@ interface LoaderData {
 
 export const meta: MetaFunction = ({ data }) => {
   const { caseData } = data as LoaderData;
-  console.log(caseData);
-
   return [
     { title: `${caseData.title} | Dennislaw` },
     {
@@ -117,6 +115,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       baseUrl!,
       dl_citation_no
     );
+
+    console.log(caseDigestFromDB);
+
+
+
+
 
     return json({
       caseData: caseResponse.data.data,
@@ -148,6 +152,8 @@ export default function CasePreview() {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [vectorStoreId, setVectorStoreId] = useState<string | null>(null);
   const [caseAnalysis, setCaseAnalysis] = useState<CaseAnalysis | null>(null);
+  const [keyQuotes, setKeyQuotes] = useState<any[]>([]); 
+const [loadingKeyQuotes, setLoadingKeyQuotes] = useState(false);
 
   const navigate = useNavigate();
 
@@ -173,6 +179,28 @@ export default function CasePreview() {
     }
   }, [isChatOpen, isMobile]);
 
+  // Fetch Key Quotes
+  useEffect(() => {
+    const fetchKeyQuotes = async () => {
+      if (caseData && caseData.dl_citation_no) {
+        setLoadingKeyQuotes(true);
+        try {const response = await axios.get(`${baseUrl}/nugget-by-dl-citation-no/${caseData.dl_citation_no}`);
+          console.log("key quotes", response.data);
+          setKeyQuotes(response.data);
+        } catch (err) {
+          console.error("Error fetching key quotes:", err);
+          setKeyQuotes([]); 
+        } finally {
+          setLoadingKeyQuotes(false);
+        }
+      }else{
+        console.log("no key quotes");
+      }
+    };
+
+    fetchKeyQuotes();
+  }, [caseData, baseUrl]);
+
   // Fetch with auth token on client side if needed
   useEffect(() => {
     const fetchWithAuth = async () => {
@@ -192,7 +220,6 @@ export default function CasePreview() {
         apiCallMadeRef.current = true;
         setLoading(true);
         setLoadingDigest(true);
-
         const response = await axios.get(
           `${baseUrl}/case/${caseData.dl_citation_no}/fetch`,
           {
@@ -273,31 +300,25 @@ export default function CasePreview() {
     window.print();
   };
 
-  interface CaseNugget {
-    id: string
-    quote: string
-    page: number
-  }
-
-  const keyQuotes = [
-    {
-      id: "1",
-      quote:
-        "On the 30th day of November 2022, this court by a unanimous decision allowed the appeal by the Plaintiffs/Respondents/Appellants hereafter referred to as Plaintiffs.",
-      page: 1,
-    },
-    {
-      id: "2",
-      quote:
-        "The Court of Appeal judgment dated 30th July 2020 which was in favour of Defendants/Appellants/Respondents hereafter, Defendants.",
-      page: 1,
-    },
-    {
-      id: "3",
-      quote: "The parties entered into a contract for the sale of land situated at East Legon.",
-      page: 2,
-    },
-  ];
+  // const keyQuotes = [
+  //   {
+  //     id: "1",
+  //     quote:
+  //       "On the 30th day of November 2022, this court by a unanimous decision allowed the appeal by the Plaintiffs/Respondents/Appellants hereafter referred to as Plaintiffs.",
+  //     page: 1,
+  //   },
+  //   {
+  //     id: "2",
+  //     quote:
+  //       "The Court of Appeal judgment dated 30th July 2020 which was in favour of Defendants/Appellants/Respondents hereafter, Defendants.",
+  //     page: 1,
+  //   },
+  //   {
+  //     id: "3",
+  //     quote: "The parties entered into a contract for the sale of land situated at East Legon.",
+  //     page: 2,
+  //   },
+  // ];
 
 
 
@@ -330,8 +351,8 @@ export default function CasePreview() {
               <div
                 ref={mainContentRef}
                 className={`${isChatOpen
-                    ? "w-full lg:w-3/5 lg:border-r border-gray-200"
-                    : "w-full"
+                  ? "w-full lg:w-3/5 lg:border-r border-gray-200"
+                  : "w-full"
                   } transition-all duration-300 ease-in-out overflow-y-auto px-4`}
               >
                 {/* Back button row */}
@@ -416,8 +437,8 @@ export default function CasePreview() {
                       {caseDetails.title}
                     </h1>
 
-                    {/* Case Metadata Grid - Enhanced */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        {/* Case Metadata Grid */}
+                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-gray-500">Citation:</p>
                         <p className="font-semibold">
@@ -429,70 +450,26 @@ export default function CasePreview() {
                         <p className="font-semibold">{caseDetails.date}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Court:</p>
-                        <p className="font-semibold">
-                          {caseDetails.court_type === "SC"
-                            ? "Supreme Court"
-                            : caseDetails.court_type === "CA"
-                              ? "Court of Appeal"
-                              : caseDetails.court_type === "HC"
-                                ? "High Court"
-                                : caseDetails.court ||
-                                caseDetails.court_type ||
-                                "Not specified"}
+                        <p className="text-sm text-gray-500">Type:</p>
+                        <p className="font-semibold capitalize">
+                          {caseDetails.type}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">
-                          Reference Number:
-                        </p>
+                        <p className="text-sm text-gray-500">Region:</p>
                         <p className="font-semibold">
-                          {caseDetails.suit_reference_number || "Not specified"}
+                          {caseDetails.region?.name || "Not specified"}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Year:</p>
-                        <p className="font-semibold">
-                          {caseDetails.year ||
-                            (caseDetails.date &&
-                              new Date(caseDetails.date).getFullYear()) ||
-                            "Not specified"}
-                        </p>
-                      </div>
-                    </div>
+                    </div> */}
 
-                    {/* Judges & Lawyers Section */}
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-500">Presiding Judge:</p>
-                      <p className="font-semibold">
-                        {caseDetails.judgement_by ||
-                          (caseDetails.presiding_judge &&
-                            caseDetails.presiding_judge.split(",")[0]) ||
-                          "Not specified"}
-                      </p>
-                    </div>
-
-                    <div className="mb-4">
+                        {/* Judges */}
+                        {/* <div className="mb-4">
                       <p className="text-sm text-gray-500">Judges:</p>
                       <p className="font-semibold">
-                        {caseDetails.presiding_judge ||
-                          caseDetails.judges ||
-                          "Not specified"}
+                        {caseDetails.judges || "Not specified"}
                       </p>
-                    </div>
-
-                    {caseDetails.lawyers && (
-                      <div className="mb-4">
-                        <p className="text-sm text-gray-500">Lawyers:</p>
-                        <p className="font-semibold">
-                          {caseDetails.lawyers.split(",").map((lawyer, idx) => (
-                            <span key={idx} className="block">
-                              {lawyer.trim()}
-                            </span>
-                          ))}
-                        </p>
-                      </div>
-                    )}
+                    </div> */}
 
                     {/* Categorizations */}
                     <div className="flex flex-wrap gap-2 mb-4">
@@ -552,6 +529,239 @@ export default function CasePreview() {
                           }}
                         />
                       </Tab>
+
+                          <Tab
+                            key="references"
+                            title={
+                              <div className="flex items-center gap-1">
+                                REFERENCES{" "}
+                                <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
+                                  AI
+                                </span>
+                              </div>
+                            }
+                          >
+                            <div className="py-4">
+                              {loadingDigest ? (
+                                <div className="space-y-6">
+                                  {/* Cases Cited Section Skeleton */}
+                                  <div className="mb-6">
+                                    <h3 className="text-lg font-semibold mb-3">
+                                      Cases Cited
+                                    </h3>
+                                    <ul className="list-disc pl-5 space-y-3">
+                                      <li className="flex items-center">
+                                        <Skeleton className="w-full h-4 rounded-lg" />
+                                      </li>
+                                      <li className="flex items-center">
+                                        <Skeleton className="w-full h-4 rounded-lg" />
+                                      </li>
+                                      <li className="flex items-center">
+                                        <Skeleton className="w-5/6 h-4 rounded-lg" />
+                                      </li>
+                                    </ul>
+                                  </div>
+
+                                  {/* Laws Cited Section Skeleton */}
+                                  <div className="mb-6">
+                                    <h3 className="text-lg font-semibold mb-3">
+                                      Laws Cited
+                                    </h3>
+                                    <ul className="list-disc pl-5 space-y-3">
+                                      <li className="flex items-center">
+                                        <Skeleton className="w-full h-4 rounded-lg" />
+                                      </li>
+                                      <li className="flex items-center">
+                                        <Skeleton className="w-4/5 h-4 rounded-lg" />
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  {/* Cases Cited Section */}
+                                  <div className="mb-6">
+                                    <h3 className="text-lg font-semibold mb-3">
+                                      Cases Cited
+                                    </h3>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                      {caseDigest?.cases_cited?.map(
+                                        (item, index) => (
+                                          <li key={index}>
+                                            {item.content || item.value}
+                                          </li>
+                                        )
+                                      )}
+                                    </ul>
+                                  </div>
+
+                                  {/* Laws Cited Section */}
+                                  <div className="mb-6">
+                                    <h3 className="text-lg font-semibold mb-3">
+                                      Laws Cited
+                                    </h3>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                      {caseDigest?.laws_cited?.map(
+                                        (item, index) => (
+                                          <li key={index}>
+                                            {item.content || item.value}
+                                          </li>
+                                        )
+                                      )}
+                                    </ul>
+                                  </div>
+
+                                  {/* Metadata Card */}
+                                  <Card className="border border-gray-100 shadow-sm overflow-visible bg-white">
+                                    <div className="p-5">
+                                      <h3 className="text-lg font-semibold text-primary-800 mb-3">
+                                        Additional Metadata
+                                      </h3>
+
+                                      {/* Subject Matter */}
+                                      {caseDigest?.subject_matter &&
+                                        caseDigest?.subject_matter.length > 0 && (
+                                          <div className="mb-4">
+                                            <h4 className="font-medium mb-2 text-primary-700">
+                                              Subject Matter
+                                            </h4>
+                                            <div className="flex flex-wrap gap-2">
+                                              {caseDigest?.subject_matter.map(
+                                                (item, index) => (
+                                                  <Chip
+                                                    key={index}
+                                                    size="sm"
+                                                    variant="flat"
+                                                    color="secondary"
+                                                    className="transition-all hover:scale-105"
+                                                  >
+                                                    {item.content || item.value}
+                                                  </Chip>
+                                                )
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                      {/* Keywords */}
+                                      {caseDigest?.keywords &&
+                                        caseDigest?.keywords.length > 0 && (
+                                          <div>
+                                            <h4 className="font-medium mb-2 text-primary-700">
+                                              Keywords
+                                            </h4>
+                                            <div className="flex flex-wrap gap-2">
+                                              {caseDigest?.keywords.map(
+                                                (item, index) => (
+                                                  <Chip
+                                                    key={index}
+                                                    size="sm"
+                                                    variant="flat"
+                                                    color="default"
+                                                    className="transition-all hover:scale-105"
+                                                  >
+                                                    {item.content || item.value}
+                                                  </Chip>
+                                                )
+                                              )}
+                                            </div>
+                                          </div>
+                                        )}
+                                    </div>
+                                  </Card>
+                                </>
+                              )}
+                            </div>
+                          </Tab>
+                          <Tab title={
+                            <span className="flex items-center">
+                              CASE INFO & CLASSIFICATION
+                            </span>
+                          }>
+                            {/* Case Metadata Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2  mb-6">
+                              {/* Right Column - Judges */}
+                              <div className="flex flex-col gap-4">
+                                <div>
+                                  <p className="text-sm text-gray-500">Judges:</p>
+                                  <p className="font-semibold">{caseDetails.judges || "Not specified"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Area of Law:</p>
+                                  <p className="font-semibold">{caseDetails.area_of_law || "Not specified"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Keyword Phrase:</p>
+                                  <p className="font-semibold">{caseDetails.keywords_phrases || "Not specified"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Lawyers:</p>
+                                  <p className="font-semibold">{caseDetails.lawyers || "Not specified"}</p>
+                                </div>
+
+                              </div>
+
+                              {/* Left Column */}
+                              <div className="flex flex-col gap-4">
+                                <div>
+                                  <p className="text-sm text-gray-500">Citation:</p>
+                                  <p className="font-semibold">{caseDetails.dl_citation_no}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Court:</p>
+                                  <p className="font-semibold">{caseDetails.court || "Not Specified"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Date:</p>
+                                  <p className="font-semibold">{caseDetails.date}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Type:</p>
+                                  <p className="font-semibold capitalize">{caseDetails.c_t}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Region:</p>
+                                  <p className="font-semibold">
+                                    {caseDetails.region?.name || "Not specified"}
+                                  </p>
+                                </div>
+                              </div>
+
+
+                            </div>
+
+                          </Tab>
+
+                          <Tab title="KEY QUOTES/NUGGETS">
+                            <div className="space-y-4">
+                              {loadingKeyQuotes ? (
+                                <p>Loading key quotes...</p>
+                              ) : keyQuotes.length > 0 ? (
+                                <div className="space-y-4">
+                                  {keyQuotes.map((nugget: any) => (
+                                    <div key={nugget.id} className="border rounded-md p-4 bg-gray-50">
+                                      <blockquote className="text-gray-800 italic border-l-4 border-primary pl-4">
+                                        "{nugget.quote}"
+                                      </blockquote>
+                                      {nugget.page && (
+                                        <div className="text-sm text-gray-500 mt-2">Page {nugget.page}</div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p>No key quotes found for this case.</p>
+                              )}
+                            </div>
+                          </Tab>
+
+                          <Tab title={
+                            <span className="flex items-center">
+                              COMMENTARY
+                            </span>
+                          }>
+                            <p>This is the commentary tab</p>
+                          </Tab>
                     </Tabs>
 
                     {/* Print version - only visible when printing */}
