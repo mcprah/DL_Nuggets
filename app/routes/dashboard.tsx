@@ -1,4 +1,4 @@
-import { Button, Card, Progress } from "@nextui-org/react";
+import { Button, Card, Link, Progress } from "@nextui-org/react";
 import AdminLayout from "../Layout/AdminLayout";
 import {
   MdArrowRight,
@@ -10,7 +10,7 @@ import {
   MdPerson,
   MdCalendarToday,
 } from "react-icons/md";
-import { useNavigate, useLoaderData, Link } from "@remix-run/react";
+import { useNavigate, useLoaderData } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { MetaFunction, LoaderFunction, json, redirect } from "@remix-run/node";
 import axios from "axios";
@@ -41,7 +41,6 @@ export const meta: MetaFunction = () => {
 
 // Server loader to provide base URL
 export const loader: LoaderFunction = async ({ request }) => {
-
   return json({
     baseUrl: process.env.NEXT_PUBLIC_DL_LIVE_URL,
   });
@@ -448,15 +447,15 @@ const Dashboard = () => {
                   Access comprehensive case law and legal resources in our
                   advanced library.
                 </p>
-                <Link to="https://dennislawgh.com">
-
-                <Button
-                  className="bg-default"
+                  <Button
+                    className="bg-default"
+                    as={Link}
+                    href="https://www.dennislawgh.com"
+                    target="__blank"
                     endContent={<MdArrowRight />}
-                >
-                  Go to Dennislaw
-                </Button>
-                </Link>
+                  >
+                    Go to Dennislaw
+                  </Button>
               </div>
               {/* <div className="md:w-1/3 bg-gradient-to-br from-indigo-500 to-blue-700 flex items-center justify-center p-6">
                 <div className="text-white text-center">
