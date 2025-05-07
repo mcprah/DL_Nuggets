@@ -432,7 +432,7 @@ export default function CasePreview() {
                 </div>
 
                 <Card className="shadow-sm mb-20">
-                  <div className="py-6">
+                  <div className="py-6 px-4 lg:px-1">
                     {/* Case Header */}
                     <h1 className="text-2xl font-bold mb-2 text-primary">
                       {caseDetails.title}
