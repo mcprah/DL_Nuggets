@@ -152,8 +152,8 @@ export default function CasePreview() {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [vectorStoreId, setVectorStoreId] = useState<string | null>(null);
   const [caseAnalysis, setCaseAnalysis] = useState<CaseAnalysis | null>(null);
-  const [keyQuotes, setKeyQuotes] = useState<any[]>([]); 
-const [loadingKeyQuotes, setLoadingKeyQuotes] = useState(false);
+  const [keyQuotes, setKeyQuotes] = useState<any[]>([]);
+  const [loadingKeyQuotes, setLoadingKeyQuotes] = useState(false);
 
   const navigate = useNavigate();
 
@@ -184,16 +184,17 @@ const [loadingKeyQuotes, setLoadingKeyQuotes] = useState(false);
     const fetchKeyQuotes = async () => {
       if (caseData && caseData.dl_citation_no) {
         setLoadingKeyQuotes(true);
-        try {const response = await axios.get(`${baseUrl}/nugget-by-dl-citation-no/${caseData.dl_citation_no}`);
+        try {
+          const response = await axios.get(`${baseUrl}/nugget-by-dl-citation-no/${caseData.dl_citation_no}`);
           console.log("key quotes", response.data);
           setKeyQuotes(response.data);
         } catch (err) {
           console.error("Error fetching key quotes:", err);
-          setKeyQuotes([]); 
+          setKeyQuotes([]);
         } finally {
           setLoadingKeyQuotes(false);
         }
-      }else{
+      } else {
         console.log("no key quotes");
       }
     };
@@ -431,14 +432,14 @@ const [loadingKeyQuotes, setLoadingKeyQuotes] = useState(false);
                 </div>
 
                 <Card className="shadow-sm mb-20">
-                  <div className="p-6">
+                  <div className="py-6">
                     {/* Case Header */}
                     <h1 className="text-2xl font-bold mb-2 text-primary">
                       {caseDetails.title}
                     </h1>
 
-                        {/* Case Metadata Grid */}
-                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    {/* Case Metadata Grid */}
+                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-gray-500">Citation:</p>
                         <p className="font-semibold">
@@ -463,8 +464,8 @@ const [loadingKeyQuotes, setLoadingKeyQuotes] = useState(false);
                       </div>
                     </div> */}
 
-                        {/* Judges */}
-                        {/* <div className="mb-4">
+                    {/* Judges */}
+                    {/* <div className="mb-4">
                       <p className="text-sm text-gray-500">Judges:</p>
                       <p className="font-semibold">
                         {caseDetails.judges || "Not specified"}
@@ -491,278 +492,158 @@ const [loadingKeyQuotes, setLoadingKeyQuotes] = useState(false);
                     <Divider className="my-4" />
 
                     {/* Case Content Tabs */}
-                    <Tabs
-                      size="lg"
-                      color="default"
-                      selectedKey={selectedTab}
-                      onSelectionChange={(key) => setSelectedTab(key as string)}
-                      className="print:hidden"
-                      classNames={{
-                        tabList: "shadow-sm bg-gray-200/50",
-                      }}
-                    >
-                      <Tab key="full" title="FULL CASE">
-                        <div className="py-4 prose prose-slate max-w-none">
-                          {formatDecision(caseDetails.decision)}
-                        </div>
-                      </Tab>
-
-                      <Tab
-                        key="analysis"
-                        title={
-                          <div className="flex items-center gap-1">
-                            Case Analysis{" "}
-                            <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
-                              AI
-                            </span>
-                          </div>
-                        }
+                    <div className="w-80 lg:w-full overflow-x-auto">
+                      <Tabs
+                        size="lg"
+                        color="default"
+                        selectedKey={selectedTab}
+                        onSelectionChange={(key) => setSelectedTab(key as string)}
+                        className="print:hidden"
+                        classNames={{
+                          tabList: "shadow-sm bg-gray-200/50 flex overflow-x-auto whitespace-nowrap scrollbar-hide",
+                        }}
                       >
-                        <CaseAnalysisDisplay
-                          caseData={caseDetails}
-                          baseAIUrl={baseAIUrl}
-                          baseUrl={baseUrl}
-                          initialAnalysis={caseAnalysis}
-                          onAnalysisGenerated={(analysis) => {
-                            setCaseAnalysis(analysis);
-                            setAnalysisLoading(false);
-                          }}
-                        />
-                      </Tab>
+                        <Tab key="full" title="Full Case">
+                          <div className="py-4 prose prose-slate max-w-none">
+                            {formatDecision(caseDetails.decision)}
+                          </div>
+                        </Tab>
 
-                          <Tab
-                            key="references"
-                            title={
-                              <div className="flex items-center gap-1">
-                                REFERENCES{" "}
-                                <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
-                                  AI
-                                </span>
-                              </div>
-                            }
-                          >
-                            <div className="py-4">
-                              {loadingDigest ? (
-                                <div className="space-y-6">
-                                  {/* Cases Cited Section Skeleton */}
-                                  <div className="mb-6">
-                                    <h3 className="text-lg font-semibold mb-3">
-                                      Cases Cited
-                                    </h3>
-                                    <ul className="list-disc pl-5 space-y-3">
-                                      <li className="flex items-center">
-                                        <Skeleton className="w-full h-4 rounded-lg" />
-                                      </li>
-                                      <li className="flex items-center">
-                                        <Skeleton className="w-full h-4 rounded-lg" />
-                                      </li>
-                                      <li className="flex items-center">
-                                        <Skeleton className="w-5/6 h-4 rounded-lg" />
-                                      </li>
-                                    </ul>
-                                  </div>
-
-                                  {/* Laws Cited Section Skeleton */}
-                                  <div className="mb-6">
-                                    <h3 className="text-lg font-semibold mb-3">
-                                      Laws Cited
-                                    </h3>
-                                    <ul className="list-disc pl-5 space-y-3">
-                                      <li className="flex items-center">
-                                        <Skeleton className="w-full h-4 rounded-lg" />
-                                      </li>
-                                      <li className="flex items-center">
-                                        <Skeleton className="w-4/5 h-4 rounded-lg" />
-                                      </li>
-                                    </ul>
-                                  </div>
-                                </div>
-                              ) : (
-                                <>
-                                  {/* Cases Cited Section */}
-                                  <div className="mb-6">
-                                    <h3 className="text-lg font-semibold mb-3">
-                                      Cases Cited
-                                    </h3>
-                                    <ul className="list-disc pl-5 space-y-2">
-                                      {caseDigest?.cases_cited?.map(
-                                        (item, index) => (
-                                          <li key={index}>
-                                            {item.content || item.value}
-                                          </li>
-                                        )
-                                      )}
-                                    </ul>
-                                  </div>
-
-                                  {/* Laws Cited Section */}
-                                  <div className="mb-6">
-                                    <h3 className="text-lg font-semibold mb-3">
-                                      Laws Cited
-                                    </h3>
-                                    <ul className="list-disc pl-5 space-y-2">
-                                      {caseDigest?.laws_cited?.map(
-                                        (item, index) => (
-                                          <li key={index}>
-                                            {item.content || item.value}
-                                          </li>
-                                        )
-                                      )}
-                                    </ul>
-                                  </div>
-
-                                  {/* Metadata Card */}
-                                  <Card className="border border-gray-100 shadow-sm overflow-visible bg-white">
-                                    <div className="p-5">
-                                      <h3 className="text-lg font-semibold text-primary-800 mb-3">
-                                        Additional Metadata
-                                      </h3>
-
-                                      {/* Subject Matter */}
-                                      {caseDigest?.subject_matter &&
-                                        caseDigest?.subject_matter.length > 0 && (
-                                          <div className="mb-4">
-                                            <h4 className="font-medium mb-2 text-primary-700">
-                                              Subject Matter
-                                            </h4>
-                                            <div className="flex flex-wrap gap-2">
-                                              {caseDigest?.subject_matter.map(
-                                                (item, index) => (
-                                                  <Chip
-                                                    key={index}
-                                                    size="sm"
-                                                    variant="flat"
-                                                    color="secondary"
-                                                    className="transition-all hover:scale-105"
-                                                  >
-                                                    {item.content || item.value}
-                                                  </Chip>
-                                                )
-                                              )}
-                                            </div>
-                                          </div>
-                                        )}
-
-                                      {/* Keywords */}
-                                      {caseDigest?.keywords &&
-                                        caseDigest?.keywords.length > 0 && (
-                                          <div>
-                                            <h4 className="font-medium mb-2 text-primary-700">
-                                              Keywords
-                                            </h4>
-                                            <div className="flex flex-wrap gap-2">
-                                              {caseDigest?.keywords.map(
-                                                (item, index) => (
-                                                  <Chip
-                                                    key={index}
-                                                    size="sm"
-                                                    variant="flat"
-                                                    color="default"
-                                                    className="transition-all hover:scale-105"
-                                                  >
-                                                    {item.content || item.value}
-                                                  </Chip>
-                                                )
-                                              )}
-                                            </div>
-                                          </div>
-                                        )}
-                                    </div>
-                                  </Card>
-                                </>
-                              )}
-                            </div>
-                          </Tab>
-                          <Tab title={
+                        <Tab
+                          title={
                             <span className="flex items-center">
-                              CASE INFO & CLASSIFICATION
+                              Case Info & Classification
                             </span>
-                          }>
-                            {/* Case Metadata Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2  mb-6">
-                              {/* Right Column - Judges */}
-                              <div className="flex flex-col gap-4">
-                                <div>
-                                  <p className="text-sm text-gray-500">Judges:</p>
-                                  <p className="font-semibold">{caseDetails.judges || "Not specified"}</p>
+                          }
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div className="flex flex-col gap-4">
+                              {[
+                                { label: "Judges", value: caseDetails.judges },
+                                { label: "Area of Law", value: caseDetails.area_of_law },
+                                { label: "Keyword Phrase", value: caseDetails.keywords_phrases },
+                                { label: "Lawyers", value: caseDetails.lawyers },
+                              ].map(({ label, value }) => (
+                                <div key={label}>
+                                  <p className="text-sm text-gray-500">{label}:</p>
+                                  <p className="font-semibold">{value || "Not specified"}</p>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Area of Law:</p>
-                                  <p className="font-semibold">{caseDetails.area_of_law || "Not specified"}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Keyword Phrase:</p>
-                                  <p className="font-semibold">{caseDetails.keywords_phrases || "Not specified"}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Lawyers:</p>
-                                  <p className="font-semibold">{caseDetails.lawyers || "Not specified"}</p>
-                                </div>
-
-                              </div>
-
-                              {/* Left Column */}
-                              <div className="flex flex-col gap-4">
-                                <div>
-                                  <p className="text-sm text-gray-500">Citation:</p>
-                                  <p className="font-semibold">{caseDetails.dl_citation_no}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Court:</p>
-                                  <p className="font-semibold">{caseDetails.court || "Not Specified"}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Date:</p>
-                                  <p className="font-semibold">{caseDetails.date}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Type:</p>
-                                  <p className="font-semibold capitalize">{caseDetails.c_t}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Region:</p>
-                                  <p className="font-semibold">
-                                    {caseDetails.region?.name || "Not specified"}
-                                  </p>
-                                </div>
-                              </div>
-
-
+                              ))}
                             </div>
 
-                          </Tab>
-
-                          <Tab title="KEY QUOTES/NUGGETS">
-                            <div className="space-y-4">
-                              {loadingKeyQuotes ? (
-                                <p>Loading key quotes...</p>
-                              ) : keyQuotes.length > 0 ? (
-                                <div className="space-y-4">
-                                  {keyQuotes.map((nugget: any) => (
-                                    <div key={nugget.id} className="border rounded-md p-4 bg-gray-50">
-                                      <blockquote className="text-gray-800 italic border-l-4 border-primary pl-4">
-                                        "{nugget.quote}"
-                                      </blockquote>
-                                      {nugget.page && (
-                                        <div className="text-sm text-gray-500 mt-2">Page {nugget.page}</div>
-                                      )}
-                                    </div>
-                                  ))}
+                            <div className="flex flex-col gap-4">
+                              {[
+                                { label: "Citation", value: caseDetails.dl_citation_no },
+                                { label: "Court", value: caseDetails.court },
+                                { label: "Date", value: caseDetails.date },
+                                { label: "Type", value: caseDetails.c_t },
+                                { label: "Region", value: caseDetails.region?.name },
+                              ].map(({ label, value }) => (
+                                <div key={label}>
+                                  <p className="text-sm text-gray-500">{label}:</p>
+                                  <p className="font-semibold capitalize">{value || "Not specified"}</p>
                                 </div>
-                              ) : (
-                                <p>No key quotes found for this case.</p>
-                              )}
+                              ))}
                             </div>
-                          </Tab>
+                          </div>
+                        </Tab>
 
-                          <Tab title={
+                        <Tab
+                          key="analysis"
+                          title={
+                            <div className="flex items-center gap-1">
+                              Case Analysis{" "}
+                              <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
+                                AI
+                              </span>
+                            </div>
+                          }
+                        >
+                          <CaseAnalysisDisplay
+                            caseData={caseDetails}
+                            baseAIUrl={baseAIUrl}
+                            baseUrl={baseUrl}
+                            initialAnalysis={caseAnalysis}
+                            onAnalysisGenerated={(analysis) => {
+                              setCaseAnalysis(analysis);
+                              setAnalysisLoading(false);
+                            }}
+                          />
+                        </Tab>
+
+                        <Tab title="Key Quotes & Nuggets">
+                          <div className="space-y-4">
+                            {loadingKeyQuotes ? (
+                              <p>Loading key quotes...</p>
+                            ) : keyQuotes.length > 0 ? (
+                              <div className="space-y-4">
+                                {keyQuotes.map((nugget: any) => (
+                                  <div key={nugget.id} className="border rounded-md p-4 bg-gray-50">
+                                    <blockquote className="text-gray-800 italic border-l-4 border-primary pl-4">
+                                      "{nugget.quote}"
+                                    </blockquote>
+                                    {nugget.page && (
+                                      <div className="text-sm text-gray-500 mt-2">Page {nugget.page}</div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p>No key quotes found for this case.</p>
+                            )}
+                          </div>
+                        </Tab>
+
+                        <Tab
+                          key="references"
+                          title={
+                            <div className="flex items-center gap-1">
+                              References{" "}
+                              <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
+                                AI
+                              </span>
+                            </div>
+                          }
+                        >
+                          <div className="py-4 space-y-6">
+                            {loadingDigest ? (
+                              <p>Loading references...</p>
+                            ) : (
+                              <>
+                                <div className="mb-6">
+                                  <h3 className="text-lg font-semibold mb-3">Cases Cited</h3>
+                                  <ul className="list-disc pl-5 space-y-2">
+                                    {caseDigest?.cases_cited?.map((item, index) => (
+                                      <li key={index}>{item.content || item.value}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+
+                                <div className="mb-6">
+                                  <h3 className="text-lg font-semibold mb-3">Laws Cited</h3>
+                                  <ul className="list-disc pl-5 space-y-2">
+                                    {caseDigest?.laws_cited?.map((item, index) => (
+                                      <li key={index}>{item.content || item.value}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </Tab>
+
+                        <Tab
+                          title={
                             <span className="flex items-center">
-                              COMMENTARY
+                              Commentary
                             </span>
-                          }>
-                            <p>This is the commentary tab</p>
-                          </Tab>
-                    </Tabs>
+                          }
+                        >
+                          <p>This is the commentary tab.</p>
+                        </Tab>
+                      </Tabs>
+                    </div>
+
 
                     {/* Print version - only visible when printing */}
                     <div className="hidden print:block">
