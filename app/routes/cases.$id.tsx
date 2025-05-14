@@ -318,7 +318,7 @@ export default function CasePreview() {
                   </Button>
 
                   <div className="flex items-center gap-2">
-                    {!isChatOpen && (
+                    {caseAnalysis != null && !isChatOpen && (
                       <Tooltip content={"Ask AI"}>
                         <Button
                           isIconOnly
