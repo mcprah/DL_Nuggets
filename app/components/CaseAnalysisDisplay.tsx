@@ -170,6 +170,7 @@ export default function CaseAnalysisDisplay({
           );
 
           const newAnalysis: CaseAnalysis = {
+            ...analysisResponse.data,
             analysis: analysisMarkdown ?? "",
             created_at: new Date().toISOString(),
             dl_citation_no: caseData.dl_citation_no,
@@ -182,7 +183,9 @@ export default function CaseAnalysisDisplay({
           await createCaseAnalysis(
             baseUrl,
             {
+              ...analysisResponse.data,
               analysis: analysisMarkdown ?? "",
+              created_at: new Date().toISOString(),
               dl_citation_no: caseData.dl_citation_no,
               vector_store_id: analysisResponse.data.vector_store_id,
               vector_file_id: analysisResponse.data.file_id,
